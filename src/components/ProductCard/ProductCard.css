@@ -1,0 +1,22 @@
+/* ProductCard.css */
+.product-card {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.custom-badge {
+    background-color: var(--primary-color) !important;
+}
+
+.card-title {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.text-primary {
+  color: var(--primary-color) !important;
+}
