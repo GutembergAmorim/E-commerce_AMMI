@@ -22,16 +22,10 @@ function Header() {
               </a>
               <nav className="d-none d-md-flex" style={{ gap: "1.5rem" }}>
                 <Link
-                  to="/products"
-                  className="nav-link text-dark fw-medium nav-link-custom-hover px-0"
-                >
-                  Produtos
-                </Link>
-                <Link
                   to="/collections" // Exemplo de rota, ajuste conforme necessário
                   className="nav-link text-dark fw-medium nav-link-custom-hover px-0"
                 >
-                  Coleções
+                  Produtos
                 </Link>
                 <a
                   href="#/"

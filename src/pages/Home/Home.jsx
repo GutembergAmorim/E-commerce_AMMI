@@ -121,12 +121,11 @@ function Home() {
                 para você se sentir poderosa em cada movimento.
               </p>
               <div className="d-flex flex-column flex-sm-row gap-3">
-                {/* <button className="btn btn-custom-pink rounded-pill px-4 py-2 fw-medium">
-                  Comprar Agora
-                </button> */}
-                <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-medium">
-                  Ver Coleção
-                </button>
+                <Link to="/collections">
+                  <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-medium">
+                    Ver Coleção
+                  </button>
+                </Link>
               </div>
             </div>
             <div className="col-md-6 d-flex justify-content-center align-items-center">
@@ -170,10 +169,9 @@ function Home() {
       <section className="py-5 bg-light">
         <div className="container">
           <div className="d-flex justify-content-between align-items-center mb-4">
-           
-            <h2 className="h2 fw-bold">Destaques</h2> 
+            <h2 className="h2 fw-bold">Destaques</h2>
             <Link
-              to="/products"
+              to="/collections"
               className="nav-link text-decoration-none text-custom-pink fw-medium"
             >
               Ver todos
@@ -223,16 +221,20 @@ function Home() {
                           <span
                             className={`badge rounded-pill small px-2 py-1 ${product.statusColor} ${product.statusTextColor}`}
                           >
-                            {product.status} 
+                            {product.status}
                           </span>
                         )}
                       </div>
                       <div className="d-flex align-items-center justify-content-between mt-auto">
-                        <span className="fw-bold fs-5">{`R$ ${product.price.toFixed(2).replace(".", ",")}`}</span>
-                        
+                        <span className="fw-bold fs-5">{`R$ ${product.price
+                          .toFixed(2)
+                          .replace(".", ",")}`}</span>
+
                         {product.oldPrice && (
                           <span className="text-muted text-decoration-line-through ms-2">
-                            {`R$ ${product.oldPrice.toFixed(2).replace(".", ",")}`}
+                            {`R$ ${product.oldPrice
+                              .toFixed(2)
+                              .replace(".", ",")}`}
                           </span>
                         )}
                         {/* <button className="btn btn-custom-pink btn-sm rounded-pill p-2 lh-1">
@@ -277,11 +279,8 @@ function Home() {
 
       {/* Seção Newsletter */}
       <section className="py-5 bg-light">
-        
         <div className="container" style={{ maxWidth: "896px" }}>
-          
           <div className="bg-white rounded-3 shadow-sm p-4 p-md-5 text-center">
-            
             <h2 className="h2 fw-bold mb-3">Receba nossas novidades</h2>
             <p className="text-muted mb-4">
               Cadastre-se para receber promoções exclusivas e as últimas
@@ -291,7 +290,6 @@ function Home() {
               className="d-flex flex-column flex-sm-row gap-2 mx-auto"
               style={{ maxWidth: "520px" }}
             >
-              
               <input
                 type="email"
                 placeholder="Seu melhor e-mail"
@@ -305,13 +303,12 @@ function Home() {
               </button>
             </form>
             <p className="small text-muted mt-3">
-              
               Não compartilhamos seus dados. Veja nossa
               <a
                 href="#privacy"
                 className="text-custom-pink text-decoration-none"
               >
-                {" "}                
+                {" "}
                 Política de Privacidade
               </a>
               .
