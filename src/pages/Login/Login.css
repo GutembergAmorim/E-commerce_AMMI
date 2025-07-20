@@ -1,0 +1,33 @@
+.btn-login-custom {
+  background-color: #ff3399; /* Rosa vibrante */
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  width: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.btn-login-custom:hover {
+  background-color: #ff66b3 !important; /* Sua cor de hover desejada */
+  border-color: #ff66b3 !important;
+}
+
+.btn-create-account {
+  background-color: #ff3399; /* Cor de fundo cinza claro */
+  color: white; /* Cor do texto rosa */
+  border: 1px solid #ccc; /* Borda cinza clara */
+  padding: 0.8rem;
+  width: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-create-account:hover {
+  background-color: #ff66b3
+}

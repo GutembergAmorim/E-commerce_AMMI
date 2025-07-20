@@ -141,7 +141,7 @@ function Home() {
       </section>
 
       {/* Seção Categorias */}
-      <section className="py-5 bg-white">
+      {/* <section className="py-5 bg-white">
         <div className="container">
           <h2 className="h2 fw-bold text-center mb-5">Nossas Categorias</h2>
           <div className="row row-cols-2 row-cols-md-4 g-4">
@@ -163,7 +163,7 @@ function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Seção Produtos em Destaque */}
       <section className="py-5 bg-light">

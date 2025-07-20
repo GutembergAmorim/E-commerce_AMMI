@@ -1,10 +1,15 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./cart.css"; // Importando o CSS do carrinho
 
 import { useCart } from "../../Context/CartContext";
+import { useAuth } from "../../Context/authContext";
 
 const Cart = () => {
   const { cartItems, handleQuantityChange, handleRemoveItem } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navegate = useNavigate();
+  const location = useLocation();
   const [cep, setCep] = useState("");
 
   const handleCepChange = (e) => {
@@ -15,8 +20,18 @@ const Cart = () => {
     setCep(value);
   };
 
+  const handleCheckout = () => {
+    if (isAuthenticated) {
+      navegate("/checkout"); // Redireciona para a página de checkout caso o usuario esteja logado
+    } else {
+      navegate("/login", {
+        state: { from: location },
+      });
+    }
+  };
+
   const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+    (acc, item) => acc + item.originalPrice * item.quantity,
     0
   );
   const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -35,9 +50,8 @@ const Cart = () => {
     // { icon: "fab fa-cc-paypal", label: "PayPal" },
     // { icon: "fas fa-barcode", label: "Boleto" },
     { icon: "fa-brands fa-pix ", label: "Pix" },
-    { icon: "fas fa-credit-card", label: "Cartão de Crédito" } // Verifique se este ícone está disponível
+    { icon: "fas fa-credit-card", label: "Cartão de Crédito" }, // Verifique se este ícone está disponível
   ];
-
 
   return (
     <>
@@ -242,7 +256,10 @@ const Cart = () => {
                 </div>
               </div>
 
-              <button className="btn btn-primary w-100 fw-bold py-2 mb-3">
+              <button
+                className="btn btn-primary w-100 fw-bold py-2 mb-3"
+                onClick={handleCheckout}
+              >
                 Finalizar Compra
               </button>
 
@@ -263,7 +280,6 @@ const Cart = () => {
                       key={method.label}
                       className="payment-icon-bg p-2 rounded d-flex align-items-center justify-content-center"
                       title={method.label}
-                      
                     >
                       <i className={`${method.icon} fs-4`}></i>
                     </div>

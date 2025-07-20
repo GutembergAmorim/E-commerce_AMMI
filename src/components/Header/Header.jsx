@@ -7,9 +7,11 @@ import { Link } from "react-router-dom"; // Importe Link do react-router-dom par
 import "./Header.css"; // Importe o CSS para estilos personalizados
 
 import { useCart } from "../../Context/CartContext";
+import { useAuth } from "../../Context/authContext";
 
 function Header() {
   const { cartItems } = useCart();
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <>
@@ -37,12 +39,30 @@ function Header() {
             </div>
 
             <div className="d-flex align-items-center" style={{ gap: "1rem" }}>
-              <button className="btn btn-light rounded-circle p-2 lh-1">
+              {isAuthenticated ? (
+                <>
+                  <span className="text-dark fw-medium d-none d-sm-block">
+                    Bem-vindo, {user.name}!
+                  </span>
+                  <button onClick={logout} className="btn btn-outline-secondary btn-sm">
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="btn btn-outline-secondary rounded-pill px-3"
+                >
+                  Entrar
+                </Link>
+              )}
+
+              {/* <button className="btn btn-light rounded-circle p-2 lh-1">
                 <i className="fas fa-search text-secondary"></i>{" "}
               </button>
               <button className="btn btn-light rounded-circle p-2 lh-1">
                 <i className="fas fa-heart text-secondary"></i>
-              </button>
+              </button> */}
               <Link
                 to="/Cart"
                 className="btn btn-light rounded-circle p-2 lh-1 position-relative"
@@ -55,7 +75,6 @@ function Header() {
                   </span>
                 )}
               </Link>
-
               <button className="btn btn-light rounded-circle p-2 d-md-none lh-1">
                 <i className="fas fa-bars text-secondary"></i>
               </button>

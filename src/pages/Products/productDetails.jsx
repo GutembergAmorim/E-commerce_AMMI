@@ -246,8 +246,7 @@ const ProductDetails = () => {
               {/* <!-- Price --> */}
               <div className="mb-6">
                 <span className="display-6 fw-bold text-dark">
-                  R$ {product.price.toFixed(2).replace(".", ",")
-                 || "R$ 0,00"}
+                  R$ {product.price.toFixed(2).replace(".", ",") || "R$ 0,00"}
                 </span>
                 {product.oldPrice && (
                   <span className="fs-5 text-muted text-decoration-line-through ms-2">
