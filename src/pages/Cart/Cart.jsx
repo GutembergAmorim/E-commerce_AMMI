@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import "./cart.css"; // Importando o CSS do carrinho
+
 
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/authContext";
@@ -58,7 +58,7 @@ const Cart = () => {
       <main className="container py-4" style={{ backgroundColor: "#f8f9fa" }}>
         <div className="row g-4">
           {/* Itens do Carrinho */}
-          <div className="col-lg-8">
+          <div className="col-lg-7">
             <div className="card shadow-sm p-4 mb-4">
               <h2 className="h4 fw-bold mb-4">
                 Meu Carrinho ({totalItems} {totalItems === 1 ? "item" : "itens"}
@@ -223,7 +223,7 @@ const Cart = () => {
           </div>
 
           {/* Resumo do Pedido */}
-          <div className="col-lg-4">
+          <div className="col-lg-5">
             <div
               className="card shadow-sm p-4 position-sticky"
               style={{ top: "1rem" }}

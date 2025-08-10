@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   });
 
   // O estado de autenticação é derivado do estado do usuário
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user; // Verifica se o usuário está autenticado
 
   // Efeito para salvar o usuário no localStorage sempre que ele mudar
   useEffect(() => {
@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Funções de registro
   const register = (userData) => {
     const users = getUsersFromStorage();
     const userExists = users.some((u) => u.email === userData.email);
@@ -64,9 +65,9 @@ export const AuthProvider = ({ children }) => {
       // Armazena apenas os dados necessários para a sessão, sem a senha
       const { password, ...userToStore } = foundUser;
       setUser(userToStore);
-      return true; // Sucesso no login
+      return { success: true}; // Sucesso no login
     }
-    return false; // Falha no login
+    return { success: false, message: "Credenciais inválidas." }; // Falha no login
   };
 
   const logout = () => {

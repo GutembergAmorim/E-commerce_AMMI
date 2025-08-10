@@ -11,6 +11,8 @@ import { AuthProvider } from "./Context/authContext";
 import Login from "./pages/Login/Login.jsx";
 import Cart from "./pages/Cart/Cart.jsx";
 import Register from "./pages/Register/Register.jsx";
+import Checkout from "./pages/Checkout/Checkout.jsx";
+import Customer from "./pages/Customer/Customer.jsx";
 
 const router = createBrowserRouter([
   {
@@ -39,8 +41,16 @@ const router = createBrowserRouter([
         element: <Cart />,
       },
       {
+        path: "checkout",
+        element: <Checkout />,
+      },
+      {
         path: "collections",
         element: <Collections />,
+      },
+      {
+        path: "customer",
+        element: <Customer />,
       },
     ],
   },
