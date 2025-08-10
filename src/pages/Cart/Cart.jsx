@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 
 import { useCart } from "../../Context/CartContext";
-import { useAuth } from "../../Context/authContext";
+import { useAuth } from "../../Context/AuthContext";
 
 const Cart = () => {
   const { cartItems, handleQuantityChange, handleRemoveItem } = useCart();

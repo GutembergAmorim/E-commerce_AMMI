@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import logo from "../../assets/logo.png";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../../Context/authContext";
+import { useAuth } from "../../Context/AuthContext";
 
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
