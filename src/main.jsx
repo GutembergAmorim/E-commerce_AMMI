@@ -7,7 +7,7 @@ import ProductDetails from "./pages/Products/productDetails";
 import { CartProvider } from "./Context/CartContext";
 import Home from "./pages/Home/Home";
 import Collections from "./pages/Collections/Collections";
-import { AuthProvider } from "./Context/authContext";
+import { AuthProvider } from "./Context/AuthContext";
 import Login from "./pages/Login/Login.jsx";
 import Cart from "./pages/Cart/Cart.jsx";
 import Register from "./pages/Register/Register.jsx";
@@ -62,7 +62,7 @@ ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <AuthProvider>
       <CartProvider>
-        <RouterProvider router={router} />;
+        <RouterProvider router={router} />
       </CartProvider>
     </AuthProvider>
   </React.StrictMode>

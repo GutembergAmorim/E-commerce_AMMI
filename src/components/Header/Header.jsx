@@ -7,7 +7,7 @@ import { Link } from "react-router-dom"; // Importe Link do react-router-dom par
 import "./Header.css"; // Importe o CSS para estilos personalizados
 
 import { useCart } from "../../Context/CartContext";
-import { useAuth } from "../../Context/authContext";
+import { useAuth } from "../../Context/AuthContext";
 
 function Header() {
   const { cartItems } = useCart();
@@ -64,7 +64,7 @@ function Header() {
                 <i className="fas fa-heart text-secondary"></i>
               </button> */}
               <Link
-                to="/Cart"
+                to="/cart"
                 className="btn btn-light rounded-circle p-2 lh-1 position-relative"
               >
                 <i className="fas fa-shopping-bag text-secondary"></i>

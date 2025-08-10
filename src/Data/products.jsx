@@ -6,7 +6,7 @@ import Produto2 from "../assets/produto2.jpg";
 import Produto2_thumb2 from "../assets/produto2_thumb2.jpg";
 import Produto2_thumb3 from "../assets/produto2_thumb3.jpg";
 import Produto2_thumb4 from "../assets/produto2_thumb4.jpg";
-import Produto3 from "../assets/produto3.jpg";
+import Produto3 from "../assets/produto3.JPG";
 import Produto3_thumb2 from "../assets/produto3_thumb2.jpg";
 import Produto3_thumb3 from "../assets/produto3_thumb3.jpg";
 import Produto3_thumb4 from "../assets/produto3_thumb4.jpg";

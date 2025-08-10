@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import logo from "../../assets/logo.png";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { useAuth } from "../../Context/authContext";
+import { useAuth } from "../../Context/AuthContext";
 import "./Login.css";
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -26,10 +26,11 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    if (login(email, password)) {
+    const result = login(email, password);
+    if (result.success) {
       navigate(from, { replace: true });
     } else {
-      setError("Email ou senha inválidos. Tente novamente.");
+      setError(result.message || "Email ou senha inválidos. Tente novamente.");
     }
   };
 
