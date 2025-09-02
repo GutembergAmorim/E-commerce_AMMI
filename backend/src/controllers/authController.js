@@ -1,10 +1,13 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 // Gerar JWT Token
 const generateToken = (id) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET não configurado no servidor");
+  }
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE
+    expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
@@ -20,7 +23,7 @@ const register = async (req, res) => {
     if (userExists) {
       return res.status(400).json({
         success: false,
-        message: 'Este e-mail já está cadastrado'
+        message: "Este e-mail já está cadastrado",
       });
     }
 
@@ -28,7 +31,7 @@ const register = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password
+      password,
     });
 
     if (user) {
@@ -38,16 +41,16 @@ const register = async (req, res) => {
           _id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role,
         },
-        token: generateToken(user._id)
+        token: generateToken(user._id),
       });
     }
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Erro ao registrar usuário',
-      error: error.message
+      message: "Erro ao registrar usuário",
+      error: error.message,
     });
   }
 };
@@ -58,23 +61,33 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("[AUTH] Tentativa de login:", { email });
 
     // Verificar se usuário existe
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
+      console.warn("[AUTH] Usuário não encontrado:", { email });
       return res.status(401).json({
         success: false,
-        message: 'Credenciais inválidas'
+        message: "Credenciais inválidas",
       });
     }
 
-    // Verificar senha
+    // Verificar usuário ativo e senha
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
+      console.warn("[AUTH] Senha inválida para:", { email });
       return res.status(401).json({
         success: false,
-        message: 'Credenciais inválidas'
+        message: "Credenciais inválidas",
       });
+    }
+
+    if (!user.isActive) {
+      console.warn("[AUTH] Usuário desativado tentou login:", { email });
+      return res
+        .status(403)
+        .json({ success: false, message: "Usuário desativado" });
     }
 
     res.json({
@@ -83,15 +96,16 @@ const login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
       },
-      token: generateToken(user._id)
+      token: generateToken(user._id),
     });
   } catch (error) {
+    console.error("Erro no login:", error);
     res.status(500).json({
       success: false,
-      message: 'Erro ao fazer login',
-      error: error.message
+      message: "Erro ao fazer login",
+      error: error.message,
     });
   }
 };
@@ -104,19 +118,15 @@ const getMe = async (req, res) => {
     const user = await User.findById(req.user.id);
     res.json({
       success: true,
-      data: user
+      data: user,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Erro ao buscar usuário',
-      error: error.message
+      message: "Erro ao buscar usuário",
+      error: error.message,
     });
   }
 };
 
-module.exports = {
-  register,
-  login,
-  getMe
-};
+export { register, login, getMe };

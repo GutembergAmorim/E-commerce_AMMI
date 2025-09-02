@@ -1,4 +1,4 @@
-const Product = require('../models/Product');
+import Product from "../models/Product.js";
 
 // @desc    Buscar todos os produtos
 // @route   GET /api/products
@@ -6,22 +6,22 @@ const Product = require('../models/Product');
 const getProducts = async (req, res) => {
   try {
     const { category, isNew, isHighlighted, search } = req.query;
-    
+
     // Construir filtros
     const filter = { isActive: true };
-    
+
     if (category) {
       filter.category = category;
     }
-    
-    if (isNew === 'true') {
+
+    if (isNew === "true") {
       filter.isNew = true;
     }
-    
-    if (isHighlighted === 'true') {
+
+    if (isHighlighted === "true") {
       filter.isHighlighted = true;
     }
-    
+
     if (search) {
       filter.$text = { $search: search };
     }
@@ -31,13 +31,13 @@ const getProducts = async (req, res) => {
     res.json({
       success: true,
       count: products.length,
-      data: products
+      data: products,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Erro ao buscar produtos',
-      error: error.message
+      message: "Erro ao buscar produtos",
+      error: error.message,
     });
   }
 };
@@ -52,19 +52,19 @@ const getProductById = async (req, res) => {
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: 'Produto não encontrado'
+        message: "Produto não encontrado",
       });
     }
 
     res.json({
       success: true,
-      data: product
+      data: product,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Erro ao buscar produto',
-      error: error.message
+      message: "Erro ao buscar produto",
+      error: error.message,
     });
   }
 };
@@ -78,13 +78,13 @@ const createProduct = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: product
+      data: product,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Erro ao criar produto',
-      error: error.message
+      message: "Erro ao criar produto",
+      error: error.message,
     });
   }
 };
@@ -99,24 +99,24 @@ const updateProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: 'Produto não encontrado'
+        message: "Produto não encontrado",
       });
     }
 
     product = await Product.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
 
     res.json({
       success: true,
-      data: product
+      data: product,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Erro ao atualizar produto',
-      error: error.message
+      message: "Erro ao atualizar produto",
+      error: error.message,
     });
   }
 };
@@ -131,29 +131,29 @@ const deleteProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: 'Produto não encontrado'
+        message: "Produto não encontrado",
       });
     }
 
-    await product.remove();
+    await Product.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
-      message: 'Produto removido com sucesso'
+      message: "Produto removido com sucesso",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Erro ao deletar produto',
-      error: error.message
+      message: "Erro ao deletar produto",
+      error: error.message,
     });
   }
 };
 
-module.exports = {
+export {
   getProducts,
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
 };

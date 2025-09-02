@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-
-
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
 
 const Cart = () => {
-  const { cartItems, handleQuantityChange, handleRemoveItem } = useCart();
-  const { isAuthenticated } = useAuth();
-  const navegate = useNavigate();
+  const { cartItems, handleQuantityChange, handleRemoveItem, totalItems } =
+    useCart();
+  const { isAuthenticated } = useAuth(); // Adicionado 'token' do contexto de autenticação
+  const navigate = useNavigate();
   const location = useLocation();
   const [cep, setCep] = useState("");
+
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
 
   const handleCepChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -20,21 +25,20 @@ const Cart = () => {
     setCep(value);
   };
 
-  const handleCheckout = () => {
-    if (isAuthenticated) {
-      navegate("/checkout"); // Redireciona para a página de checkout caso o usuario esteja logado
-    } else {
-      navegate("/login", {
+  const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      navigate("/login", {
         state: { from: location },
       });
+      return;
     }
+    navigate("/checkout");
   };
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.originalPrice * item.quantity,
     0
   );
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const discount = cartItems.reduce((acc, item) => {
     if (item.originalPrice) {
       return acc + (item.originalPrice - item.price) * item.quantity;
@@ -144,19 +148,16 @@ const Cart = () => {
                         <div className="text-end">
                           {item.originalPrice && (
                             <p className="text-muted text-decoration-line-through small">
-                              R${" "}
-                              {item.originalPrice.toFixed(2).replace(".", ",")}
+                              {formatCurrency(item.originalPrice)}
                             </p>
                           )}
                           <p className="text-primary fw-bold fs-5 mb-0">
-                            R$ {item.price.toFixed(2).replace(".", ",")}
+                            {formatCurrency(item.price)}
                           </p>
                           {item.price && (
                             <p className="text-success small">
-                              Economize R${" "}
-                              {(item.originalPrice - item.price)
-                                .toFixed(2)
-                                .replace(".", ",")}
+                              Economize{" "}
+                              {formatCurrency(item.originalPrice - item.price)}
                             </p>
                           )}
                           {item.installments && (
@@ -236,31 +237,32 @@ const Cart = () => {
                     Subtotal ({totalItems} {totalItems === 1 ? "item" : "itens"}
                     )
                   </span>
-                  <span className="fw-medium">R$ {subtotal.toFixed(2)}</span>
+                  <span className="fw-medium">{formatCurrency(subtotal)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="d-flex justify-content-between mb-2">
                     <span className="text-muted">Descontos</span>
                     <span className="text-success">
-                      - R$ {discount.toFixed(2)}
+                      - {formatCurrency(discount)}
                     </span>
                   </div>
                 )}
                 <div className="d-flex justify-content-between mb-2">
                   <span className="text-muted">Frete</span>
-                  <span className="text-success">Grátis</span>
+                  <span className="fw-medium text-success">Grátis</span>
                 </div>
                 <div className="border-top pt-2 mt-2 d-flex justify-content-between">
                   <span className="text-muted">Total</span>
-                  <span className="fw-bold fs-5">R$ {total.toFixed(2)}</span>
+                  <span className="fw-bold fs-5">{formatCurrency(total)}</span>
                 </div>
               </div>
 
               <button
                 className="btn btn-primary w-100 fw-bold py-2 mb-3"
                 onClick={handleCheckout}
+                disabled={cartItems.length === 0}
               >
-                Finalizar Compra
+              Finalizar a compra com Mercado Pago
               </button>
 
               {/* <div className="text-center small text-muted mb-3">
@@ -289,20 +291,20 @@ const Cart = () => {
               </div>
               {/* <!-- Security Info --> */}
               <div className="bg-white rounded-lg mt-3 border-top pt-4">
-                <div className="d-flex gap-2  mb-3">
-                  <i className="fas fa-lock text-green-500 mt-1 mr-2"></i>
+                <div className="d-flex gap-2 mb-3">
+                  <i className="fas fa-lock text-success mt-1 me-2"></i>
                   <div>
-                    <h3 className="font-bold">Compra segura</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="fw-bold h6">Compra segura</h3>
+                    <p className="small text-muted mb-0">
                       Seus dados estão protegidos
                     </p>
                   </div>
                 </div>
-                <div className="d-flex gap-2  mb-3">
-                  <i className="fas fa-truck text-orange-500 mt-1 mr-2"></i>
+                <div className="d-flex gap-2 mb-3">
+                  <i className="fas fa-truck text-warning mt-1 me-2"></i>
                   <div>
-                    <h3 className="font-bold">Entrega garantida</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="fw-bold h6">Entrega garantida</h3>
+                    <p className="small text-muted mb-0">
                       Ou seu dinheiro de volta
                     </p>
                   </div>

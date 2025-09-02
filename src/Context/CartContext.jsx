@@ -83,6 +83,30 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  // funcao para limpar o carrinho
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem("cartItems");  };
+
+  // Calcula o subtotal
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+
+  // Calcula o desconto total
+  const discount = cartItems.reduce((acc, item) => {
+    if (item.originalPrice) {
+      return acc + (item.originalPrice - item.price) * item.quantity;
+    }
+    return acc;
+  }, 0);
+
+  // Calcula o total (subtotal - desconto)
+  const total = subtotal - discount;
+
+  
+
   return (
     <CartContext.Provider
       value={{
@@ -90,6 +114,10 @@ export const CartProvider = ({ children }) => {
         handleQuantityChange,
         handleRemoveItem,
         addItemToCart,
+        clearCart, // Adiciona a função de limpar o carrinho
+        subtotal,
+        discount,
+        total, 
       }}
     >
       {children}

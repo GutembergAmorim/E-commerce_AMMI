@@ -3,3 +3,73 @@
   padding-left: 1rem;
   padding-right: 1rem;
 }
+
+/* --- Estilos para o Header --- */
+
+/* Ajuste da Logo */
+.img-logo {
+  height: 40px; /* Ajuste a altura da sua logo conforme necessário */
+  width: auto;
+}
+
+/* Estilo customizado para os links de navegação */
+.nav-link-custom {
+  color: #333;
+  font-weight: 500;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 5px;
+}
+
+/* Efeito de sublinhado animado no hover */
+.nav-link-custom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--cor-verde-raizes, #2e4034); /* Usa a cor da coleção ou um fallback */
+  transition: width 0.3s ease-out;
+}
+
+.nav-link-custom:hover::after {
+  width: 100%;
+}
+
+/* Estilo para os botões de ícone (carrinho, hambúrguer) */
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #555;
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.btn-icon:hover {
+  color: #000;
+}
+
+/* Badge do carrinho de compras */
+.cart-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(40%, -40%);
+    background-color: var(--cor-castanho-raizes, #6d4c41); /* Cor da coleção */
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Garante que o menu offcanvas tenha uma prioridade visual alta */
+.offcanvas {
+  z-index: 1050; /* Prioridade maior que o header sticky */
+}

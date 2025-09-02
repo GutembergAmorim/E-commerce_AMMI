@@ -13,7 +13,7 @@ import Produto3_thumb4 from "../assets/produto3_thumb4.jpg";
 
 const produtos = [
   {
-    id: 1,
+    _id: "689a8520fad906705b94d670",
     name: "Top e Calça Fitness",
     description:
       "Tecido de poliamida com elastano, proporcionando conforto, elasticidade e proteção UV.",
@@ -34,7 +34,7 @@ const produtos = [
     statusTextColor: "text-white",
   },
   {
-    id: 2,
+    _id: "689a8520fad906705b94d673",
     name: "Top e Short Premium",
     description:
       "Modelagem de alta sustentação proporcionando conforto. Comprimento médio e entrada para bojo.",
@@ -55,7 +55,7 @@ const produtos = [
     statusTextColor: "text-white",
   },
   {
-    id: 3,
+    _id: "689a8520fad906705b94d66d",
     name: "Top Isis e Short Grazy",
     description:
       "Cós alto com alta compressão e ideal para exercícios de forte impacto.",

@@ -22,11 +22,11 @@ const Login = () => {
 
   const from = location.state?.from?.pathname || "/";
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    const result = login(email, password);
+    const result = await login(email, password);
     if (result.success) {
       navigate(from, { replace: true });
     } else {

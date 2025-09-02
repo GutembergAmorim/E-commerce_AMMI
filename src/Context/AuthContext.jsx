@@ -1,80 +1,93 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { authService } from "../services/authService";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Tenta carregar o usuário do localStorage ao iniciar
   const [user, setUser] = useState(() => {
-    try {
-      const storedUser = localStorage.getItem("currentUser");
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch (error) {
-      console.error("Falha ao carregar usuário do localStorage", error);
-      return null;
-    }
+    return authService.getCurrentUser();
   });
 
-  // O estado de autenticação é derivado do estado do usuário
-  const isAuthenticated = !!user; // Verifica se o usuário está autenticado
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Efeito para salvar o usuário no localStorage sempre que ele mudar
+  const isAuthenticated = !!user;
+
+  // Verificar token na inicialização
   useEffect(() => {
-    try {
-      if (user) {
-        localStorage.setItem("currentUser", JSON.stringify(user));
-      } else {
-        localStorage.removeItem("currentUser");
+    const checkAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          setLoading(true);
+          const response = await authService.getMe();
+          if (response.success) {
+            setUser(response.data);
+          } else {
+            authService.logout();
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Erro ao verificar autenticação:', error);
+          authService.logout();
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
       }
-    } catch (error) {
-      console.error("Falha ao salvar usuário no localStorage", error);
-    }
-  }, [user]);
+    };
 
-  // Função para obter todos os usuários do "banco de dados" do localStorage
-  const getUsersFromStorage = () => {
+    checkAuth();
+  }, []);
+
+  const register = async (userData) => {
     try {
-      const users = localStorage.getItem("users");
-      return users ? JSON.parse(users) : [];
+      setLoading(true);
+      setError(null);
+      const response = await authService.register(userData);
+      if (response.success) {
+        setUser(response.data);
+      }
+      return response;
     } catch (error) {
-      console.error("Falha ao carregar usuários do localStorage", error);
-      return [];
+      setError(error.message);
+      return { success: false, message: error.message };
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Funções de registro
-  const register = (userData) => {
-    const users = getUsersFromStorage();
-    const userExists = users.some((u) => u.email === userData.email);
-
-    if (userExists) {
-      return { success: false, message: "Este e-mail já está cadastrado." };
+  const login = async (email, password) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await authService.login(email, password);
+      if (response.success) {
+        setUser(response.data);
+      }
+      return response;
+    } catch (error) {
+      setError(error.message);
+      return { success: false, message: error.message };
+    } finally {
+      setLoading(false);
     }
-
-    users.push(userData);
-    localStorage.setItem("users", JSON.stringify(users));
-    return { success: true, message: "Cadastro realizado com sucesso!" };
-  };
-
-  const login = (email, password) => {
-    const users = getUsersFromStorage();
-    const foundUser = users.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    if (foundUser) {
-      // Armazena apenas os dados necessários para a sessão, sem a senha
-      const { password, ...userToStore } = foundUser;
-      setUser(userToStore);
-      return { success: true}; // Sucesso no login
-    }
-    return { success: false, message: "Credenciais inválidas." }; // Falha no login
   };
 
   const logout = () => {
+    authService.logout();
     setUser(null);
+    setError(null);
   };
 
-  const value = { user, isAuthenticated, login, logout, register };
+  const value = { 
+    user, 
+    isAuthenticated, 
+    login, 
+    logout, 
+    register, 
+    loading, 
+    error 
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

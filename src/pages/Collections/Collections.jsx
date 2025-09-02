@@ -1,21 +1,31 @@
-import React, { useState } from "react";
-import produtos from "../../Data/products.jsx";
+import React, { useState, useMemo } from "react";
+// import produtos from "../../Data/products.jsx";
 import { Link } from "react-router-dom";
 import "./style.css";
+import { useProducts } from "../../hooks/useProducts";
 
 function Collections() {
   const [activeCategory, setActiveCategory] = useState("Todos");
 
+  const { products: fetchProducts, loading, error } = useProducts();
+  // console.log(fetchProducts);
   // Extrai categorias unicas dos produtos e adiciona "Todos"
-  const categories = ["Todos", ...new Set(produtos.map((p) => p.category))];
 
-  const filteredProducts =
-    activeCategory === "Todos"
-      ? produtos
-      : produtos.filter(
-          (product) =>
-            product.category.toLowerCase() === activeCategory.toLowerCase()
-        );
+  const categories = useMemo(
+    () => ["Todos", ...new Set(fetchProducts.map((p) => p.category))],
+    [fetchProducts]
+  );
+
+  const filteredProducts = useMemo(
+    () =>
+      activeCategory === "Todos"
+        ? fetchProducts
+        : fetchProducts.filter(
+            (product) =>
+              product.category.toLowerCase() === activeCategory.toLowerCase()
+          ),
+    [activeCategory, fetchProducts]
+  );
 
   return (
     <div className="container py-5">
@@ -42,10 +52,10 @@ function Collections() {
 
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         {filteredProducts.map((product) => (
-          <div className="col" key={product.id}>
+          <div className="col" key={product._id}>
             <div className="card h-100 product-card-custom border-0 shadow-sm">
               <Link
-                to={`/products/${product.id}`}
+                to={`/products/${product._id}`}
                 className="text-decoration-none"
               >
                 <div

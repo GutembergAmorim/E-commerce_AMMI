@@ -13,6 +13,13 @@ import Cart from "./pages/Cart/Cart.jsx";
 import Register from "./pages/Register/Register.jsx";
 import Checkout from "./pages/Checkout/Checkout.jsx";
 import Customer from "./pages/Customer/Customer.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
+import MediaUpload from "./pages/Admin/MediaUpload.jsx";
+import ProductCreate from "./pages/Admin/ProductCreate.jsx";
+import Users from "./pages/Admin/Users.jsx";
+import OrderSuccess from "./components/OrderSuccess.jsx";
+import OrderPending from "./pages/OrderPending.jsx";
+import PaymentFailure from "./pages/PaymentFailure.jsx";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +40,10 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: "collections",
+        element: <Collections />,
+      },
+      {
         path: "products/:id",
         element: <ProductDetails />,
       },
@@ -45,12 +56,57 @@ const router = createBrowserRouter([
         element: <Checkout />,
       },
       {
-        path: "collections",
-        element: <Collections />,
-      },
-      {
         path: "customer",
         element: <Customer />,
+      },
+      {
+        path: "payment/success/:orderId",
+        element: (
+          <ProtectedRoute>
+            <OrderSuccess />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "payment/pending/:orderId",
+        element: (
+          <ProtectedRoute>
+            <OrderPending />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "payment/failure/:orderId",
+        element: (
+          <ProtectedRoute>
+            <PaymentFailure />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "admin/media",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <MediaUpload />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/products/new",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <ProductCreate />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/users",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <Users />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

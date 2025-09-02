@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-
-import Hero from "../../assets/hero.jpg";
-import top from "../../assets/top.png";
-import legging from "../../assets/legging.png";
-import short from "../../assets/short.png";
-import conjunto from "../../assets/conjunto.png";
 import "./style.css";
-import produtos from "../../Data/products.jsx";
+import { useHighlightedProducts } from "../../hooks/useProducts";
 import { Link } from "react-router-dom";
 
 function Home() {
+  const {
+    products: highlightedProducts,
+    loading,
+    error,
+  } = useHighlightedProducts();
+
   // Função para iniciar o temporizador
   const [countdown, setCountdown] = useState({
     days: "00",
@@ -62,41 +62,6 @@ function Home() {
     return () => clearInterval(intervalId);
   }, []); // Array de dependências vazio para executar apenas na montagem e desmontagem
 
-  const categories = [
-    {
-      name: "Tops",
-      img: top,
-      alt: "Tops",
-      models: "10 modelos",
-      bgColor: "bg-custom-pink-subtle",
-      textColor: "text-custom-pink",
-    },
-    {
-      name: "Leggings",
-      img: legging,
-      alt: "Leggings",
-      models: "8 modelos",
-      bgColor: "bg-custom-blue-subtle",
-      textColor: "text-custom-blue",
-    },
-    {
-      name: "Shorts",
-      img: short,
-      alt: "Shorts",
-      models: "5 modelos",
-      bgColor: "bg-custom-green-subtle",
-      textColor: "text-custom-green",
-    },
-    {
-      name: "Conjuntos",
-      img: conjunto,
-      alt: "Conjuntos",
-      models: "12 modelos",
-      bgColor: "bg-custom-yellow-subtle",
-      textColor: "text-custom-yellow",
-    },
-  ];
-
   const countdownUnits = [
     { label: "Dias", value: countdown.days, id: "days" },
     { label: "Horas", value: countdown.hours, id: "hours" },
@@ -106,147 +71,94 @@ function Home() {
 
   return (
     <>
-      <section className="py-5 hero-gradient-custom">
+      <section className="colecao-raizes-hero">
         <div className="container">
           <div className="row align-items-center justify-content-between">
+            {/* --- Coluna de Texto --- */}
             <div className="col-md-6 mb-4 mb-md-0">
-              <span className="badge rounded-pill bg-custom-pink-subtle text-custom-pink p-2 small fw-medium">
-                Nova Coleção
-              </span>
-              <h1 className="display-4 fw-bold mt-3 mb-4">
-                Performance com Estilo
-              </h1>
-              <p className="lead text-muted mb-4">
-                Roupas de academia que combinam tecnologia, conforto e design
-                para você se sentir poderosa em cada movimento.
+              <span className="badge-raizes ">Nova Coleção</span>
+
+              <h2 className="titulo-colecao mt-3">
+                COLEÇÃO <span className="titulo-destaque">RAÍZES</span>
+              </h2>
+
+              <p className="descricao-colecao">
+                A Coleção Raízes nasce da inspiração na força interior, na
+                autenticidade e na conexão com o que realmente importa.
               </p>
-              <div className="d-flex flex-column flex-sm-row gap-3">
+
+              <div className="d-flex">
                 <Link to="/collections">
-                  <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-medium">
-                    Ver Coleção
-                  </button>
+                  {" "}
+                  {/* O teu link para as coleções */}
+                  <button className="btn-ver-colecao">Ver Coleção</button>
                 </Link>
               </div>
             </div>
+
+            {/* --- Coluna da Imagem --- */}
             <div className="col-md-6 d-flex justify-content-center align-items-center">
               <img
-                src={Hero}
-                alt="Mulher usando roupa de academia"
-                className="img-fluid rounded-3 shadow-lg" // max-w-full h-auto -> img-fluid, rounded-lg -> rounded-3, shadow-xl -> shadow-lg
-                style={{ maxHeight: "384px", objectFit: "cover" }} // max-h-96 (384px)
+                src="https://res.cloudinary.com/dxaacelde/image/upload/w_700,h_900,c_fill,q_auto,f_auto/Home_0-Photoroom_z7jtga.png"
+                alt="Modelo a usar um conjunto verde da Coleção Raízes da AMMI Fitwear"
+                className="img-fluid rounded-3 shadow-sm" // Mantive img-fluid e adicionei uma sombra suave
+                style={{ maxHeight: "450px", objectFit: "cover" }} // Aumentei um pouco a altura para mais impacto
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Seção Categorias */}
-      {/* <section className="py-5 bg-white">
-        <div className="container">
-          <h2 className="h2 fw-bold text-center mb-5">Nossas Categorias</h2>
-          <div className="row row-cols-2 row-cols-md-4 g-4">
-            {categories.map((category, index) => (
-              <div className="col" key={index}>
-                <a
-                  href="#category" // Mude para o link correto
-                  className="text-decoration-none d-block bg-light rounded-3 p-4 text-center category-card-hover h-100" // bg-gray-50 -> bg-light, rounded-xl -> rounded-3, p-6 -> p-4
-                >
-                  <div
-                    className={`category-icon-wrapper rounded-pill mx-auto mb-3 ${category.bgColor} ${category.textColor}`}
-                  >
-                    <img src={category.img} width="40" alt={category.alt} />
-                  </div>
-                  <h4 className="h6 fw-medium text-dark">{category.name}</h4>
-                  <p className="small text-muted mt-1">{category.models}</p>
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
       {/* Seção Produtos em Destaque */}
-      <section className="py-5 bg-light">
+      <section className="raizes-destaques-section">
         <div className="container">
+          {/* --- Cabeçalho da Secção --- */}
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="h2 fw-bold">Destaques</h2>
-            <Link
-              to="/collections"
-              className="nav-link text-decoration-none text-custom-pink fw-medium"
-            >
-              Ver todos
+            <h2 className="destaques-titulo">Destaques da Coleção</h2>
+            <Link to="/collections" className="link-ver-todos">
+              Ver todos &rarr;
             </Link>
           </div>
-          <div className="row row-cols-1 row-cols-sm-2 g-4">
-            {produtos.map((product) => (
-              <div className="col" key={product.id}>
-                {product.isHighlighted && (
-                  <div className="card h-100 product-card-custom border-0 shadow-sm">
-                    <div
-                      className="position-relative overflow-hidden"
-                      style={{ aspectRatio: "3/4" }}
-                    >
+
+          {/* --- Lógica de Carregamento (Mantida Intacta) --- */}
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-raizes" role="status">
+                <span className="visually-hidden">Carregando...</span>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="alert alert-warning" role="alert">
+              {error}
+            </div>
+          ) : (
+            /* --- Grelha de Produtos --- */
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+              {highlightedProducts.map((product) => (
+                <div className="col" key={product._id}>
+                  <div className="card product-card-raizes">
+                    <div className="card-img-container">
                       <img
                         src={
-                          product.images && product.images.length > 0
-                            ? product.images[0]
-                            : "https://via.placeholder.com/300x400?text=Sem+Imagem"
+                          product.images?.[0] ||
+                          "https://via.placeholder.com/400x500?text=Sem+Imagem"
                         }
-                        alt={product.alt}
-                        className="w-100 h-100 pt-2 object-fit-cover"
-                        style={{ objectFit: "cover" }}
+                        alt={product.name}
+                        className="card-img-top"
                       />
-                      {product.isNew && (
-                        <div className="position-absolute top-0 start-0 m-2">
-                          <span className="badge bg-custom-pink rounded-pill small px-2 py-1 fw-medium">
-                            NOVO
-                          </span>
-                        </div>
-                      )}
-                      <button className="btn btn-light btn-sm rounded-pill position-absolute top-0 end-0 m-2 shadow-sm">
-                        <i className="fas fa-heart text-muted"></i>
-                      </button>
                     </div>
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                          <h3 className="h6 card-title fw-medium mb-1">
-                            {product.name}
-                          </h3>
-                          <p className="card-text small text-muted">
-                            {product.description}
-                          </p>
-                        </div>
-                        {product.status && (
-                          <span
-                            className={`badge rounded-pill small px-2 py-1 ${product.statusColor} ${product.statusTextColor}`}
-                          >
-                            {product.status}
-                          </span>
-                        )}
-                      </div>
-                      <div className="d-flex align-items-center justify-content-between mt-auto">
-                        <span className="fw-bold fs-5">{`R$ ${product.price
-                          .toFixed(2)
-                          .replace(".", ",")}`}</span>
 
-                        {product.oldPrice && (
-                          <span className="text-muted text-decoration-line-through ms-2">
-                            {`R$ ${product.oldPrice
-                              .toFixed(2)
-                              .replace(".", ",")}`}
-                          </span>
-                        )}
-                        {/* <button className="btn btn-custom-pink btn-sm rounded-pill p-2 lh-1">
-                          <i className="fas fa-shopping-bag"></i>
-                        </button> */}
-                      </div>
+                    <div className="card-body">
+                      <h3 className="product-name">{product.name}</h3>
+                      <p className="product-price">{`R$ ${product.price
+                        .toFixed(2)
+                        .replace(".", ",")}`}</p>
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -293,11 +205,11 @@ function Home() {
               <input
                 type="email"
                 placeholder="Seu melhor e-mail"
-                className="form-control form-control-lg rounded-pill form-control-pink-focus" /* px-4 py-3 border ... -> form-control-lg */
+                className="form-control form-control-lg rounded-pill form-control-pink-focus"
               />
               <button
                 type="submit"
-                className="btn btn-custom-pink btn-lg rounded-pill px-4 text-nowrap" /* px-6 py-3 whitespace-nowrap -> px-4 text-nowrap (btn-lg já dá altura) */
+                className="btn btn-custom-pink btn-lg rounded-pill px-4 text-nowrap"
               >
                 Assinar
               </button>
