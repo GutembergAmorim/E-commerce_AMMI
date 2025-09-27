@@ -262,7 +262,7 @@ const Cart = () => {
                 onClick={handleCheckout}
                 disabled={cartItems.length === 0}
               >
-              Finalizar a compra com Mercado Pago
+              Finalizar a compra
               </button>
 
               {/* <div className="text-center small text-muted mb-3">

@@ -80,16 +80,10 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["PIX", "Cartão de Crédito", "Cartão de Débito", "Boleto", "Mercado Pago"],
+      enum: ["PIX", "Cartão de Crédito", "Cartão de Débito", "Boleto", "PagSeguro"],
     },
-    mpPreferenceId: String,
-    mpPaymentId: String,
-    paymentResult: {
-      id: String,
-      status: String,
-      update_time: String,
-      email_address: String,
-    },
+    pgOrderId: String,
+    pgChargeId: String,
     itemsPrice: {
       type: Number,
       required: true,

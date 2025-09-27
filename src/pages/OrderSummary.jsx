@@ -77,7 +77,7 @@ const OrderSummary = ({ onCheckout, isProcessing, isFormValid }) => {
         <div className="mt-3 text-center">
           <small className="text-muted">
             <i className="bi bi-lock-fill me-1"></i>
-            Pagamento seguro via Mercado Pago
+            Pagamento seguro via PagSeguro
           </small>
         </div>
       </div> */}

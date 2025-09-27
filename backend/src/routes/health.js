@@ -35,8 +35,7 @@ router.get('/health/detailed', async (req, res) => {
         environment: process.env.NODE_ENV
       },
       dependencies: {
-        database: 'unknown',
-        mercadopago: 'unknown'
+        database: 'unknown'
       }
     };
 
