@@ -135,65 +135,30 @@ const testRoutes = async () => {
       auth: false,
     },
     {
-      name: "Criar Preferência (Dados válidos)",
+      name: "Criar PIX (Dados válidos)",
       method: "POST",
-      url: `${BASE_URL}/api/payment/create-preference`,
+      url: `${BASE_URL}/api/payment/create-pix`,
       data: {
         cartItems: validCartItems,
-        shippingAddress: validShippingAddress,
-        payer: {
-          cpf: "12345678900",
-          phone: {
-            area_code: "11",
-            number: "999999999",
-          },
-        },
+        shippingAddress: validShippingAddress
       },
       expectedStatus: 201,
       auth: true,
     },
     {
-      name: "Criar Preferência (Sem dados - deve falhar)",
+      name: "Criar PIX (Sem dados - deve falhar)",
       method: "POST",
-      url: `${BASE_URL}/api/payment/create-preference`,
+      url: `${BASE_URL}/api/payment/create-pix`,
       data: {},
       expectedStatus: 400,
       auth: true,
     },
     {
-      name: "Criar Preferência (Sem auth - deve falhar)",
+      name: "Criar PIX (Sem auth - deve falhar)",
       method: "POST",
-      url: `${BASE_URL}/api/payment/create-preference`,
+      url: `${BASE_URL}/api/payment/create-pix`,
       data: { cartItems: validCartItems },
       expectedStatus: 401,
-      auth: false,
-    },
-    {
-      name: "Webhook MP (Pagamento aprovado)",
-      method: "POST",
-      url: `${BASE_URL}/api/payment/webhook`,
-      data: {
-        type: "payment",
-        data: {
-          id: "test_approved_123", // ID de teste para pagamento aprovado
-          external_reference: realOrderId,
-        },
-      },
-      expectedStatus: 200,
-      auth: false,
-    },
-    {
-      name: "Webhook MP (Pagamento pendente)",
-      method: "POST",
-      url: `${BASE_URL}/api/payment/webhook`,
-      data: {
-        type: "payment",
-        data: {
-          id: "test_pending_456", // ID de teste para pagamento pendente
-          external_reference: realOrderId,
-        },
-      },
-      expectedStatus: 200,
       auth: false,
     },
   ];

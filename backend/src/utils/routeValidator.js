@@ -3,7 +3,7 @@ export const validateRoutes = (app) => {
   console.log('🔄 Validando rotas do backend...');
   
   const routes = [
-    { method: 'POST', path: '/api/payment/create-preference' },
+    { method: 'POST', path: '/api/payment/create-pix' },
     { method: 'POST', path: '/api/payment/webhook' },
     { method: 'GET', path: '/api/payment/status/:orderId' },
     { method: 'GET', path: '/api/products' },
@@ -31,7 +31,8 @@ export const validateEnv = () => {
   console.log('🔍 Validando variáveis de ambiente...');
   
   const requiredEnvVars = [
-    'MERCADOPAGO_ACCESS_TOKEN',
+    'PAGSEGURO_TOKEN',
+    'PAGSEGURO_BASE_URL',
     'CLIENT_URL',
     'BACKEND_URL',
     'MONGODB_URI'

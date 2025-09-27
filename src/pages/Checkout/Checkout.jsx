@@ -4,7 +4,7 @@ import api from "../../services/api";
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
+// Removido Mercado Pago
 
 // Componentes separados
 import CustomerInfo from "../Customerinfo";
@@ -12,11 +12,7 @@ import AddressForm from "../AddressForm";
 import OrderSummary from "../OrderSummary";
 import Notification from "../Notification";
 
-// Inicializa o SDK do Mercado Pago
-
-initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY, {
-  locale: "pt-BR",
-});
+// Sem SDK externo: fluxo via QR Code PIX
 
 // Função de debounce
 const debounce = (func, wait) => {
@@ -48,7 +44,7 @@ function Checkout() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSearchingCep, setIsSearchingCep] = useState(false);
-  const [preferenceId, setPreferenceId] = useState(null);
+  const [pix, setPix] = useState({ text: null, link: null, expiresAt: null });
   const [notification, setNotification] = useState({
     show: false,
     message: "",
@@ -178,22 +174,12 @@ function Checkout() {
       };
 
       console.log("Enviando para API...");
-      const response = await api.post("/payment/create-preference", {
+      const response = await api.post("/payment/create-pix", {
         cartItems,
         shippingAddress,
-        cpf: user.cpf,
-        telefone: user.phone,
       });
-
-      const { id, init_point, orderId } = response.data;
-
-      if (init_point) {
-        console.log("Redirecionando para:", init_point);
-        window.location.href = init_point;
-      } else if (id) {
-        console.log("Preference ID recebido:", id);
-        setPreferenceId(id);
-      }
+      const { qrCodeText, qrCodeLink, orderId } = response.data;
+      setPix({ text: qrCodeText, link: qrCodeLink, expiresAt: response.data.expiresAt });
     } catch (error) {
       console.error(
         "Erro ao criar preferência:",
@@ -268,15 +254,17 @@ function Checkout() {
                 isFormValid={isFormValid}
               />
 
-              {/* Área do Wallet do Mercado Pago */}
-              {preferenceId ? (
+              {/* Área do PIX */}
+              {pix.text ? (
                 <div className="mt-4">
-                  <p className="text-center fw-bold mb-3">
-                    Continue para o pagamento seguro:
-                  </p>
-                  <div id="wallet_container">
-                    <Wallet initialization={{ preferenceId: preferenceId }} />
+                  <p className="text-center fw-bold mb-3">Pague via PIX</p>
+                  <div className="mb-3">
+                    <textarea className="form-control" readOnly rows={3} value={pix.text || ''} />
                   </div>
+                  {pix.link && (
+                    <a href={pix.link} target="_blank" rel="noreferrer" className="btn btn-success w-100">Abrir QR Code</a>
+                  )}
+                  <small className="text-muted d-block mt-2">Após o pagamento, aguarde a confirmação automática.</small>
                 </div>
               ) : (
                 <button
@@ -293,7 +281,7 @@ function Checkout() {
                       Processando...
                     </>
                   ) : (
-                    "Pagar com Mercado Pago"
+                    "Gerar PIX"
                   )}
                 </button>
               )}
