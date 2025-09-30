@@ -127,11 +127,10 @@ function Checkout() {
   };
 
   useEffect(() => {
-    console.log("Preference ID:", preferenceId);
     console.log("isProcessing:", isProcessing);
     console.log("isFormValid:", isFormValid);
     console.log("Address completo:", address);
-  }, [preferenceId, isProcessing, isFormValid, address]);
+  }, [isProcessing, isFormValid, address]);
 
   const handleCreatePreference = async (event) => {
     if (event) event.preventDefault();
@@ -178,19 +177,53 @@ function Checkout() {
         cartItems,
         shippingAddress,
       });
-      const { qrCodeText, qrCodeLink, orderId } = response.data;
-      setPix({ text: qrCodeText, link: qrCodeLink, expiresAt: response.data.expiresAt });
+      
+      // CORREÇÃO: Verificar se a resposta é de sucesso
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Erro ao criar pagamento PIX");
+      }
+
+      // CORREÇÃO: Acessar os dados corretamente
+      const { qrCodeText, qrCodeLink, orderId, expiresAt } = response.data;
+      
+      setPix({ 
+        text: qrCodeText, 
+        link: qrCodeLink, 
+        expiresAt: expiresAt,
+        orderId: orderId 
+      });
+      
+      console.log("PIX criado com sucesso:", response.data);
+      
     } catch (error) {
       console.error(
         "Erro ao criar preferência:",
         error.response?.data || error.message
       );
 
-      const errorData = error.response?.data;
-      const errorMessage = Array.isArray(errorData?.errors)
-        ? errorData.errors[0].msg
-        : errorData?.message ||
-          "Não foi possível iniciar o processo de pagamento. Tente novamente.";
+      // CORREÇÃO: Tratamento de erro mais robusto
+      let errorMessage = "Não foi possível iniciar o processo de pagamento. Tente novamente.";
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // Se for erro do PagSeguro com array error_messages
+        if (errorData.error_messages && Array.isArray(errorData.error_messages)) {
+          errorMessage = errorData.error_messages.map(msg => 
+            `${msg.description} (${msg.code})`
+          ).join(', ');
+        } 
+        // Se for erro normal da API
+        else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+        // Se for array de errors (como você tinha antes)
+        else if (Array.isArray(errorData.errors)) {
+          errorMessage = errorData.errors[0].msg;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
 
       showNotification(errorMessage, "error");
     } finally {

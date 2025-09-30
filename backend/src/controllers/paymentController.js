@@ -7,6 +7,13 @@ import crypto from "crypto";
 
 dotenv.config();
 
+console.log("🔐 VERIFICAÇÃO DO TOKEN:", {
+  tokenExists: !!process.env.PAGSEGURO_TOKEN,
+  tokenLength: process.env.PAGSEGURO_TOKEN?.length,
+  tokenStartsWith: process.env.PAGSEGURO_TOKEN?.substring(0, 10),
+  tokenEndsWith: process.env.PAGSEGURO_TOKEN?.substring(process.env.PAGSEGURO_TOKEN?.length - 10)
+});
+
 function validateClientURL() {
   const clientUrl = process.env.CLIENT_URL;
   if (!clientUrl) {
@@ -50,8 +57,9 @@ async function validateStock(cartItems) {
 const pagseguroApi = axios.create({
   baseURL: process.env.PAGSEGURO_BASE_URL || "https://sandbox.api.pagseguro.com",
   headers: {
-    Authorization: `Bearer ${process.env.PAGSEGURO_TOKEN || ""}`,
+    "Authorization": `Bearer ${process.env.PAGSEGURO_TOKEN}`,
     "Content-Type": "application/json",
+    "Accept": "application/json"
   },
   timeout: 15000,
 });
@@ -71,22 +79,46 @@ const mapPgStatus = (pgStatus) => {
   return map[status] || "Processando";
 };
 
-const createPix = async (req, res) => {
-  const { cartItems, shippingAddress } = req.body;
-  if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
-    return res.status(400).json({ success: false, message: "O carrinho está vazio ou é inválido." });
-  }
-
+async function testAuth() {
   try {
-    const user = validateUser(req.user);
-    await validateStock(cartItems);
-    validateClientURL();
+    const testResponse = await pagseguroApi.get("/charges");
+    console.log("✅ Autenticação OK - Status:", testResponse.status);
+    return true;
+  } catch (error) {
+    console.error("❌ Falha na autenticação:", error.response?.status);
+    return false;
+  }
+}
 
-    const itemsPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const taxPrice = 0;
+const createPix = async (req, res) => {
+  try {
+    const { cartItems, shippingAddress } = req.body;
+
+    if (!cartItems || !cartItems.length) {
+      return res.status(400).json({ success: false, message: "Carrinho vazio" });
+    }
+
+    // Valida usuário
+    if (!req.user || !req.user.id || !req.user.email) {
+      return res.status(401).json({ success: false, message: "Usuário não autenticado" });
+    }
+    const user = req.user;
+
+    // Valida estoque
+    for (const item of cartItems) {
+      const product = await Product.findById(item.id);
+      if (!product) throw new Error(`Produto ${item.name} não encontrado`);
+      if (product.stock < item.quantity) throw new Error(`Estoque insuficiente para ${item.name}`);
+    }
+
+    // Calcula valores
+    const itemsPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const shippingPrice = 0;
-    const total = itemsPrice + taxPrice + shippingPrice;
+    const taxPrice = 0;
+    const total = itemsPrice + shippingPrice + taxPrice;
+    const totalCents = Math.round(total * 100);
 
+    // Cria pedido
     const order = await Order.create({
       user: user.id,
       orderItems: cartItems.map((item) => ({
@@ -99,16 +131,16 @@ const createPix = async (req, res) => {
         image: item.image,
       })),
       shippingAddress: {
-        address: shippingAddress?.logradouro || shippingAddress?.address,
-        number: shippingAddress?.numero,
-        complement: shippingAddress?.complemento || shippingAddress?.complement,
-        neighborhood: shippingAddress?.bairro || shippingAddress?.neighborhood,
-        city: shippingAddress?.localidade || shippingAddress?.city,
-        state: shippingAddress?.uf || shippingAddress?.state,
-        postalCode: shippingAddress?.cep || shippingAddress?.postalCode,
+        address: shippingAddress.logradouro,
+        number: shippingAddress.numero,
+        complement: shippingAddress.complemento || "",
+        neighborhood: shippingAddress.bairro,
+        city: shippingAddress.localidade,
+        state: shippingAddress.uf,
+        postalCode: shippingAddress.cep,
         country: "Brasil",
       },
-      paymentMethod: "PagSeguro",
+      paymentMethod: "PIX",
       itemsPrice,
       taxPrice,
       shippingPrice,
@@ -118,37 +150,63 @@ const createPix = async (req, res) => {
     });
 
     const idempotencyKey = crypto.randomUUID();
-    const amountInCents = Math.round(total * 100);
 
+    // Body PIX para PagSeguro
     const body = {
-      reference_id: String(order._id),
-      description: `Pedido ${order._id}`,
-      amount: { value: amountInCents, currency: "BRL" },
-      payment_method: { type: "PIX" },
-      notification_urls: [ `${process.env.BACKEND_URL}/api/payment/webhook` ],
+      reference_id: order._id.toString(),
+      description: `Pedido #${order._id}`,
+      amount: {
+        value: totalCents,
+        currency: "BRL",
+      },
+      customer: {
+        name: user.name,
+        email: user.email,
+        tax_id: "12345678909", // ou o CPF real do cliente
+      },
+      payment_method: {
+        type: "PIX",
+      },
+      notification_urls: [`${process.env.CLIENT_URL}/api/payment/webhook`],
     };
 
-    const { data } = await pagseguroApi.post("/charges", body, {
+    console.log("📤 Enviando body para PagSeguro:", JSON.stringify(body, null, 2));
+
+    // Envia requisição
+    const response = await pagseguroApi.post("/orders", body, {
       headers: { "x-idempotency-key": idempotencyKey },
     });
 
-    const chargeId = data?.id;
-    const qr = Array.isArray(data?.qr_codes) ? data.qr_codes[0] : undefined;
+    const charge = response.data;
+    if (!charge || !charge.id) throw new Error("Resposta inválida do PagSeguro");
 
-    order.pgChargeId = chargeId || null;
+    order.pgChargeId = charge.id;
     await order.save();
 
+    // Extrai QR Code PIX
+    const qrCode = charge.pix || charge.qr_codes?.[0] || charge.text;
+
     return res.status(201).json({
+      success: true,
       orderId: order._id,
-      chargeId: chargeId,
-      qrCodeText: qr?.text || null,
-      qrCodeLink: qr?.links?.[0]?.href || qr?.link || null,
-      expiresAt: qr?.expiration_date || null,
+      chargeId: charge.id,
+      qrCodeText: qrCode?.text || qrCode?.qrcode,
+      qrCodeLink: qrCode?.links?.[0]?.href || qrCode?.href,
+      expiresAt: qrCode?.expiration_date || new Date(Date.now() + 3600000).toISOString(),
     });
   } catch (error) {
-    const status = error?.response?.status || 500;
-    const message = error?.response?.data || error?.message || "Erro ao criar cobrança PIX";
-    console.error("Erro PagSeguro /charges:", message);
+    console.error("❌ Erro PagSeguro:", error.response?.data || error.message);
+
+    let message = "Erro ao processar pagamento";
+    let status = 500;
+
+    if (error.response?.data?.error_messages) {
+      message = error.response.data.error_messages.map((e) => e.description).join(", ");
+      status = error.response.status || 400;
+    } else if (error.message) {
+      message = error.message;
+    }
+
     return res.status(status).json({ success: false, message });
   }
 };
