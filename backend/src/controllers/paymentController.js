@@ -75,6 +75,9 @@ const mapPgStatus = (pgStatus) => {
     CANCELED: "Cancelado",
     REFUNDED: "Reembolsado",
     CHARGED_BACK: "Chargeback",
+    APPROVED: "Aprovado",
+    REJECTED: "Rejeitado",
+    PENDING: "Pendente"
   };
   return map[status] || "Processando";
 };
@@ -211,6 +214,166 @@ const createPix = async (req, res) => {
   }
 };
 
+const createCreditCardPayment = async (req, res) => {
+  const { cartItems, shippingAddress, cardData, installments } = req.body;
+  
+  if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "O carrinho está vazio ou é inválido." 
+    });
+  }
+
+  if (!cardData || !cardData.number || !cardData.holder || !cardData.exp_month || !cardData.exp_year || !cardData.security_code) {
+    return res.status(400).json({
+      success: false,
+      message: "Dados do cartão incompletos."
+    });
+  }
+
+  try {
+    const user = validateUser(req.user);
+    await validateStock(cartItems);
+    validateClientURL();
+
+    const itemsPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = itemsPrice;
+
+    const orderItems = cartItems.map((item) => ({
+      product: item.id || item.product,
+      name: item.name,
+      price: item.price,
+      quantity: Number(item.quantity) || 1,
+      color: item.color || '',
+      size: item.size || '',
+      image: item.image || ''
+    }));
+
+    const order = await Order.create({
+      user: user.id,
+      orderItems: orderItems,
+      shippingAddress: {
+        address: shippingAddress?.logradouro || '',
+        number: shippingAddress?.numero || '',
+        complement: shippingAddress?.complemento || '',
+        neighborhood: shippingAddress?.bairro || '',
+        city: shippingAddress?.localidade || '',
+        state: shippingAddress?.uf || '',
+        postalCode: shippingAddress?.cep || '',
+        country: "Brasil",
+      },
+      paymentMethod: 'CREDIT_CARD',
+      itemsPrice,
+      taxPrice: 0,
+      shippingPrice: 0,
+      total,
+      status: "Processando",
+      isPaid: false,
+      installments: installments || 1
+    });
+
+    console.log("✅ Order criada com sucesso:", order._id);
+
+    const idempotencyKey = crypto.randomUUID();
+    const amountInCents = Math.round(total * 100);
+
+    const body = {
+      reference_id: order._id.toString(),
+      description: `Pedido #${order._id}`,
+      amount: {
+        value: amountInCents,
+        currency: "BRL"
+      },
+      payment_method: {
+        type: "CREDIT_CARD",
+        capture: true,
+        installments: installments || 1,
+        card: {
+          number: cardData.number.replace(/\s/g, ''),
+          exp_month: String(cardData.exp_month).padStart(2, '0'),
+          exp_year: String(cardData.exp_year),
+          security_code: cardData.security_code,
+          holder: {
+            name: cardData.holder
+          }
+        }
+      },
+      notification_urls: [
+        `${process.env.CLIENT_URL}/api/payment/webhook`
+      ]
+    };
+
+    console.log("💳 Enviando para /charges...");
+    
+    const response = await pagseguroApi.post("/charges", body, {
+      headers: { 
+        "x-idempotency-key": idempotencyKey 
+      }
+    });
+
+    const data = response.data;
+    console.log("✅ Resposta do PagSeguro:", data.status);
+
+    const charge = data;
+    
+    // Atualizar ordem com dados do pagamento
+    order.pgChargeId = charge.id;
+    order.status = mapPgStatus(charge.status);
+    
+    if (charge.status === 'PAID' || charge.status === 'AUTHORIZED') {
+      order.isPaid = true;
+      order.paidAt = new Date();
+      order.status = "Pago";
+      
+      // Atualizar estoque
+      if (!order.stockUpdated) {
+        for (const item of order.orderItems) {
+          await Product.findByIdAndUpdate(item.product, { 
+            $inc: { stock: -item.quantity } 
+          });
+        }
+        order.stockUpdated = true;
+      }
+    }
+    
+    await order.save();
+
+    res.status(201).json({
+      success: true,
+      orderId: order._id,
+      chargeId: charge.id,
+      status: order.status,
+      isPaid: order.isPaid,
+      paymentResponse: {
+        id: charge.id,
+        status: charge.status,
+        authorization_code: charge.payment_response?.raw_data?.authorization_code,
+        nsu: charge.payment_response?.raw_data?.nsu,
+        message: charge.payment_response?.message
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Erro no pagamento com cartão:", error.response?.data || error.message);
+    
+    let statusCode = error.response?.status || 500;
+    let errorMessage = "Erro ao processar pagamento";
+
+    if (error.response?.data?.error_messages) {
+      errorMessage = error.response.data.error_messages.map(msg => 
+        `${msg.description} (${msg.code})`
+      ).join(', ');
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message: errorMessage
+    });
+  }
+};
+
 const handleWebhook = async (req, res) => {
   try {
     const payload = req.body || {};
@@ -238,9 +401,11 @@ const handleWebhook = async (req, res) => {
       const order = await Order.findById(referenceId);
       if (order) {
         order.status = status;
-        if (status === "Pago") {
+        if (status === "Pago" || status === "Autorizado") {
           order.isPaid = true;
           order.paidAt = new Date();
+
+          
           if (!order.stockUpdated) {
             for (const item of order.orderItems) {
               await Product.findByIdAndUpdate(item.product, { $inc: { stock: -item.quantity } });
@@ -296,4 +461,4 @@ const getPaymentStatus = async (req, res) => {
   }
 };
 
-export { createPix, handleWebhook, getPaymentStatus };
+export { createPix, createCreditCardPayment, handleWebhook, getPaymentStatus };

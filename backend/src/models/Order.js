@@ -80,7 +80,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["PIX", "Cartão de Crédito", "Cartão de Débito", "Boleto", "PagSeguro"],
+      enum: ["PIX", "CREDIT_CARD", "Cartão de Débito", "Boleto", "PagSeguro"],
     },
     pgOrderId: String,
     pgChargeId: String,
