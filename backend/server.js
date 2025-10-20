@@ -13,6 +13,8 @@ import productRoutes from "./src/routes/products.js";
 import uploadRoutes from "./src/routes/upload.js";
 import userRoutes from "./src/routes/users.js";
 import paymentRoutes from "./src/routes/payment.js";
+import orderRoutes from './src/routes/orderRoutes.js';
+import stockRoutes from './src/routes/stockRoutes.js';
 
 import dotenv from "dotenv";
 import path from "path";
@@ -69,6 +71,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use('/api/orders', orderRoutes)
+app.use('/api/stock', stockRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {

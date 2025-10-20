@@ -63,17 +63,17 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    stock: {
-      type: Number,
-      required: [true, "Estoque é obrigatório"],
-      min: [0, "Estoque não pode ser negativo"],
-      default: 0,
-    },
-    status: {
-      type: String,
-      enum: ["", "Em Estoque", "Baixo Estoque", "Esgotado"],
-      default: "",
-    },
+    // stock: {
+    //   type: Number,
+    //   required: [true, "Estoque é obrigatório"],
+    //   min: [0, "Estoque não pode ser negativo"],
+    //   default: 0,
+    // },
+    // status: {
+    //   type: String,
+    //   enum: ["", "Em Estoque", "Baixo Estoque", "Esgotado"],
+    //   default: "",
+    // },
     statusColor: {
       type: String,
       default: "bg-custom-pink",
@@ -94,6 +94,79 @@ const productSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // Controle de Estoque
+  stock: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0
+  },
+  lowStockAlert: {
+    type: Number,
+    default: 5
+  },
+  sku: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  
+  // Variações (cores, tamanhos)
+  variations: [{
+    color: String,
+    size: String,
+    stock: {
+      type: Number,
+      default: 0
+    },
+    sku: String,
+    price: Number // Preço específico para variação
+  }],
+  
+  // Histórico de Estoque
+  stockHistory: [{
+    type: {
+      type: String,
+      enum: ['IN', 'OUT', 'ADJUST', 'RETURN'],
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true
+    },
+    previousStock: Number,
+    newStock: Number,
+    reason: String,
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order'
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  // Métricas
+  totalSold: {
+    type: Number,
+    default: 0
+  },
+  lastRestock: Date,
+  
+  // Configurações
+  trackStock: {
+    type: Boolean,
+    default: true
+  },
+  allowBackorder: {
+    type: Boolean,
+    default: false
+  }
   },
   {
     timestamps: true,

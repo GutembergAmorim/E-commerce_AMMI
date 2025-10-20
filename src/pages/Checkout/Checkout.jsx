@@ -184,17 +184,13 @@ function Checkout() {
 
       const { success, orderId, status, isPaid, message } = response.data;
 
-      if (success) {
-        if (isPaid) {
-          showNotification("Pagamento aprovado com sucesso!", "success");
-          clearCart();
-          navigate(`/order-confirmation/${orderId}`);
-        } else {
-          showNotification(`Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`, "info");
-          navigate(`/order-pending/${orderId}`);
-        }
+      if (isPaid) {
+        showNotification("🎉 Pagamento aprovado com sucesso!", "success");
+        clearCart();
+        navigate(`/order-confirmation/${orderId}`);
       } else {
-        showNotification(message || "Erro no pagamento", "error");
+        showNotification(`Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`, "info");
+        navigate(`/order-status/${orderId}`);
       }
 
     } catch (error) {
@@ -270,7 +266,7 @@ function Checkout() {
         throw new Error(response.data.message || "Erro ao criar pagamento PIX");
       }
 
-      const { qrCodeText, qrCodeLink, orderId, expiresAt } = response.data;
+      const { qrCodeText, qrCodeLink, orderId, expiresAt, isPaid } = response.data;
       
       setPix({ 
         text: qrCodeText, 
@@ -280,6 +276,15 @@ function Checkout() {
       });
       
       console.log("PIX criado com sucesso:", response.data);
+
+      if (isPaid) {
+        showNotification("🎉 Pagamento aprovado com sucesso!", "success");
+        clearCart();
+        navigate(`/order-confirmation/${orderId}`);
+      } else {
+        showNotification(`Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`, "info");
+        navigate(`/order-status/${orderId}`);
+      }
       
     } catch (error) {
       console.error(

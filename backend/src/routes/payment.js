@@ -1,5 +1,5 @@
 import express from "express";
-import { createPix, createCreditCardPayment, handleWebhook, getPaymentStatus } from "../controllers/paymentController.js";
+import { createPix, createCreditCardPayment, handleWebhook, getPaymentStatus, getPixQrCode } from "../controllers/paymentController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -12,5 +12,7 @@ router.post("/create-credit-card", protect, createCreditCardPayment);
 router.post("/webhook", handleWebhook);
 // Rota para consultar o status do pagamento
 router.get("/status/:orderId", protect, getPaymentStatus);
+// Rota para obter QR Code PIX
+router.get("/pix/:chargeId", protect, getPixQrCode);
 
 export default router;

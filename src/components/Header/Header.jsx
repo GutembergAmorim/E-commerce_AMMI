@@ -33,7 +33,7 @@ function Header() {
 
       {isAuthenticated && user?.name === "Administrador" ? (
         <>
-          <Link
+          {/* <Link
             to="/admin/products/new"
             className="nav-link-custom"
             onClick={isMobile ? handleMenuClose : null}
@@ -46,6 +46,20 @@ function Header() {
             onClick={isMobile ? handleMenuClose : null}
           >
             Upload Produto
+          </Link> */}
+          <Link
+            to="/admin/dashboard"
+            className="nav-link-custom"
+            onClick={isMobile ? handleMenuClose : null}
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/admin/stock"
+            className="nav-link-custom"
+            onClick={isMobile ? handleMenuClose : null}
+          >
+            Controle de Estoque
           </Link>
         </>
       ) : (

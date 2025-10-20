@@ -370,6 +370,7 @@ const createCreditCardPayment = async (req, res) => {
     res.status(statusCode).json({
       success: false,
       message: errorMessage
+      
     });
   }
 };
@@ -387,7 +388,7 @@ const handleWebhook = async (req, res) => {
     // Buscar status atual da cobrança para evitar confiar no payload
     let charge;
     try {
-      const { data } = await pagseguroApi.get(`/charges/${chargeId}`);
+      const { data } = await pagseguroApi.get(`/orders/${chargeId}`);
       charge = data;
     } catch (err) {
       console.log("Falha ao consultar charge no PagSeguro:", err?.response?.data || err.message);
@@ -435,7 +436,7 @@ const getPaymentStatus = async (req, res) => {
 
     if (order.pgChargeId) {
       try {
-        const { data } = await pagseguroApi.get(`/charges/${order.pgChargeId}`);
+        const { data } = await pagseguroApi.get(`/orders/${order.pgChargeId}`);
         const status = mapPgStatus(data?.status);
         order.status = status;
         if (status === "Pago") {
@@ -461,4 +462,164 @@ const getPaymentStatus = async (req, res) => {
   }
 };
 
-export { createPix, createCreditCardPayment, handleWebhook, getPaymentStatus };
+const getPixQrCode = async (req, res) => {
+  try {
+    const { chargeId } = req.params;
+    const userId = req.user?.id;
+
+    console.log("🔍 getPixQrCode - Iniciando busca:", { chargeId, userId });
+
+    if (!chargeId) {
+      console.log("❌ getPixQrCode - chargeId não fornecido");
+      return res.status(400).json({ error: "ID da cobrança é obrigatório" });
+    }
+
+    if (!userId) {
+      console.log("❌ getPixQrCode - usuário não autenticado");
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
+
+    // Buscar a ordem que possui este chargeId
+    console.log("🔍 getPixQrCode - Buscando ordem:", { pgChargeId: chargeId, user: userId });
+    const order = await Order.findOne({ pgChargeId: chargeId, user: userId });
+    
+    console.log("📋 getPixQrCode - Ordem encontrada:", order ? { id: order._id, status: order.status } : null);
+    
+    if (!order) {
+      console.log("❌ getPixQrCode - Ordem não encontrada");
+      return res.status(404).json({ error: "Pedido não encontrado" });
+    }
+
+    // Buscar informações atualizadas da cobrança no PagSeguro
+    try {
+      console.log("🔍 getPixQrCode - Consultando PagSeguro:", `/orders/${chargeId}`);
+      const { data } = await pagseguroApi.get(`/orders/${chargeId}`);
+      
+      console.log("📊 getPixQrCode - Resposta PagSeguro:", { 
+        hasData: !!data, 
+        status: data?.status,
+        hasPix: !!data?.pix,
+        hasQrCodes: !!data?.qr_codes?.length,
+        dataKeys: data ? Object.keys(data) : [],
+        fullData: JSON.stringify(data, null, 2)
+      });
+      
+      if (!data) {
+        console.log("❌ getPixQrCode - Dados não encontrados no PagSeguro");
+        return res.status(404).json({ error: "Cobrança não encontrada no PagSeguro" });
+      }
+
+      // Extrair QR Code PIX - tentar diferentes estruturas possíveis
+      let qrCode = null;
+      
+      // Tentar diferentes campos onde o PIX pode estar
+      if (data.pix) {
+        qrCode = data.pix;
+      } else if (data.qr_codes && data.qr_codes.length > 0) {
+        qrCode = data.qr_codes[0];
+      } else if (data.payment_methods && data.payment_methods.length > 0) {
+        // PIX pode estar dentro de payment_methods
+        const pixMethod = data.payment_methods.find(pm => pm.type === 'PIX');
+        if (pixMethod) {
+          qrCode = pixMethod.pix || pixMethod.qr_code;
+        }
+      } else if (data.charges && data.charges.length > 0) {
+        // PIX pode estar dentro de charges
+        const pixCharge = data.charges.find(c => c.payment_method?.type === 'PIX');
+        if (pixCharge) {
+          qrCode = pixCharge.pix || pixCharge.qr_code;
+        }
+      } else if (data.orders && data.orders.length > 0) {
+        // PIX pode estar dentro de orders
+        const pixOrder = data.orders.find(o => o.payment_method?.type === 'PIX');
+        if (pixOrder) {
+          qrCode = pixOrder.pix || pixOrder.qr_code;
+        }
+      }
+      
+      // Se ainda não encontrou, tentar buscar em qualquer campo que contenha 'pix' ou 'qr'
+      if (!qrCode) {
+        const searchForPix = (obj, depth = 0) => {
+          if (depth > 3) return null; // Evitar recursão muito profunda
+          
+          if (obj && typeof obj === 'object') {
+            for (const [key, value] of Object.entries(obj)) {
+              if (key.toLowerCase().includes('pix') || key.toLowerCase().includes('qr')) {
+                if (value && typeof value === 'object' && (value.text || value.qrcode || value.href)) {
+                  return value;
+                }
+              }
+              if (typeof value === 'object' && value !== null) {
+                const found = searchForPix(value, depth + 1);
+                if (found) return found;
+              }
+            }
+          }
+          return null;
+        };
+        
+        qrCode = searchForPix(data);
+      }
+      
+      console.log("🔍 getPixQrCode - QR Code extraído:", { 
+        hasQrCode: !!qrCode,
+        hasText: !!qrCode?.text,
+        hasLinks: !!qrCode?.links?.length,
+        qrCodeStructure: qrCode ? Object.keys(qrCode) : []
+      });
+      
+      if (!qrCode) {
+        console.log("❌ getPixQrCode - QR Code não disponível na consulta atual");
+        // Retornar informações básicas mesmo sem QR Code
+        return res.json({
+          success: true,
+          orderId: order._id,
+          chargeId: data.id || chargeId,
+          status: data.status || 'WAITING',
+          qrCodeText: null,
+          qrCodeLink: null,
+          expiresAt: new Date(Date.now() + 3600000).toISOString(),
+          total: order.total,
+          message: "QR Code PIX não disponível no momento. Tente novamente em alguns instantes."
+        });
+      }
+
+      const response = {
+        success: true,
+        orderId: order._id,
+        chargeId: data.id,
+        status: data.status,
+        qrCodeText: qrCode?.text || qrCode?.qrcode,
+        qrCodeLink: qrCode?.links?.[0]?.href || qrCode?.href,
+        expiresAt: qrCode?.expiration_date || new Date(Date.now() + 3600000).toISOString(),
+        total: order.total
+      };
+
+      console.log("✅ getPixQrCode - Retornando resposta:", { 
+        success: response.success,
+        orderId: response.orderId,
+        hasQrCodeText: !!response.qrCodeText,
+        hasQrCodeLink: !!response.qrCodeLink
+      });
+
+      return res.json(response);
+
+    } catch (apiError) {
+      console.error("❌ getPixQrCode - Erro ao consultar PagSeguro:", {
+        status: apiError.response?.status,
+        data: apiError.response?.data,
+        message: apiError.message
+      });
+      return res.status(500).json({ error: "Erro ao consultar informações do pagamento" });
+    }
+
+  } catch (error) {
+    console.error("❌ getPixQrCode - Erro geral:", {
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(500).json({ error: "Erro interno no servidor" });
+  }
+};
+
+export { createPix, createCreditCardPayment, handleWebhook, getPaymentStatus, getPixQrCode };

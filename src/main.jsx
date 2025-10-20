@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
@@ -12,14 +11,24 @@ import Login from "./pages/Login/Login.jsx";
 import Cart from "./pages/Cart/Cart.jsx";
 import Register from "./pages/Register/Register.jsx";
 import Checkout from "./pages/Checkout/Checkout.jsx";
-import Customer from "./pages/Customer/Customer.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MediaUpload from "./pages/Admin/MediaUpload.jsx";
 import ProductCreate from "./pages/Admin/ProductCreate.jsx";
 import Users from "./pages/Admin/Users.jsx";
-import OrderSuccess from "./components/OrderSuccess.jsx";
-import OrderPending from "./pages/OrderPending.jsx";
-import PaymentFailure from "./pages/PaymentFailure.jsx";
+import OrderConfirmation from './pages/Order/OrderConfirmation.jsx';
+import OrderStatus from "./pages/Order/OrderStatus.jsx";
+import PersonalData from "./pages/profile/PersonalData.jsx";
+import UserProfile from "./pages/Customer/UserProfile.jsx";
+import OrderHistory from "./pages/profile/OrderHistory.jsx";
+import AddressManagement from './pages/profile/AddressManagement.jsx'; // ✅ Corrigido caminho
+import ProfileSettings from './pages/profile/ProfileSettings.jsx'; // ✅ Corrigido caminho
+import AdminDashboard from './pages/Admin/AdminDashboard.jsx'
+import OrderManagement from './pages/Admin/OrderManagement.jsx'
+import OrderDetails from './pages/Admin/OrderDetails.jsx'
+import StockManagement from './pages/Admin/StockManagement.jsx'
+import StockHistory from './pages/Admin/StockHistory.jsx'
+import PixQrCode from './pages/Payment/PixQrCode.jsx'
+
 
 const router = createBrowserRouter([
   {
@@ -32,11 +41,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <App />, // O componente App atua como o layout principal
+    element: <App />,
     children: [
-      // Rotas aninhadas serão renderizadas dentro do <Outlet /> do App
       {
-        index: true, // Isso faz com que Home seja a rota filha padrão para "/"
+        index: true,
         element: <Home />,
       },
       {
@@ -53,37 +61,68 @@ const router = createBrowserRouter([
       },
       {
         path: "checkout",
-        element: <Checkout />,
-      },
-      {
-        path: "customer",
-        element: <Customer />,
-      },
-      {
-        path: "payment/success/:orderId",
         element: (
           <ProtectedRoute>
-            <OrderSuccess />
+            <Checkout />
           </ProtectedRoute>
         ),
       },
       {
-        path: "payment/pending/:orderId",
+        path: "order-confirmation/:orderId",
         element: (
           <ProtectedRoute>
-            <OrderPending />
+            <OrderConfirmation />
           </ProtectedRoute>
         ),
       },
       {
-        path: "payment/failure/:orderId",
+        path: "order-pending/:orderId",
         element: (
           <ProtectedRoute>
-            <PaymentFailure />
+            <OrderStatus />
           </ProtectedRoute>
         ),
       },
-
+      {
+        path: "order-status/:orderId",
+        element: (
+          <ProtectedRoute>
+            <OrderStatus />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "payment/pix/:chargeId",
+        element: (
+          <ProtectedRoute>
+            <PixQrCode />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/dashboard",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/orders",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <OrderManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/orders/:id",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <OrderDetails /> // Você vai criar este componente
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "admin/media",
         element: (
@@ -108,8 +147,50 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "admin/stock",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <StockManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/stock/history/:productId",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <StockHistory />
+          </ProtectedRoute>
+        ),
+      }
     ],
   },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute>
+        <UserProfile />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <PersonalData />
+      },
+      {
+        path: "orders", 
+        element: <OrderHistory />
+      },
+      {
+        path: "addresses",
+        element: <AddressManagement />
+      },
+      {
+        path: "settings",
+        element: <ProfileSettings />
+      }
+    ]
+  }
 ]);
 
 const root = document.getElementById("root");

@@ -22,15 +22,15 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
-    const result = register({ name, cpf, email, password });
+    const result = await register({ name, cpf, email, password });
 
     if (result.success) {
-      setSuccess(result.message + " Você será redirecionado para o login.");
+      setSuccess("Cadastro realizado! Você será redirecionado para o login.");
       setTimeout(() => {
         navigate("/login");
       }, 3000); // Redireciona após 3 segundos
@@ -48,7 +48,8 @@ const Register = () => {
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5">
             <div className="p-4">
-              <h2 className="text-center h4 fw-bold mb-4">CADASTRE-SE</h2>
+              <h2 className="text-center h4 fw-bold">CADASTRE-SE</h2>
+              <p className="text-center fw-bold mb-4">Finalize suas compras de forma mais rapida!</p>
               <form onSubmit={handleSubmit}>
                 {success && <div className="alert alert-success">{success}</div>}
                 {error && <div className="alert alert-danger">{error}</div>}
