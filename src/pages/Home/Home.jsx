@@ -1,16 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "./style.css";
-import { useHighlightedProducts } from "../../hooks/useProducts";
+import { useProducts } from "../../hooks/useProducts"; // Assumindo que você criará este hook
 import { Link } from "react-router-dom";
+import ProductCard from "../../components/ProductCard/ProductCard";
 
 function Home() {
-  const {
-    products: highlightedProducts,
-    loading,
-    error,
-  } = useHighlightedProducts();
+  const { products, loading, error } = useProducts();
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // Função para iniciar o temporizador
+  // Cria uma lista de categorias únicas a partir dos produtos
+  const categories = useMemo(() => {
+    if (!products.length) return [];
+    const uniqueCategories = products.reduce((acc, product) => {
+      if (
+        product.category &&
+        !acc.some((cat) => cat._id === product.category._id)
+      ) {
+        acc.push(product.category);
+      }
+      return acc;
+    }, []);
+    return uniqueCategories;
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (!selectedCategory) {
+      return products;
+    }
+    return products.filter(
+      (product) => product.category._id === selectedCategory
+    );
+  }, [products, selectedCategory]);
+
+  // A data alvo para o countdown. Ex: Black Friday (Novembro é mês 10)
+  const targetDate = new Date(new Date().getFullYear(), 10, 24);
+
   const [countdown, setCountdown] = useState({
     days: "00",
     hours: "00",
@@ -19,14 +43,13 @@ function Home() {
   });
 
   useEffect(() => {
+    let blackFriday = new Date(targetDate);
+
     const updateCountdownState = () => {
       const now = new Date();
-      // Defina a data da Black Friday (24 de Novembro do ano corrente)
-      // No JavaScript, os meses são 0-indexados (Janeiro=0, ..., Novembro=10)
-      let blackFriday = new Date(now.getFullYear(), 10, 24);
 
       if (now > blackFriday) {
-        // Se já passou, define para o próximo ano
+        // Se a data já passou, define para o próximo ano
         blackFriday.setFullYear(blackFriday.getFullYear() + 1);
       }
 
@@ -56,10 +79,10 @@ function Home() {
     // Chama a função uma vez para definir o valor inicial sem delay
     updateCountdownState();
 
-    const intervalId = setInterval(updateCountdownState, 1000);
+    const timerId = setInterval(updateCountdownState, 1000);
 
     // Função de limpeza para remover o intervalo quando o componente for desmontado
-    return () => clearInterval(intervalId);
+    return () => clearInterval(timerId);
   }, []); // Array de dependências vazio para executar apenas na montagem e desmontagem
 
   const countdownUnits = [
@@ -71,97 +94,162 @@ function Home() {
 
   return (
     <>
-      <section className="colecao-raizes-hero">
-        <div className="container">
-          <div className="row align-items-center justify-content-between">
-            {/* --- Coluna de Texto --- */}
-            <div className="col-md-6 mb-4 mb-md-0">
-              <span className="badge-raizes ">Nova Coleção</span>
+      <section className="colecao-raizes-hero position-relative">
+        <div className="hero-container-custom">
+          {/* Imagem posicionada (Absolute Bottom-Left) */}
+          <img
+            src="https://res.cloudinary.com/dxaacelde/image/upload/w_700,h_900,c_fill,q_auto,f_auto/Home_0-Photoroom_z7jtga.png"
+            alt="Modelo a usar um conjunto verde da Coleção Raízes da AMMI Fitwear"
+            className="hero-image-positioned"
+          />
 
-              <h2 className="titulo-colecao mt-3">
-                COLEÇÃO <span className="titulo-destaque">RAÍZES</span>
-              </h2>
+          {/* Conteúdo de Texto (Alinhado à direita via CSS) */}
+          <div className="hero-text-content">
+            <span className="hero-subtitle-top">COLEÇÃO</span>
+            <h1 className="hero-title-main">RAÍZES</h1>
+            <p className="hero-subtitle-bottom">
+              ELEGANCIA EM TODO MOVIMENTO
+            </p>
 
-              <p className="descricao-colecao">
-                A Coleção Raízes nasce da inspiração na força interior, na
-                autenticidade e na conexão com o que realmente importa.
-              </p>
-
-              <div className="d-flex">
-                <Link to="/collections">
-                  {" "}
-                  {/* O teu link para as coleções */}
-                  <button className="btn-ver-colecao">Ver Coleção</button>
-                </Link>
-              </div>
-            </div>
-
-            {/* --- Coluna da Imagem --- */}
-            <div className="col-md-6 d-flex justify-content-center align-items-center">
-              <img
-                src="https://res.cloudinary.com/dxaacelde/image/upload/w_700,h_900,c_fill,q_auto,f_auto/Home_0-Photoroom_z7jtga.png"
-                alt="Modelo a usar um conjunto verde da Coleção Raízes da AMMI Fitwear"
-                className="img-fluid rounded-3 shadow-sm" // Mantive img-fluid e adicionei uma sombra suave
-                style={{ maxHeight: "450px", objectFit: "cover" }} // Aumentei um pouco a altura para mais impacto
-              />
+            <div className="d-flex justify-content-center justify-content-md-end mt-4">
+              <Link to="/collections">
+                <button className="btn-ver-colecao">VER COLEÇÃO</button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Seção Produtos em Destaque */}
-      <section className="raizes-destaques-section">
+      {/* Seção de Produtos com Filtro */}
+      <section className="products-section-grid ">
         <div className="container">
-          {/* --- Cabeçalho da Secção --- */}
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="destaques-titulo">Destaques da Coleção</h2>
-            <Link to="/collections" className="link-ver-todos">
-              Ver todos &rarr;
-            </Link>
-          </div>
-
-          {/* --- Lógica de Carregamento (Mantida Intacta) --- */}
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-raizes" role="status">
-                <span className="visually-hidden">Carregando...</span>
+          <h2 className="display-5 fw-bold text-center mb-4">Destaques da Coleção</h2>
+          <div className="row">
+            {/* --- Sidebar de Categorias --- */}
+            {/* <aside className="col-lg-3">
+              <div className="category-sidebar">
+                <h3 className="sidebar-title">Categorias</h3>
+                {loading ? (
+                  <p>Carregando...</p>
+                ) : (
+                  <ul className="list-unstyled">
+                    <li>
+                      <button
+                        className={`category-link ${
+                          selectedCategory === null ? "active" : ""
+                        }`}
+                        onClick={() => setSelectedCategory(null)}
+                      >
+                        Todos os Produtos
+                      </button>
+                    </li>
+                    {categories.map((category) => (
+                      <li key={category._id}>
+                        <button
+                          className={`category-link ${
+                            selectedCategory === category._id ? "active" : ""
+                          }`}
+                          onClick={() => setSelectedCategory(category._id)}
+                        >
+                          {category.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-            </div>
-          ) : error ? (
-            <div className="alert alert-warning" role="alert">
-              {error}
-            </div>
-          ) : (
-            /* --- Grelha de Produtos --- */
-            <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-              {highlightedProducts.map((product) => (
-                <div className="col" key={product._id}>
-                  <div className="card product-card-raizes">
-                    <div className="card-img-container">
-                      <img
-                        src={
-                          product.images?.[0] ||
-                          "https://via.placeholder.com/400x500?text=Sem+Imagem"
-                        }
-                        alt={product.name}
-                        className="card-img-top"
-                      />
-                    </div>
+            </aside> */}
 
-                    <div className="card-body">
-                      <h3 className="product-name">{product.name}</h3>
-                      <p className="product-price">{`R$ ${product.price
-                        .toFixed(2)
-                        .replace(".", ",")}`}</p>
-                    </div>
+            {/* --- Grelha de Produtos --- */}
+            <main className="col-lg-12">
+              {loading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-raizes" role="status">
+                    <span className="visually-hidden">Carregando...</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ) : error ? (
+                <div className="alert alert-warning" role="alert">
+                  {error}
+                </div>
+              ) : (
+                <div className="row row-cols-2 row-cols-lg-4 g-4">
+                  {filteredProducts.map((product) => (
+                    <div className="col" key={product._id}>
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </main>
+          </div>
         </div>
       </section>
-
+      {/* Seção de Depoimentos de Clientes */}
+      <section className="reviews-section">
+        <div className="container">
+          <h2 className="display-5 fw-bold text-center mb-5">Elas Usam AMMI</h2>
+          
+          <div className="reviews-scroll-container">
+            {/* Mock Data de Reviews */}
+            {[
+              {
+                id: 1,
+                name: "Julia Martins",
+                handle: "@julia.mfit",
+                text: "Simplesmente apaixonada! O tecido é incrível e não fica transparente.",
+                image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=400&q=80"
+              },
+              {
+                id: 2,
+                name: "Carla Souza",
+                handle: "@carlinha_treino",
+                text: "Melhor legging que já comprei. Veste super bem!",
+                image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&q=80"
+              },
+              {
+                id: 3,
+                name: "Beatriz Lima",
+                handle: "@bia.lifestyle",
+                text: "Entrega super rápida e o capricho na embalagem é tudo.",
+                image: "https://images.unsplash.com/photo-1595078475328-1ab05d0a6a0e?auto=format&fit=crop&w=400&q=80"
+              },
+              {
+                id: 4,
+                name: "Fernanda Costa",
+                handle: "@nanda.yoga",
+                text: "Uso para yoga e musculação, perfeito para ambos.",
+                image: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=400&q=80"
+              },
+              {
+                id: 5,
+                name: "Mariana Alves",
+                handle: "@mari.alves",
+                text: "As cores são ainda mais lindas pessoalmente.",
+                image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=400&q=80"
+              }
+            ].map((review) => (
+              <div key={review.id} className="review-card">
+                <div className="review-image-wrapper">
+                  <img src={review.image} alt={review.name} className="review-image" />
+                </div>
+                <div className="review-content">
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <div className="review-avatar">
+                      {review.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h5 className="mb-0 fs-6 fw-bold">{review.name}</h5>
+                      <small className="text-muted">{review.handle}</small>
+                    </div>
+                  </div>
+                  <p className="review-text small mb-0">"{review.text}"</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       {/* Seção Promoção de Black Friday */}
       <section className="py-5 text-white promo-gradient-custom">
         <div className="container text-center">
@@ -183,9 +271,25 @@ function Home() {
               </div>
             ))}
           </div>
-          <button className="btn btn-light text-custom-pink rounded-pill px-5 py-2 fw-bold fs-5">
-            Comprar Agora
-          </button>
+          <Link to="/collections">
+            <button className="btn btn-light text-custom-pink rounded-pill px-5 py-2 fw-bold fs-5">
+              Comprar Agora
+            </button>
+          </Link>
+          {/* --- Divisor de Seção Curvo --- */}
+          <div className="custom-shape-divider-bottom-1716490896">
+            <svg
+              data-name="Layer 1"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 1200 120"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                className="shape-fill"
+              ></path>
+            </svg>
+          </div>
         </div>
       </section>
 

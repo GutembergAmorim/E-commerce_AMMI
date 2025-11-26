@@ -1,75 +1,82 @@
-.container {
-  max-width: 1024px;
-  padding-left: 1rem;
-  padding-right: 1rem;
+/* Header.css */
+
+.transition-all {
+  transition: all 0.3s ease-in-out;
 }
 
-/* --- Estilos para o Header --- */
-
-/* Ajuste da Logo */
-.img-logo {
-  height: 40px; /* Ajuste a altura da sua logo conforme necessário */
-  width: auto;
+/* Header Transparente (Estado inicial na Home) */
+.header-transparent {
+  background-color: transparent;
+  box-shadow: none;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
-/* Estilo customizado para os links de navegação */
-.nav-link-custom {
-  color: #333;
+.header-transparent .nav-link-custom {
+  color: rgba(31, 30, 30, 0.9) !important;
   font-weight: 500;
+}
+
+.header-transparent .nav-link-custom:hover {
+  color: #242323 !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Header Scrolled (Estado ao rolar ou em outras páginas) */
+.header-scrolled {
+  background-color: rgba(255, 255, 255, 0.85); /* Fundo branco translúcido */
+  backdrop-filter: blur(12px); /* Efeito de vidro */
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.header-scrolled .nav-link-custom {
+  color: #333 !important;
+  font-weight: 500;
+}
+
+.header-scrolled .nav-link-custom:hover {
+  color: #4f46e5 !important; /* Cor primária */
+}
+
+/* Links de Navegação */
+.nav-link-custom {
   text-decoration: none;
   position: relative;
-  padding-bottom: 5px;
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
 }
 
-/* Efeito de sublinhado animado no hover */
+/* Efeito de sublinhado animado */
 .nav-link-custom::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
   width: 0;
   height: 2px;
-  background-color: var(--cor-verde-raizes, #2e4034); /* Usa a cor da coleção ou um fallback */
-  transition: width 0.3s ease-out;
+  bottom: 0;
+  left: 0;
+  background-color: currentColor;
+  transition: width 0.3s ease;
 }
 
 .nav-link-custom:hover::after {
   width: 100%;
 }
 
-/* Estilo para os botões de ícone (carrinho, hambúrguer) */
-.btn-icon {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: #555;
-  padding: 0.5rem;
-  line-height: 1;
+/* Ajustes para Mobile */
+@media (max-width: 991px) {
+  .header-transparent {
+    background-color: rgba(0, 0, 0, 0.2); /* Um pouco de fundo no mobile para legibilidade */
+    backdrop-filter: blur(4px);
+  }
 }
 
-.btn-icon:hover {
-  color: #000;
-}
-
-/* Badge do carrinho de compras */
-.cart-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    transform: translate(40%, -40%);
-    background-color: var(--cor-castanho-raizes, #6d4c41); /* Cor da coleção */
-    color: white;
-    font-size: 0.7rem;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Garante que o menu offcanvas tenha uma prioridade visual alta */
-.offcanvas {
-  z-index: 1050; /* Prioridade maior que o header sticky */
+/* Dropdown Hover Effect */
+@media (min-width: 992px) {
+  .dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0; /* Remove default margin to ensure mouse can travel to menu */
+  }
 }

@@ -69,7 +69,7 @@ const Login = () => {
                     placeholder="Senha"
                   />
                   <label htmlFor="passwordInput">Senha</label>
-                </div>
+                </div>                
                 <div className="text-center form-check mb-3">
                   <a href="" className="text-muted fw-bold">
                     Esqueceu seus dados de acesso?

@@ -1,3 +1,4 @@
+import "./src/config/env.js"; // Must be the first import
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -16,14 +17,7 @@ import paymentRoutes from "./src/routes/payment.js";
 import orderRoutes from './src/routes/orderRoutes.js';
 import stockRoutes from './src/routes/stockRoutes.js';
 
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+// dotenv configured in ./src/config/env.js
 
 const app = express();
 

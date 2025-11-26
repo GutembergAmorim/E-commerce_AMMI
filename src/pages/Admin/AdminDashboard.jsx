@@ -251,9 +251,9 @@ const AdminDashboard = () => {
                   <Users size={16} className="me-2" />
                   Gerenciar Usuários
                 </Link>
-                <Link to="/admin/media" className="btn btn-outline-primary">
+                <Link to="/admin/stock" className="btn btn-outline-primary">
                   <TrendingUp size={16} className="me-2" />
-                  Gerenciar Mídia
+                  Gerenciar Stock
                 </Link>
               </div>
             </div>

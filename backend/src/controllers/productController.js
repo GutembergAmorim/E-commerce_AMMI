@@ -74,6 +74,7 @@ const getProductById = async (req, res) => {
 // @access  Private/Admin
 const createProduct = async (req, res) => {
   try {
+    console.log('Body recebido na criação de produto:', req.body);
     const product = await Product.create(req.body);
 
     res.status(201).json({

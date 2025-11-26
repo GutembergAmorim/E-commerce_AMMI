@@ -1,27 +1,44 @@
-import React, { useState } from "react"; // Importe o React se ainda não estiver
+import React, { useState, useEffect } from "react";
 import logo from "../../assets/logo.png";
-import { Link } from "react-router-dom";
-import Offcanvas from "react-bootstrap/Offcanvas"; // Importe Link do react-router-dom para navegação
-
-import "./Header.css"; // Importe o CSS para estilos personalizados
-
+import { Link, useLocation } from "react-router-dom";
+import Offcanvas from "react-bootstrap/Offcanvas";
+import "./Header.css";
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
-import {} from "../../services/authService";
 
 function Header() {
   const { cartItems } = useCart();
   const { isAuthenticated, user, logout } = useAuth();
-
   const [showMenu, setShowMenu] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+
+  // Detectar scroll para mudar o estilo do header
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 50;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [scrolled]);
+
+  // Verificar se estamos na home para aplicar transparência inicial
+  const isHome = location.pathname === "/";
+  const headerClass = isHome && !scrolled ? "header-transparent" : "header-scrolled";
 
   const handleMenuClose = () => setShowMenu(false);
   const handleMenuShow = () => setShowMenu(true);
 
   const NavLinks = ({ isMobile }) => (
     <nav
-      className={isMobile ? "d-flex flex-column" : "d-none d-lg-flex"}
-      style={{ gap: isMobile ? "1rem" : "1.5rem" }}
+      className={isMobile ? "d-flex flex-column" : "d-none d-lg-flex align-items-center"}
+      style={{ gap: isMobile ? "1rem" : "2rem" }}
     >
       <Link
         to="/collections"
@@ -30,45 +47,28 @@ function Header() {
       >
         Produtos
       </Link>
-
-      {isAuthenticated && user?.name === "Administrador" ? (
-        <>
-          {/* <Link
-            to="/admin/products/new"
-            className="nav-link-custom"
-            onClick={isMobile ? handleMenuClose : null}
-          >
-            Cadastrar Produto
-          </Link>
-          <Link
-            to="/admin/media"
-            className="nav-link-custom"
-            onClick={isMobile ? handleMenuClose : null}
-          >
-            Upload Produto
-          </Link> */}
-          <Link
-            to="/admin/dashboard"
-            className="nav-link-custom"
-            onClick={isMobile ? handleMenuClose : null}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/admin/stock"
-            className="nav-link-custom"
-            onClick={isMobile ? handleMenuClose : null}
-          >
-            Controle de Estoque
-          </Link>
-        </>
-      ) : (
+      <Link
+        to="/collections?sort=newest" // Exemplo de link para lançamentos
+        className="nav-link-custom"
+        onClick={isMobile ? handleMenuClose : null}
+      >
+        Lançamentos
+      </Link>
+      <Link
+        to="/about"
+        className="nav-link-custom"
+        onClick={isMobile ? handleMenuClose : null}
+      >
+        Sobre
+      </Link>
+      
+      {isAuthenticated && user?.role === "admin" && (
         <Link
-          to="/about"
-          className="nav-link-custom"
+          to="/admin/dashboard"
+          className="nav-link-custom text-warning" // Destaque para admin
           onClick={isMobile ? handleMenuClose : null}
         >
-          Sobre
+          Admin
         </Link>
       )}
     </nav>
@@ -76,56 +76,71 @@ function Header() {
 
   return (
     <>
-      <header className="bg-info-subtle shadow-sm sticky-top">
+      <header className={`fixed-top transition-all ${headerClass}`}>
         <div className="container py-3">
           <div className="d-flex align-items-center justify-content-between">
-            {/* Esquerda: Logo e Navegação Desktop */}
-            <div className="d-flex align-items-center" style={{ gap: "2rem" }}>
-              <Link to="/" onClick={handleMenuClose}>
-                <img className="img-logo" src={logo} alt="Logo AMMI Fitwear" />
+            
+            {/* Esquerda: Logo e Nome */}
+            <div className="d-flex align-items-center gap-2">
+              <Link to="/" onClick={handleMenuClose} className="d-flex align-items-center text-decoration-none">
+                <img className="img-logo" src={logo} alt="Logo AMMI Fitwear" style={{ maxHeight: '45px' }} />
+                <span className={`ms-2 fs-4 fw-bold font-pacifico ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
+                  AMMI Fitwear
+                </span>
               </Link>
+            </div>
+
+            {/* Centro: Navegação (Desktop) */}
+            <div className="d-none d-lg-block">
               <NavLinks isMobile={false} />
             </div>
 
-            {/* Direita: Ícones e Ações do Utilizador */}
-            <div className="d-flex align-items-center" style={{ gap: "1rem" }}>
-              {isAuthenticated ? (
-                <div
-                  className="d-flex align-items-center"
-                  style={{ gap: "1rem" }}
-                >
-                  <span className="fw-medium d-none d-sm-block">
-                    Olá, {user?.name}!
+            {/* Direita: Ações (Carrinho, Login, Menu Mobile) */}
+            <div className="d-flex align-items-center gap-3">
+              
+              {/* Carrinho */}
+              <Link to="/cart" className={`btn-icon position-relative ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
+                <i className="fas fa-shopping-bag fs-5"></i>
+                {cartItems?.length > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
+                    {cartItems.length}
                   </span>
-                  <button
-                    onClick={logout}
-                    className="btn btn-outline-secondary btn-sm"
+                )}
+              </Link>
+
+              {/* Login / Perfil */}
+              {isAuthenticated ? (
+                <div className="dropdown">
+                  <button 
+                    className={`btn btn-link text-decoration-none dropdown-toggle ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`} 
+                    type="button" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false"
                   >
-                    Sair
+                    <i className="fas fa-user me-1"></i>
+                    <span className="d-none d-sm-inline">{user?.name?.split(' ')[0]}</span>
                   </button>
+                  <ul className="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><Link className="dropdown-item" to="/profile">Meus Dados</Link></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button className="dropdown-item text-danger" onClick={logout}>Sair</button></li>
+                  </ul>
                 </div>
               ) : (
                 <Link
                   to="/login"
-                  className="btn btn-outline-secondary rounded-pill px-3 d-none d-sm-block"
+                  className={`btn rounded-pill px-4 fw-medium ${isHome && !scrolled ? 'btn-dark' : 'btn-dark'}`}
                 >
                   Entrar
                 </Link>
               )}
 
-              <Link to="/cart" className="btn-icon position-relative">
-                <i className="fas fa-shopping-bag"></i>
-                {cartItems?.length > 0 && (
-                  <span className="cart-badge">
-                    {cartItems.length}
-                    <span className="visually-hidden">Itens no carrinho</span>
-                  </span>
-                )}
-              </Link>
-
-              {/* Ícone do Menu Hambúrguer (só aparece em ecrãs pequenos) */}
-              <button className="btn-icon d-lg-none" onClick={handleMenuShow}>
-                <i className="fas fa-bars"></i>
+              {/* Menu Hambúrguer (Mobile) */}
+              <button 
+                className={`btn-icon d-lg-none border-0 bg-transparent ${isHome && !scrolled ? 'text-white' : 'text-dark'}`} 
+                onClick={handleMenuShow}
+              >
+                <i className="fas fa-bars fs-4"></i>
               </button>
             </div>
           </div>
@@ -135,20 +150,24 @@ function Header() {
       {/* Menu Offcanvas para Mobile */}
       <Offcanvas show={showMenu} onHide={handleMenuClose} placement="end">
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Menu</Offcanvas.Title>
+          <Offcanvas.Title className="font-pacifico text-custom-primary">AMMI Fitwear</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
-          <NavLinks isMobile={true} />
-          <hr />
-          {!isAuthenticated && (
-            <Link
-              to="/login"
-              className="btn btn-primary w-100"
-              onClick={handleMenuClose}
-            >
-              Entrar
-            </Link>
-          )}
+          <div className="d-flex flex-column h-100">
+            <NavLinks isMobile={true} />
+            
+            <div className="mt-auto">
+              {!isAuthenticated && (
+                <Link
+                  to="/login"
+                  className="btn btn-dark w-100 py-2 rounded-pill"
+                  onClick={handleMenuClose}
+                >
+                  Entrar / Cadastrar
+                </Link>
+              )}
+            </div>
+          </div>
         </Offcanvas.Body>
       </Offcanvas>
     </>

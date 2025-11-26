@@ -47,11 +47,15 @@ router.post('/image', protect, admin, upload.single('image'), async (req, res) =
     };
 
     const result = await streamUpload();
+    console.log('Upload concluído com sucesso:', result.secure_url);
+
+    // Adicionar transformações solicitadas: w_600,h_800,c_fill,q_auto,f_auto
+    const optimizedUrl = result.secure_url.replace('/upload/', '/upload/w_600,h_800,c_fill,q_auto,f_auto/');
 
     return res.status(201).json({
       success: true,
       data: {
-        url: result.secure_url,
+        url: optimizedUrl,
         publicId: result.public_id,
         width: result.width,
         height: result.height,
@@ -59,6 +63,7 @@ router.post('/image', protect, admin, upload.single('image'), async (req, res) =
       },
     });
   } catch (error) {
+    console.error('ERRO NO UPLOAD (BACKEND):', error);
     return res.status(500).json({ success: false, message: 'Erro ao fazer upload', error: error.message });
   }
 });

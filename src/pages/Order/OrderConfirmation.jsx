@@ -91,7 +91,7 @@ const OrderConfirmation = () => {
                 <Download size={16} className="me-2" />
                 Imprimir Recibo
               </button>
-              <Link to="/products" className="btn btn-primary">
+              <Link to="/collections" className="btn btn-primary">
                 Continuar Comprando
               </Link>
             </div>
@@ -280,7 +280,7 @@ const OrderConfirmation = () => {
               <Link to="/orders" className="btn btn-outline-primary">
                 Ver Todos os Pedidos
               </Link>
-              <Link to="/products" className="btn btn-primary">
+              <Link to="/" className="btn btn-primary">
                 Continuar Comprando
               </Link>
               {order.paymentMethod === 'PIX' && order.pgChargeId && (

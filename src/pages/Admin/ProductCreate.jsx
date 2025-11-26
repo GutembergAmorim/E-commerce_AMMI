@@ -29,18 +29,31 @@ const ProductCreate = () => {
   };
 
   const addImage = async (file) => {
-    if (!file) return;
+    console.log('Chamou addImage com:', file);
+    if (!file) {
+        console.log('Nenhum arquivo recebido em addImage');
+        return;
+    }
     setUploading(true);
     setError(null);
     try {
+      console.log('Iniciando upload...');
       const response = await uploadService.uploadImage(file);
+      console.log('Resposta do upload:', response);
       if (response.success) {
-        setForm((prev) => ({ ...prev, images: [...prev.images, response.data.url] }));
+        console.log('Adicionando imagem ao estado:', response.data.url);
+        setForm((prev) => {
+           const newState = { ...prev, images: [...prev.images, response.data.url] };
+           console.log('Novo estado do form (images):', newState.images);
+           return newState;
+        });
       } else {
+        console.error('Erro no upload (sucesso falso):', response);
         setError(response.message || 'Falha no upload');
       }
     } catch (err) {
       const serverMessage = err?.response?.data?.message;
+      console.error('Erro no catch:', err);
       setError(serverMessage || err.message || 'Erro ao enviar imagem');
     } finally {
       setUploading(false);
@@ -86,6 +99,7 @@ const ProductCreate = () => {
         status: '',
       };
 
+      console.log('Payload enviado:', payload);
       const response = await productService.createProduct(payload);
       if (response.success) {
         setSuccess('Produto criado com sucesso');
@@ -163,7 +177,16 @@ const ProductCreate = () => {
         <div className="col-12">
           <label className="form-label">Imagens</label>
           <div className="d-flex gap-2 align-items-center">
-            <input type="file" accept="image/*" className="form-control" onChange={(e) => addImage(e.target.files?.[0])} disabled={uploading} />
+            <input 
+                type="file" 
+                accept="image/*" 
+                className="form-control" 
+                onChange={(e) => {
+                    console.log('Evento onChange disparado', e.target.files);
+                    addImage(e.target.files?.[0]);
+                }} 
+                disabled={uploading} 
+            />
             <span className="text-muted small">{uploading ? 'Enviando...' : 'Selecione uma imagem para enviar'}</span>
           </div>
           <div className="d-flex flex-wrap gap-2 mt-2">
@@ -187,5 +210,3 @@ const ProductCreate = () => {
 };
 
 export default ProductCreate;
-
-

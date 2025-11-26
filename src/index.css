@@ -177,3 +177,15 @@ body {
 .stock-movement-adjust {
   background-color: rgba(255, 193, 7, 0.1) !important;
 }
+
+/* Espaçamento para o conteúdo não ficar atrás do header fixo */
+.content-spacer {
+  padding-top: 100px; /* Ajuste conforme a altura do seu header */
+}
+
+/* Ajuste para mobile se o header for menor */
+@media (max-width: 991px) {
+  .content-spacer {
+    padding-top: 90px;
+  }
+}

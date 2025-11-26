@@ -1,7 +1,7 @@
 // src/pages/UserProfile.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { User, Package, MapPin, Settings, LogOut } from 'lucide-react';
+import { Link, Outlet, useLocation, Navigate } from 'react-router-dom';
+import { User, Package, MapPin, Settings, LogOut, ChevronRight, Home } from 'lucide-react';
 import { useAuth } from '../../Context/AuthContext';
 import api from '../../services/api';
 
@@ -55,79 +55,94 @@ const UserProfile = () => {
   };
 
   const isActive = (path) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+    return location.pathname === path || (path !== '/profile' && location.pathname.startsWith(path));
+  };
+
+  const getCurrentPageLabel = () => {
+    const currentItem = menuItems.find(item => isActive(item.path));
+    return currentItem ? currentItem.label : 'Minha Conta';
   };
 
   return (
-    <div className="container py-5">
-      <div className="row">
-        {/* Sidebar */}
-        <div className="col-lg-3 mb-4">
-          <div className="card shadow-sm">
-            <div className="card-header bg-primary text-white">
-              <div className="d-flex align-items-center">
-                <div className="bg-white rounded-circle p-2 me-3">
-                  <User size={24} className="text-primary" />
-                </div>
-                <div>
-                  <h6 className="mb-0">{user?.name}</h6>
-                  <small>{user?.email}</small>
-                </div>
-              </div>
-            </div>
-            
-            <div className="list-group list-group-flush">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`list-group-item list-group-item-action d-flex align-items-center ${
-                    isActive(item.path) ? 'active' : ''
-                  }`}
-                >
-                  <span className="me-3">{item.icon}</span>
-                  <div>
-                    <div className="fw-medium">{item.label}</div>
-                    <small className={`${isActive(item.path) ? 'text-white' : 'text-muted'}`}>
-                      {item.description}
-                    </small>
-                  </div>
+    <div className="bg-light min-vh-100 pb-5">
+      {/* Breadcrumb Section */}
+      <div className="bg-white border-bottom shadow-sm mb-4">
+        <div className="container py-3">
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb mb-0">
+              <li className="breadcrumb-item">
+                <Link to="/" className="text-decoration-none text-muted d-flex align-items-center">
+                  <Home size={16} className="me-1" /> Home
                 </Link>
-              ))}
-              
-              <button
-                onClick={logout}
-                className="list-group-item list-group-item-action d-flex align-items-center text-danger"
-              >
-                <LogOut size={20} className="me-3" />
-                <span>Sair</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Resumo Rápido */}
-          <div className="card shadow-sm mt-4">
-            <div className="card-body">
-              <h6 className="card-title">Resumo da Conta</h6>
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <span className="text-muted">Pedidos</span>
-                <span className="fw-bold text-primary">{ordersCount}</span>
-              </div>
-              <div className="d-flex justify-content-between align-items-center">
-                <span className="text-muted">Membro desde</span>
-                <span className="fw-bold">
-                  {new Date(user?.createdAt).toLocaleDateString('pt-BR')}
-                </span>
-              </div>
-            </div>
-          </div>
+              </li>
+              <li className="breadcrumb-item active" aria-current="page">
+                <span className="fw-medium text-dark">{getCurrentPageLabel()}</span>
+              </li>
+            </ol>
+          </nav>
         </div>
+      </div>
 
-        {/* Conteúdo Principal */}
-        <div className="col-lg-9">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <Outlet />
+      <div className="container">
+        <div className="row g-4">
+          {/* Sidebar */}
+          <div className="col-lg-3">
+            <div className="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+              <div className="card-body text-center p-4 bg-white">
+                <div className="mb-3 position-relative d-inline-block">
+                    <div className="bg-light rounded-circle p-3 d-flex align-items-center justify-content-center mx-auto" style={{ width: '80px', height: '80px' }}>
+                        <User size={40} className="text-primary" />
+                    </div>
+                </div>
+                <h5 className="fw-bold mb-1">{user?.name}</h5>
+                <p className="text-muted small mb-0">{user?.email}</p>
+              </div>
+              
+              <div className="list-group list-group-flush border-top">
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`list-group-item list-group-item-action border-0 py-3 px-4 d-flex align-items-center justify-content-between ${
+                      isActive(item.path) ? 'bg-primary text-white' : 'text-secondary hover-bg-light'
+                    }`}
+                  >
+                    <div className="d-flex align-items-center">
+                        <span className="me-3">{item.icon}</span>
+                        <span className="fw-medium">{item.label}</span>
+                    </div>
+                    {isActive(item.path) && <ChevronRight size={16} />}
+                  </Link>
+                ))}
+                
+                <button
+                  onClick={logout}
+                  className="list-group-item list-group-item-action border-0 py-3 px-4 d-flex align-items-center text-danger mt-2 border-top"
+                >
+                  <LogOut size={20} className="me-3" />
+                  <span className="fw-medium">Sair</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Resumo Rápido (Opcional, pode manter ou remover para limpar) */}
+            {/* <div className="card border-0 shadow-sm rounded-3">
+              <div className="card-body p-4">
+                <h6 className="fw-bold mb-3 text-uppercase small text-muted">Resumo</h6>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">Pedidos Realizados</span>
+                  <span className="badge bg-primary rounded-pill">{ordersCount}</span>
+                </div>
+              </div>
+            </div> */}
+          </div>
+
+          {/* Conteúdo Principal */}
+          <div className="col-lg-9">
+            <div className="card border-0 shadow-sm rounded-3 h-100">
+              <div className="card-body p-4">
+                <Outlet />
+              </div>
             </div>
           </div>
         </div>

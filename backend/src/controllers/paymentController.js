@@ -59,7 +59,7 @@ const pagseguroApi = axios.create({
   headers: {
     "Authorization": `Bearer ${process.env.PAGSEGURO_TOKEN}`,
     "Content-Type": "application/json",
-    "Accept": "application/json"
+    "Accept": "*/*"
   },
   timeout: 15000,
 });
@@ -154,22 +154,36 @@ const createPix = async (req, res) => {
 
     const idempotencyKey = crypto.randomUUID();
 
-    // Body PIX para PagSeguro
+    // Body PIX para PagSeguro com estrutura de charges
     const body = {
       reference_id: order._id.toString(),
-      description: `Pedido #${order._id}`,
-      amount: {
-        value: totalCents,
-        currency: "BRL",
-      },
       customer: {
         name: user.name,
         email: user.email,
-        tax_id: "12345678909", // ou o CPF real do cliente
+        tax_id: "12345678909", // CPF fixo para teste sandbox
       },
-      payment_method: {
-        type: "PIX",
-      },
+      items: cartItems.map(item => ({
+        reference_id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        unit_amount: Math.round(item.price * 100)
+      })),
+      charges: [
+        {
+          reference_id: order._id.toString(),
+          description: `Pedido #${order._id}`,
+          amount: {
+            value: totalCents,
+            currency: "BRL"
+          },
+          payment_method: {
+            type: "PIX",
+            pix: {
+                expiration_date: new Date(Date.now() + 3600000).toISOString(), // Expira em 1 hora
+            }
+          }
+        }
+      ],
       notification_urls: [`${process.env.CLIENT_URL}/api/payment/webhook`],
     };
 
@@ -180,22 +194,96 @@ const createPix = async (req, res) => {
       headers: { "x-idempotency-key": idempotencyKey },
     });
 
-    const charge = response.data;
-    if (!charge || !charge.id) throw new Error("Resposta inválida do PagSeguro");
+    const pgOrder = response.data;
+    if (!pgOrder || !pgOrder.id) throw new Error("Resposta inválida do PagSeguro");
 
-    order.pgChargeId = charge.id;
+    // Salva o ID da Ordem do PagSeguro
+    order.pgChargeId = pgOrder.id;
     await order.save();
 
-    // Extrai QR Code PIX
-    const qrCode = charge.pix || charge.qr_codes?.[0] || charge.text;
+    // Tenta extrair o QR Code da resposta imediata
+    let qrCodeText = null;
+    let qrCodeLink = null;
+    let expiresAt = new Date(Date.now() + 3600000).toISOString();
+
+    console.log("🚀 DEBUG: createPix - Analisando resposta do PagSeguro");
+    if (pgOrder.charges && pgOrder.charges.length > 0) {
+      const charge = pgOrder.charges[0];
+      console.log("🚀 DEBUG: Charge encontrada:", JSON.stringify(charge, null, 2));
+      
+      // 1. Verifica links (Padrão PagSeguro V2)
+      if (charge.links) {
+        const linkQrCode = charge.links.find(l => l.rel === "QRCODE.PNG");
+        const linkText = charge.links.find(l => l.rel === "QRCODE.TEXT");
+        if (linkQrCode) qrCodeLink = linkQrCode.href;
+        if (linkText) qrCodeText = linkText.href;
+      }
+      
+      // 2. Verifica objeto pix dentro de payment_method
+      if (charge.payment_method?.pix) {
+        if (!qrCodeText) qrCodeText = charge.payment_method.pix.qrcode || charge.payment_method.pix.text;
+        if (!qrCodeLink) qrCodeLink = charge.payment_method.pix.image || charge.payment_method.pix.qr_code_image;
+        if (charge.payment_method.pix.expiration_date) {
+            expiresAt = charge.payment_method.pix.expiration_date;
+        }
+      }
+
+      // 3. Verifica propriedades diretas na charge (observado em logs)
+      if (!qrCodeText) {
+        if (charge.text) qrCodeText = charge.text;
+        if (charge.qrcode) qrCodeText = charge.qrcode;
+        if (charge.qr_code) {
+            qrCodeText = typeof charge.qr_code === 'object' ? charge.qr_code.text : charge.qr_code;
+        }
+      }
+    }
+
+    // 4. Se não encontrou na charge, tenta na raiz (fallback)
+    if (!qrCodeText && pgOrder.qr_codes && pgOrder.qr_codes.length > 0) {
+        qrCodeText = pgOrder.qr_codes[0].text || pgOrder.qr_codes[0].qrcode;
+        qrCodeLink = pgOrder.qr_codes[0].links?.[0]?.href;
+    }
+
+    // 5. Busca Recursiva (Último recurso)
+    if (!qrCodeText) {
+        console.log("🚀 DEBUG: createPix - Tentando busca recursiva");
+        const searchForPix = (obj, depth = 0) => {
+          if (depth > 4) return null;
+          if (obj && typeof obj === 'object') {
+            // Se achou algo que parece um QR Code texto
+            if (obj.text && typeof obj.text === 'string' && obj.text.startsWith('000201')) return { text: obj.text };
+            if (obj.qrcode && typeof obj.qrcode === 'string' && obj.qrcode.startsWith('000201')) return { text: obj.qrcode };
+            
+            for (const key in obj) {
+               const res = searchForPix(obj[key], depth + 1);
+               if (res) return res;
+            }
+          }
+          return null;
+        };
+        const found = searchForPix(pgOrder);
+        if (found) {
+            qrCodeText = found.text;
+            console.log("🚀 DEBUG: createPix - QR Code encontrado via busca recursiva");
+        }
+    }
+
+    console.log("🚀 DEBUG: createPix - Dados extraídos:", { qrCodeText, qrCodeLink, expiresAt });
+
+    // Salva os dados do QR Code no banco para evitar depender da API depois
+    order.pixQrCodeText = qrCodeText;
+    order.pixQrCodeLink = qrCodeLink;
+    order.pixExpiration = expiresAt;
+    await order.save();
+    console.log("🚀 DEBUG: createPix - Dados salvos no banco");
 
     return res.status(201).json({
       success: true,
       orderId: order._id,
-      chargeId: charge.id,
-      qrCodeText: qrCode?.text || qrCode?.qrcode,
-      qrCodeLink: qrCode?.links?.[0]?.href || qrCode?.href,
-      expiresAt: qrCode?.expiration_date || new Date(Date.now() + 3600000).toISOString(),
+      chargeId: pgOrder.id,
+      qrCodeText: qrCodeText,
+      qrCodeLink: qrCodeLink,
+      expiresAt: expiresAt,
     });
   } catch (error) {
     console.error("❌ Erro PagSeguro:", error.response?.data || error.message);
@@ -467,6 +555,7 @@ const getPixQrCode = async (req, res) => {
     const { chargeId } = req.params;
     const userId = req.user?.id;
 
+    console.log("🚀 DEBUG: getPixQrCode CALLED");
     console.log("🔍 getPixQrCode - Iniciando busca:", { chargeId, userId });
 
     if (!chargeId) {
@@ -490,10 +579,67 @@ const getPixQrCode = async (req, res) => {
       return res.status(404).json({ error: "Pedido não encontrado" });
     }
 
+    // VERIFICAÇÃO NO BANCO DE DADOS PRIMEIRO
+    if (order.pixQrCodeText) {
+        console.log("✅ getPixQrCode - QR Code retornado do banco de dados");
+        return res.json({
+            success: true,
+            orderId: order._id,
+            chargeId: order.pgChargeId,
+            status: order.status,
+            qrCodeText: order.pixQrCodeText,
+            qrCodeLink: order.pixQrCodeLink,
+            expiresAt: order.pixExpiration || new Date(Date.now() + 3600000).toISOString(),
+            total: order.total
+        });
+    }
+
     // Buscar informações atualizadas da cobrança no PagSeguro
     try {
-      console.log("🔍 getPixQrCode - Consultando PagSeguro:", `/orders/${chargeId}`);
-      const { data } = await pagseguroApi.get(`/orders/${chargeId}`);
+      let data;
+      
+      console.log("🚀 DEBUG: Starting Smart Routing Logic");
+      console.log(`🚀 DEBUG: chargeId prefix: ${chargeId.substring(0, 5)}`);
+
+      // Estratégia 1: Tentar buscar pelo ID direto (Smart Routing)
+      try {
+        if (chargeId.startsWith('ORDE_')) {
+            console.log("🔍 getPixQrCode - ID de Ordem detectado, consultando /orders");
+            const response = await pagseguroApi.get(`/orders/${chargeId}`);
+            data = response.data;
+            console.log("✅ getPixQrCode - Sucesso em /orders");
+        } else if (chargeId.startsWith('CHAR_')) {
+            console.log("🔍 getPixQrCode - ID de Charge detectado, consultando /charges");
+            const response = await pagseguroApi.get(`/charges/${chargeId}`);
+            data = response.data;
+            console.log("✅ getPixQrCode - Sucesso em /charges");
+        } else {
+            // Se não tiver prefixo conhecido, tenta orders primeiro (padrão)
+            console.log("🔍 getPixQrCode - ID sem prefixo conhecido, tentando /orders");
+            const response = await pagseguroApi.get(`/orders/${chargeId}`);
+            data = response.data;
+            console.log("✅ getPixQrCode - Sucesso em /orders (default)");
+        }
+      } catch (directError) {
+        console.log("⚠️ Falha na busca direta:", directError.message);
+        if (directError.response) {
+            console.log("⚠️ Detalhes do erro direto:", JSON.stringify(directError.response.data, null, 2));
+        }
+        
+        // Estratégia 2: Fallback para busca por reference_id
+        const referenceId = order._id.toString();
+        console.log("🔄 getPixQrCode - Tentando fallback por reference_id:", referenceId);
+        
+        const response = await pagseguroApi.get(`/orders?reference_id=${referenceId}`);
+        
+        if (response.data && response.data.orders && response.data.orders.length > 0) {
+            data = response.data.orders[0];
+            console.log("✅ getPixQrCode - Ordem encontrada via reference_id");
+        } else {
+            console.log("❌ getPixQrCode - Fallback falhou: Nenhuma ordem encontrada com este reference_id");
+            throw new Error("Ordem não encontrada nem via ID direto nem via reference_id");
+        }
+      }
       
       console.log("📊 getPixQrCode - Resposta PagSeguro:", { 
         hasData: !!data, 
@@ -501,7 +647,7 @@ const getPixQrCode = async (req, res) => {
         hasPix: !!data?.pix,
         hasQrCodes: !!data?.qr_codes?.length,
         dataKeys: data ? Object.keys(data) : [],
-        fullData: JSON.stringify(data, null, 2)
+        // fullData: JSON.stringify(data, null, 2) // Comentado para não poluir demais, descomentar se necessário
       });
       
       if (!data) {
@@ -605,7 +751,7 @@ const getPixQrCode = async (req, res) => {
       return res.json(response);
 
     } catch (apiError) {
-      console.error("❌ getPixQrCode - Erro ao consultar PagSeguro:", {
+      console.error("❌ getPixQrCode - Erro ao consultar PagSeguro (CATCH EXTERNO):", {
         status: apiError.response?.status,
         data: apiError.response?.data,
         message: apiError.message
