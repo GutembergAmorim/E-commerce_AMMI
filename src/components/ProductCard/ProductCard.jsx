@@ -24,12 +24,12 @@ const ProductCard = ({ product }) => {
             />
             
             {/* Badges */}
-            {isNew && (
+            {/* {isNew && (
               <span className="product-badge badge-new">NOVO</span>
             )}
             {oldPrice && (
               <span className="product-badge badge-sale">OFERTA</span>
-            )}
+            )} */}
 
             {/* Overlay com Ações (opcional, aparece no hover) */}
             <div className="product-overlay">

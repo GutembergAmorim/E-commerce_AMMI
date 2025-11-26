@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Clock, CheckCircle, XCircle, Truck, Package } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Truck, Package, QrCode, Copy, CreditCard, MapPin, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
+import { useAuth } from '../../Context/AuthContext';
 
 const OrderStatus = () => {
   const { orderId } = useParams();
+  const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pixData, setPixData] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchOrder();
     const interval = setInterval(fetchOrder, 30000); // Atualiza a cada 30 segundos
     return () => clearInterval(interval);
   }, [orderId]);
+
+  useEffect(() => {
+    if (order && order.paymentMethod === 'PIX' && order.status === 'Pendente' && order.pgChargeId) {
+      fetchPixData();
+    }
+  }, [order]);
 
   const fetchOrder = async () => {
     try {
@@ -23,6 +33,32 @@ const OrderStatus = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchPixData = async () => {
+    try {
+      const response = await api.get(`/payment/pix/${order.pgChargeId}`);
+      setPixData(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar QR Code PIX:', error);
+    }
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Erro ao copiar:', error);
+    }
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
   };
 
   const getStatusIcon = (status) => {
@@ -108,6 +144,73 @@ const OrderStatus = () => {
             </p>
           </div>
 
+          {/* PIX Payment Section */}
+          {order.paymentMethod === 'PIX' && order.status === 'Pendente' && pixData && (
+            <div className="card shadow-sm mb-4 border-primary">
+              <div className="card-header bg-primary text-white">
+                <h5 className="mb-0 d-flex align-items-center">
+                  <QrCode className="me-2" size={20} />
+                  Pagamento via PIX
+                </h5>
+              </div>
+              <div className="card-body">
+                <div className="row align-items-center">
+                  <div className="col-md-5 text-center mb-3 mb-md-0">
+                    {pixData.qrCodeLink ? (
+                      <img 
+                        src={pixData.qrCodeLink} 
+                        alt="QR Code PIX"
+                        className="img-fluid rounded border"
+                        style={{ maxWidth: '200px' }}
+                      />
+                    ) : (
+                      <div className="alert alert-warning">
+                        QR Code indisponível
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-md-7">
+                    <h6 className="mb-3">Como pagar:</h6>
+                    <ol className="small text-muted mb-4">
+                      <li>Abra o app do seu banco</li>
+                      <li>Escolha a opção PIX &gt; Ler QR Code</li>
+                      <li>Escaneie o código ao lado ou copie o código abaixo</li>
+                    </ol>
+                    
+                    {pixData.qrCodeText && (
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold">Código PIX Copia e Cola:</label>
+                        <div className="input-group">
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            value={pixData.qrCodeText}
+                            readOnly
+                          />
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            type="button"
+                            onClick={() => copyToClipboard(pixData.qrCodeText)}
+                          >
+                            {copied ? <CheckCircle size={16} /> : <Copy size={16} />}
+                          </button>
+                        </div>
+                        {copied && <small className="text-success">Copiado!</small>}
+                      </div>
+                    )}
+                    
+                    <div className="alert alert-info py-2 mb-0">
+                      <small>
+                        <Clock size={14} className="me-1" />
+                        O pagamento será confirmado automaticamente.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Timeline do Status */}
           <div className="card shadow-sm mb-4">
             <div className="card-header bg-light">
@@ -141,9 +244,69 @@ const OrderStatus = () => {
             </div>
           </div>
 
-          {/* Informações Rápidas */}
+          {/* Informações Detalhadas */}
           <div className="row">
-            <div className="col-md-6">
+            {/* Endereço */}
+            <div className="col-md-6 mb-4">
+              <div className="card shadow-sm h-100">
+                <div className="card-header bg-light">
+                  <h6 className="mb-0 d-flex align-items-center">
+                    <MapPin size={18} className="me-2 text-primary" />
+                    Endereço de Entrega
+                  </h6>
+                </div>
+                <div className="card-body">
+                  <address className="mb-0 small">
+                    <strong>{user?.name}</strong><br />
+                    {order.shippingAddress.address}, {order.shippingAddress.number}<br />
+                    {order.shippingAddress.complement && (
+                      <>Complemento: {order.shippingAddress.complement}<br /></>
+                    )}
+                    {order.shippingAddress.neighborhood}<br />
+                    {order.shippingAddress.city} - {order.shippingAddress.state}<br />
+                    CEP: {order.shippingAddress.postalCode}
+                  </address>
+                </div>
+              </div>
+            </div>
+
+            {/* Pagamento */}
+            <div className="col-md-6 mb-4">
+              <div className="card shadow-sm h-100">
+                <div className="card-header bg-light">
+                  <h6 className="mb-0 d-flex align-items-center">
+                    <CreditCard size={18} className="me-2 text-success" />
+                    Resumo Financeiro
+                  </h6>
+                </div>
+                <div className="card-body">
+                  <ul className="list-unstyled mb-0 small">
+                    <li className="d-flex justify-content-between mb-2">
+                      <span>Subtotal:</span>
+                      <span>{formatPrice(order.itemsPrice)}</span>
+                    </li>
+                    <li className="d-flex justify-content-between mb-2">
+                      <span>Frete:</span>
+                      <span>{formatPrice(order.shippingPrice)}</span>
+                    </li>
+                    <li className="d-flex justify-content-between border-top pt-2 mt-2">
+                      <strong>Total:</strong>
+                      <strong className="text-primary">{formatPrice(order.total)}</strong>
+                    </li>
+                  </ul>
+                  <div className="mt-3 pt-2 border-top text-center">
+                    <span className="badge bg-light text-dark border">
+                      Método: {order.paymentMethod === 'CREDIT_CARD' ? 'Cartão de Crédito' : order.paymentMethod}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Informações Rápidas (Itens e Previsão) */}
+          <div className="row">
+            <div className="col-md-6 mb-4">
               <div className="card shadow-sm">
                 <div className="card-body text-center">
                   <Package size={32} className="text-primary mb-2" />
@@ -152,7 +315,7 @@ const OrderStatus = () => {
                 </div>
               </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-6 mb-4">
               <div className="card shadow-sm">
                 <div className="card-body text-center">
                   <Truck size={32} className="text-success mb-2" />
@@ -164,7 +327,7 @@ const OrderStatus = () => {
           </div>
 
           {/* Ações */}
-          <div className="text-center mt-4">
+          <div className="text-center mt-2">
             <div className="d-flex gap-2 justify-content-center flex-wrap">
               <Link to={`/order-confirmation/${order._id}`} className="btn btn-primary">
                 Ver Detalhes Completos

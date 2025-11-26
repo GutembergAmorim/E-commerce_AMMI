@@ -49,6 +49,7 @@ function Checkout() {
     message: "",
     type: "",
   });
+  const [orderPlaced, setOrderPlaced] = useState(false); // Flag para evitar redirect
 
   // Validar se o formulário está completo
   const isFormValid = address.cep && address.numero;
@@ -184,12 +185,19 @@ function Checkout() {
 
       const { success, orderId, status, isPaid, message } = response.data;
 
+      console.log("💳 Resposta do pagamento:", { success, orderId, status, isPaid, message });
+
       if (isPaid) {
+        console.log("✅ Pagamento aprovado, redirecionando para:", `/order-confirmation/${orderId}`);
         showNotification("🎉 Pagamento aprovado com sucesso!", "success");
+        setOrderPlaced(true); // Evita redirect para carrinho vazio
         clearCart();
         navigate(`/order-confirmation/${orderId}`);
       } else {
+        console.log("⚠️ Pagamento não aprovado imediatamente, redirecionando para:", `/order-status/${orderId}`);
         showNotification(`Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`, "info");
+        setOrderPlaced(true); // Evita redirect para carrinho vazio
+        clearCart(); // Opcional: limpar carrinho se o pedido foi criado mas pendente
         navigate(`/order-status/${orderId}`);
       }
 
@@ -279,10 +287,13 @@ function Checkout() {
 
       if (isPaid) {
         showNotification("🎉 Pagamento aprovado com sucesso!", "success");
+        setOrderPlaced(true);
         clearCart();
         navigate(`/order-confirmation/${orderId}`);
       } else {
         showNotification(`Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`, "info");
+        setOrderPlaced(true);
+        clearCart();
         navigate(`/order-status/${orderId}`);
       }
       
@@ -318,12 +329,12 @@ function Checkout() {
 
   // Redirecionar se carrinho estiver vazio
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !orderPlaced) {
       navigate("/cart");
     }
-  }, [cartItems, navigate]);
+  }, [cartItems, navigate, orderPlaced]);
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !orderPlaced) {
     return (
       <div className="container text-center py-5">
         <h1 className="mb-4">Seu carrinho está vazio</h1>
@@ -415,7 +426,7 @@ function Checkout() {
               <>
                 {pix.text ? (
                   <div className="mt-4">
-                    <p className="text-center fw-bold mb-3">Pague via PIX</p>
+                  <p className="text-center fw-bold mb-3">Pague via PIX</p>
                     <div className="mb-3">
                       <textarea 
                         className="form-control" 

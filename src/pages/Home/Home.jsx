@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import "./style.css";
-import { useProducts } from "../../hooks/useProducts"; // Assumindo que você criará este hook
+import { useProducts } from "../../hooks/useProducts";
 import { Link } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
+
+// Importação das imagens das clientes
+import naylaneImg from "../../assets/Naylane.png";
+import brunaImg from "../../assets/BrunaAlmeida.png";
+import claudiaImg from "../../assets/Claudia.png";
+import ivinaImg from "../../assets/IvinaGasp.png";
+import nayaraImg from "../../assets/Nayara.png";
 
 function Home() {
   const { products, loading, error } = useProducts();
@@ -123,43 +130,8 @@ function Home() {
       {/* Seção de Produtos com Filtro */}
       <section className="products-section-grid ">
         <div className="container">
-          <h2 className="display-5 fw-bold text-center mb-4">Destaques da Coleção</h2>
+          <h2 className="display-5 fw-bold text-center mb-4 font-pacifico">Destaques da Coleção</h2>
           <div className="row">
-            {/* --- Sidebar de Categorias --- */}
-            {/* <aside className="col-lg-3">
-              <div className="category-sidebar">
-                <h3 className="sidebar-title">Categorias</h3>
-                {loading ? (
-                  <p>Carregando...</p>
-                ) : (
-                  <ul className="list-unstyled">
-                    <li>
-                      <button
-                        className={`category-link ${
-                          selectedCategory === null ? "active" : ""
-                        }`}
-                        onClick={() => setSelectedCategory(null)}
-                      >
-                        Todos os Produtos
-                      </button>
-                    </li>
-                    {categories.map((category) => (
-                      <li key={category._id}>
-                        <button
-                          className={`category-link ${
-                            selectedCategory === category._id ? "active" : ""
-                          }`}
-                          onClick={() => setSelectedCategory(category._id)}
-                        >
-                          {category.name}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </aside> */}
-
             {/* --- Grelha de Produtos --- */}
             <main className="col-lg-12">
               {loading ? (
@@ -188,45 +160,45 @@ function Home() {
       {/* Seção de Depoimentos de Clientes */}
       <section className="reviews-section">
         <div className="container">
-          <h2 className="display-5 fw-bold text-center mb-5">Elas Usam AMMI</h2>
+          <h2 className="display-5 fw-bold text-center mb-5 font-pacifico">Elas Usam AMMI</h2>
           
           <div className="reviews-scroll-container">
             {/* Mock Data de Reviews */}
             {[
               {
                 id: 1,
-                name: "Julia Martins",
-                handle: "@julia.mfit",
-                text: "Simplesmente apaixonada! O tecido é incrível e não fica transparente.",
-                image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=400&q=80"
+                name: "Naylane",
+                handle: "@naylanea",
+                text: "Esse look 🤌.",
+                image: naylaneImg
               },
               {
                 id: 2,
-                name: "Carla Souza",
-                handle: "@carlinha_treino",
-                text: "Melhor legging que já comprei. Veste super bem!",
-                image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&q=80"
+                name: "Bruna Almeida",
+                handle: "@bruna_almeida",
+                text: "@ammi.fitwear",
+                image: brunaImg
               },
               {
                 id: 3,
-                name: "Beatriz Lima",
-                handle: "@bia.lifestyle",
-                text: "Entrega super rápida e o capricho na embalagem é tudo.",
-                image: "https://images.unsplash.com/photo-1595078475328-1ab05d0a6a0e?auto=format&fit=crop&w=400&q=80"
+                name: "Claudia",
+                handle: "@claudiaflaviio",
+                text: "@ammi.fitwear",
+                image: claudiaImg
               },
               {
                 id: 4,
-                name: "Fernanda Costa",
-                handle: "@nanda.yoga",
-                text: "Uso para yoga e musculação, perfeito para ambos.",
-                image: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=400&q=80"
+                name: "Ivina",
+                handle: "@ivinagasp",
+                text: "Pré treino hoje sendo meu look novo @ammi.fitwear 💚",
+                image: ivinaImg
               },
               {
                 id: 5,
-                name: "Mariana Alves",
-                handle: "@mari.alves",
-                text: "As cores são ainda mais lindas pessoalmente.",
-                image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=400&q=80"
+                name: "Nayara",
+                handle: "@nayaramakedesign",
+                text: "Melhor pré treino para toda mulher é um lookinho novo! 😍",
+                image: nayaraImg
               }
             ].map((review) => (
               <div key={review.id} className="review-card">

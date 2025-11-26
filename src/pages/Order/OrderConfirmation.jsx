@@ -277,7 +277,7 @@ const OrderConfirmation = () => {
           {/* Ações */}
           <div className="text-center mt-5">
             <div className="d-flex gap-2 justify-content-center flex-wrap">
-              <Link to="/orders" className="btn btn-outline-primary">
+              <Link to="/profile/orders" className="btn btn-outline-primary">
                 Ver Todos os Pedidos
               </Link>
               <Link to="/" className="btn btn-primary">

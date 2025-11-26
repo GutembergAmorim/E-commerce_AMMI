@@ -70,7 +70,7 @@ function Collections() {
   return (
     <div className="container py-5">
       <div className="text-center mb-5">
-        <h1 className="display-4 fw-bold">Nossa Coleção</h1>
+        <h1 className="display-4 fw-bold font-pacifico">Nossa Coleção</h1>
         <p className="lead text-muted">
           Explore nossos produtos e encontre o look perfeito para seu treino.
         </p>
