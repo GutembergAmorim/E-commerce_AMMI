@@ -5,8 +5,8 @@ import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-// Componentes separados
-import CustomerInfo from "../Customerinfo";
+
+import CustomerInfo from "../CustomerInfo";
 import AddressForm from "../AddressForm";
 import OrderSummary from "../OrderSummary";
 import Notification from "../Notification";

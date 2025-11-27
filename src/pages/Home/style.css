@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap");
+
 .hero-gradient{
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
 }
@@ -147,8 +149,8 @@
 
 /* --- Estilos Adaptados para a Secção Coleção Raízes --- */
 
-/* Importação da fonte (se ainda não tiveres no teu projeto) */
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap");
+
+
 
 /* Variáveis de Cor da Coleção */
 :root {
