@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import logo from "../../assets/logo.png";
 import { Link, useLocation } from "react-router-dom";
 import Offcanvas from "react-bootstrap/Offcanvas";
@@ -10,8 +10,24 @@ function Header() {
   const { cartItems } = useCart();
   const { isAuthenticated, user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const dropdownRef = useRef(null);
+
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Detectar scroll para mudar o estilo do header
   useEffect(() => {
@@ -110,20 +126,20 @@ function Header() {
 
               {/* Login / Perfil */}
               {isAuthenticated ? (
-                <div className="dropdown">
+                <div className="dropdown" ref={dropdownRef}>
                   <button 
                     className={`btn btn-link text-decoration-none dropdown-toggle ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`} 
                     type="button" 
-                    data-bs-toggle="dropdown" 
-                    aria-expanded="false"
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    aria-expanded={showUserMenu}
                   >
                     <i className="fas fa-user me-1"></i>
                     <span className="d-none d-sm-inline">{user?.name?.split(' ')[0]}</span>
                   </button>
-                  <ul className="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li><Link className="dropdown-item" to="/profile">Meus Dados</Link></li>
+                  <ul className={`dropdown-menu dropdown-menu-end shadow-sm ${showUserMenu ? 'show' : ''}`} data-bs-popper={showUserMenu ? "static" : null}>
+                    <li><Link className="dropdown-item" to="/profile" onClick={() => setShowUserMenu(false)}>Meus Dados</Link></li>
                     <li><hr className="dropdown-divider" /></li>
-                    <li><button className="dropdown-item text-danger" onClick={logout}>Sair</button></li>
+                    <li><button className="dropdown-item text-danger" onClick={() => { logout(); setShowUserMenu(false); }}>Sair</button></li>
                   </ul>
                 </div>
               ) : (

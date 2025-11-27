@@ -260,7 +260,7 @@
 /* Ajustes de responsividade */
 @media (max-width: 767px) {
   .colecao-raizes-hero {
-    padding: 3rem 1rem;
+    padding: 9rem 1rem 3rem 1rem; /* Aumentado padding-top para compensar o header fixo */
     text-align: center;
     min-height: auto;
     overflow: hidden;
