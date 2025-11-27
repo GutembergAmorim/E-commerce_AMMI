@@ -62,7 +62,7 @@ const Cart = () => {
       <main className="container py-4" style={{ backgroundColor: "#f8f9fa" }}>
         <div className="row g-4">
           {/* Itens do Carrinho */}
-          <div className="col-lg-7">
+          <div className="col-lg-8">
             <div className="card shadow-sm p-4 mb-4">
               <h2 className="h4 fw-bold mb-4">
                 Meu Carrinho ({totalItems} {totalItems === 1 ? "item" : "itens"}
@@ -75,40 +75,57 @@ const Cart = () => {
                 cartItems.map((item) => (
                   <div
                     key={`${item.id}-${item.color}-${item.size}`}
-                    className="d-flex flex-column flex-sm-row border-bottom pb-4 mb-4 position-relative"
+                    className="d-flex flex-column flex-sm-row border-bottom pb-4 mb-4 position-relative align-items-center"
                   >
-                    <div className="flex-shrink-0 mb-3 mb-sm-0 me-sm-4">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="rounded"
-                        style={{
-                          width: "120px",
-                          height: "120px",
-                          objectFit: "contain",
-                        }}
-                      />
+                    {/* Lado Esquerdo: Imagem + Informações */}
+                    <div className="d-flex flex-grow-1 align-items-center w-100">
+                        <div className="flex-shrink-0 me-3">
+                        <img
+                            src={item.image}
+                            alt={item.name}
+                            className="rounded"
+                            style={{
+                            width: "100px",
+                            height: "100px",
+                            objectFit: "cover",
+                            }}
+                        />
+                        </div>
+                        <div className="flex-grow-1">
+                            <h3 className="h6 fw-bold mb-1">{item.name}</h3>
+                            <p className="small text-muted mb-1">
+                                Tamanho: {item.size} | Cor: {item.color}
+                            </p>
+                            <div className="d-flex align-items-center gap-2">
+                                {item.originalPrice && (
+                                    <span className="text-muted text-decoration-line-through small">
+                                    {formatCurrency(item.originalPrice)}
+                                    </span>
+                                )}
+                                <span className="fw-bold text-primary">
+                                    {formatCurrency(item.price)}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex-grow-1">
-                      <div className="d-flex justify-content-between">
-                        <h3 className="h6 fw-medium">{item.name}</h3>
-                        <button
-                          onClick={() =>
-                            handleRemoveItem(item.id, item.color, item.size)
-                          }
-                          className="btn-close d-none d-sm-block"
-                          aria-label="Remover item"
-                        ></button>
-                      </div>
-                      <p className="small text-muted mb-1">
-                        Tamanho: {item.size}
-                      </p>
-                      <p className="small text-muted mb-3">Cor: {item.color}</p>
 
-                      <div className="d-flex flex-wrap align-items-center justify-content-between">
+                    {/* Lado Direito: Ações (Lixeira e Quantidade) */}
+                    <div className="d-flex flex-column align-items-end justify-content-between mt-3 mt-sm-0" style={{ minHeight: '100px' }}>
+                        {/* Botão de Excluir (Lixeira Vermelha) */}
+                        <button
+                            onClick={() =>
+                                handleRemoveItem(item.id, item.color, item.size)
+                            }
+                            className="btn btn-link text-danger p-0 mb-auto"
+                            title="Remover item"
+                        >
+                            <i className="fas fa-trash-alt fs-5"></i>
+                        </button>
+
+                        {/* Controles de Quantidade */}
                         <div
-                          className="input-group mb-2 mb-sm-0"
-                          style={{ maxWidth: "120px" }}
+                          className="input-group input-group-sm"
+                          style={{ width: "100px" }}
                         >
                           <button
                             className="btn btn-outline-secondary"
@@ -145,64 +162,13 @@ const Cart = () => {
                             +
                           </button>
                         </div>
-                        <div className="text-end">
-                          {item.originalPrice && (
-                            <p className="text-muted text-decoration-line-through small">
-                              {formatCurrency(item.originalPrice)}
-                            </p>
-                          )}
-                          <p className="text-primary fw-bold fs-5 mb-0">
-                            {formatCurrency(item.price)}
-                          </p>
-                          {item.price && (
-                            <p className="text-success small">
-                              Economize{" "}
-                              {formatCurrency(item.originalPrice - item.price)}
-                            </p>
-                          )}
-                          {item.installments && (
-                            <p className="text-success small">
-                              {item.installments}
-                            </p>
-                          )}
-                          {item.shippingNote && (
-                            <p className="text-success small">
-                              {item.shippingNote}
-                            </p>
-                          )}
-                        </div>
-                      </div>
                     </div>
-                    <button
-                      onClick={() =>
-                        handleRemoveItem(item.id, item.color, item.size)
-                      }
-                      className="btn-close d-sm-none position-absolute top-0 end-0 mt-2 me-2"
-                      aria-label="Remover item"
-                    ></button>
                   </div>
                 ))
               )}
             </div>
 
-            {/* Cupom e Frete */}
-            <div className="card shadow-sm p-4 mb-4">
-              <h3 className="h5 fw-bold mb-3">Cupom de desconto</h3>
-              <div className="input-group realative">
-                <input
-                  id="cupom"
-                  type="text"
-                  className="form-control"
-                  placeholder="Digite seu cupom"
-                />
-
-                <button className="btn btn-primary" type="button">
-                  Aplicar
-                </button>
-              </div>
-            </div>
-
-            <div className="card shadow-sm p-4">
+            {/* <div className="card shadow-sm p-4">
               <h3 className="h5 fw-bold mb-3">Calcular frete e prazo</h3>
               <div className="input-group mb-2">
                 <input
@@ -220,11 +186,11 @@ const Cart = () => {
               <p className="small text-muted">
                 Frete grátis para compras acima de R$ 199,00
               </p>
-            </div>
+            </div> */}
           </div>
 
           {/* Resumo do Pedido */}
-          <div className="col-lg-5">
+          <div className="col-lg-4">
             <div
               className="card shadow-sm p-4 position-sticky"
               style={{ top: "1rem" }}
@@ -257,6 +223,22 @@ const Cart = () => {
                 </div>
               </div>
 
+               {/* Cupom de Desconto (Movido para cá) */}
+               <div className="mb-4">
+                <label htmlFor="cupom" className="form-label small fw-bold text-muted">Cupom de desconto</label>
+                <div className="input-group">
+                    <input
+                    id="cupom"
+                    type="text"
+                    className="form-control"
+                    placeholder="Digite seu cupom"
+                    />
+                    <button className="btn btn-outline-primary" type="button">
+                    Aplicar
+                    </button>
+                </div>
+               </div>
+
               <button
                 className="btn btn-primary w-100 fw-bold py-2 mb-3"
                 onClick={handleCheckout}
@@ -264,15 +246,6 @@ const Cart = () => {
               >
               Finalizar a compra
               </button>
-
-              {/* <div className="text-center small text-muted mb-3">
-                <p className="mb-0">ou</p>
-              </div>
-
-              <button className="btn btn-outline-secondary w-100 fw-bold py-2 mb-4 d-flex align-items-center justify-content-center">
-                <i className="fab fa-google-pay me-2 fs-4"></i>
-                <span>Pagar com Google Pay</span>
-              </button> */}
 
               <div className="border-top pt-4">
                 <h3 className="h6 fw-bold mb-2">Formas de pagamento</h3>

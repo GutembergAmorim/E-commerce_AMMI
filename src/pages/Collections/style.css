@@ -14,3 +14,114 @@
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
+
+/* Sidebar Styles */
+.filter-sidebar {
+  position: sticky;
+  top: 20px;
+}
+
+/* Dual Range Slider Styles */
+.price-slider-container {
+  position: relative;
+  width: 100%;
+}
+
+input[type=range] {
+  -webkit-appearance: none; 
+  appearance: none;
+  pointer-events: none;
+  background: transparent; /* Remove default track */
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto; /* Re-enable pointer events for thumb */
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #e83e8c;
+  cursor: pointer;
+  margin-top: -6px; /* Center thumb on track */
+  position: relative;
+  z-index: 10;
+}
+
+input[type=range]::-moz-range-thumb {
+  pointer-events: auto;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #e83e8c;
+  cursor: pointer;
+  border: none;
+  position: relative;
+  z-index: 10;
+}
+
+/* Create a custom track background */
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: #dee2e6;
+  border-radius: 2px;
+}
+
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: #dee2e6;
+  border-radius: 2px;
+}
+
+/* Adjust the second slider to not show the track again, or overlap perfectly */
+/* Actually, for dual slider with standard inputs, we need to make the track transparent on the inputs and put a fake track behind them, OR use a specific trick. 
+   The simplest way is to make the inputs absolute and transparent, and have a div behind them acting as the track.
+*/
+
+input[type=range] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 4px; /* Match track height */
+  outline: none;
+}
+
+/* We need to override the track style for the inputs to be transparent so we can see the one behind, 
+   BUT we want the thumbs to be visible. 
+*/
+
+input[type=range]::-webkit-slider-runnable-track {
+  background: transparent; 
+}
+
+input[type=range]::-moz-range-track {
+  background: transparent;
+}
+
+/* Add a background track div in JSX or here? 
+   It's easier to add a background div in JSX. 
+   I will add a .slider-track class in JSX.
+*/
+.slider-track {
+  width: 100%;
+  height: 4px;
+  background: #dee2e6;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  z-index: 0;
+}
+
+.slider-track-active {
+  height: 4px;
+  background: #e83e8c;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 0;
+}

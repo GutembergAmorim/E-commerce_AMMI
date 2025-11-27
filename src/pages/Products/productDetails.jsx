@@ -100,69 +100,65 @@ const ProductDetails = () => {
 
   return (
     <div className="container py-5">
-      <div className="row g-4">
+      <div className="row g-5">
         {/* Product Images Section */}
-        <div className="col-md-6">
-          {/* Main Image */}
-          <div
-            className="bg-white rounded shadow-sm overflow-hidden mb-4"
-            style={{ height: "600px" }}
-          >
-            <img
-              id="mainImage"
-              src={selectedImage || "https://via.placeholder.com/600x600/cccccc/ffffff?text=Imagem+Principal"} // selectedImage já será a URL completa
-              alt={product.name || "Imagem Principal do Produto"}
-              className="p-5 img-fluid h-100 w-100"
-              style={{ objectFit: "cover" }}
-            />
-          </div>
+        <div className="col-lg-7">
+          <div className="d-flex gap-3">
+             {/* Thumbnails (Vertical) */}
+             <div className="d-flex flex-column gap-2" style={{ width: "100px" }}>
+                {productImages.length > 0
+                  ? productImages.map((imgUrl, index) => (
+                      <div
+                        key={index}
+                        className={`cursor-pointer rounded border ${
+                          selectedImage === imgUrl
+                            ? "border-dark border-2"
+                            : "border-light"
+                        } overflow-hidden`}
+                        onClick={() => handleThumbnailClick(imgUrl)}
+                        style={{ height: "100px", width: "100px" }}
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`Miniatura ${index + 1}`}
+                          className="w-100 h-100"
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
+                    ))
+                  : Array.from({ length: 4 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="bg-light rounded d-flex align-items-center justify-content-center"
+                        style={{ height: "100px", width: "100px" }}
+                      >
+                        <span className="small text-muted">Img</span>
+                      </div>
+                    ))}
+             </div>
 
-          {/* Thumbnails */}
-          <div className="row row-cols-4 g-2">
-            {productImages.length > 0
-              ? productImages.map((imgUrl, index) => (
-                  <div className="col" key={index}>
-                    <div
-                      className={`thumbnail cursor-pointer rounded border ${
-                        selectedImage === imgUrl
-                          ? "border-primary border-2"
-                          : "border-secondary"
-                      } overflow-hidden`}
-                      onClick={() => handleThumbnailClick(imgUrl)}
-                      style={{ height: "6rem" }}
-                    >
-                      <img
-                        src={imgUrl} // imgUrl já será a URL completa vinda da API
-                        alt={`Miniatura ${index + 1} de ${product.name}`}
-                        className="w-100 h-100"
-                        style={{ objectFit: "cover" }}
-                      />
-                    </div>
-                  </div>
-                ))
-              : Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="thumbnail bg-light rounded d-flex align-items-center justify-content-center"
-                    style={{ height: "6rem" }}
-                  >
-                    <span className="small text-muted">
-                      Thumb {index + 1}
-                    </span>
-                  </div>
-                ))}
+             {/* Main Image */}
+             <div className="flex-grow-1 bg-white rounded shadow-sm overflow-hidden" style={{ height: "500px" }}>
+                <img
+                  id="mainImage"
+                  src={selectedImage || "https://via.placeholder.com/600x600/cccccc/ffffff?text=Imagem+Principal"}
+                  alt={product.name}
+                  className="w-100 h-100"
+                  style={{ objectFit: "cover" }}
+                />
+             </div>
           </div>
         </div>
 
         {/* Product Details Section */}
-        <div className="col-md-6">
-          <div className="bg-white rounded shadow-sm p-4">
-            {/* Product Title */}
-            <h1 className="h2 fw-bold text-dark mb-2">
+        <div className="col-lg-5">
+          <div className="ps-lg-4">
+            {/* Product Title (Centered) */}
+            <h1 className="h2 fw-bold text-dark mb-4 text-center">
               {product.name || "Nome do Produto"}
             </h1>
 
-            {/* Price */}
+            {/* Price (Left Aligned) */}
             <div className="mb-4">
               <span className="display-6 fw-bold text-dark">
                 R$ {product.price?.toFixed(2).replace(".", ",") || "0,00"}
@@ -174,17 +170,16 @@ const ProductDetails = () => {
               )}
             </div>
 
-            {/* Description */}
+            {/* Description (Short) */}
             <div className="mb-4">
-              <h2 className="h5 fw-semibold text-dark mb-2">Descrição</h2>
               <p className="text-muted">
-                {product.description || "Descrição do produto não disponível."}
+                {product.description || "lorem ipsum dolor sit amet consectetur adipiscing elit lorem ipsum dolor sit amet consectetur adipiscing elit lorem ipsum dolor sit amet consectetur adipiscing elit lorem ipsum dolor sit amet consectetur adipiscing elit"}
               </p>
             </div>
 
             {/* Colors */}
             <div className="mb-4">
-              <h2 className="h5 fw-semibold text-dark mb-3">Cores</h2>
+              <h6 className="fw-bold text-dark mb-2">Cores</h6>
               <div className="d-flex gap-2">
                 {productColors.map((opt) => (
                   <button
@@ -209,17 +204,18 @@ const ProductDetails = () => {
 
             {/* Sizes */}
             <div className="mb-4">
-              <h2 className="h5 fw-semibold text-dark mb-3">Tamanhos</h2>
+              <h6 className="fw-bold text-dark mb-2">Tamanhos</h6>
               <div className="d-flex flex-wrap gap-2">
                 {productSizes.map((sizeOption) => (
                   <button
                     key={sizeOption}
-                    className={`btn btn-outline-secondary ${
-                      size === sizeOption ? "bg-dark text-white" : ""
+                    className={`btn btn-sm ${
+                      size === sizeOption ? "btn-dark" : "btn-outline-secondary"
                     }`}
                     onClick={() => handleSizeChange(sizeOption)}
                     title={sizeOption}
                     type="button"
+                    style={{ minWidth: "40px" }}
                   >
                     {sizeOption}
                   </button>
@@ -227,34 +223,19 @@ const ProductDetails = () => {
               </div>
             </div>
 
-            {/* Shipping Calculator */}
-            <div className="mb-4">
-              <h2 className="h5 fw-semibold text-dark mb-3">Calcular Frete</h2>
-              <div className="input-group">
-                <input
-                  type="text"
-                  placeholder="Digite seu CEP"
-                  className="form-control"
-                />
-                <button className="btn btn-primary" type="button">
-                  Calcular
-                </button>
-              </div>
-              <div className="mt-2 small text-muted">
-                <p>
-                  <i className="fas fa-truck me-2"></i> Frete grátis para
-                  compras acima de R$ 150,00
+            {/* Shipping Info (Static) */}
+            <div className="mb-4 p-3 bg-light rounded">
+                <p className="mb-1 fw-medium">
+                  <i className="fas fa-truck me-2"></i> Frete fixo para Fortaleza: <span className="text-success fw-bold">R$ 15,00</span>
                 </p>
-                <p>
-                  <i className="fas fa-undo me-2"></i> Devolução grátis em até
-                  30 dias
+                <p className="mb-0 small text-muted">
+                  <i className="fas fa-undo me-2"></i> Devolução grátis em até 30 dias
                 </p>
-              </div>
             </div>
 
             {/* Add to Cart */}
-            <div className="d-flex flex-column flex-sm-row gap-2">
-              <div className="input-group" style={{ maxWidth: "110px" }}>
+            <div className="d-flex gap-3">
+              <div className="input-group" style={{ maxWidth: "120px" }}>
                 <button
                   className="btn btn-outline-secondary"
                   onClick={decrementQuantity}
@@ -265,7 +246,6 @@ const ProductDetails = () => {
                 <input
                   type="text"
                   value={quantity}
-                  id="quantity"
                   className="form-control text-center"
                   readOnly
                 />
@@ -278,96 +258,59 @@ const ProductDetails = () => {
                 </button>
               </div>
               <button
-                className="btn btn-primary btn-lg flex-grow-1"
+                className="btn btn-dark flex-grow-1 py-2 fw-bold"
                 onClick={addToCart}
                 type="button"
               >
-                <i className="fas fa-shopping-cart me-2"></i> Adicionar ao
-                Carrinho
+                ADICIONAR AO CARRINHO
               </button>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Product Info Tabs */}
-          <div className="bg-white rounded shadow-sm mt-4">
-            <ul
-              className="nav nav-tabs nav-fill mb-3"
-              id="productInfoTabs"
-              role="tablist"
-            >
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link active"
-                  id="description-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#description-content"
-                  type="button"
-                  role="tab"
-                  aria-controls="description-content"
-                  aria-selected="true"
-                >
-                  Descrição
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  id="specs-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#specs-content"
-                  type="button"
-                  role="tab"
-                  aria-controls="specs-content"
-                  aria-selected="false"
-                >
-                  Especificações
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  id="reviews-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#reviews-content"
-                  type="button"
-                  role="tab"
-                  aria-controls="reviews-content"
-                  aria-selected="false"
-                >
-                  Avaliações
-                </button>
-              </li>
-            </ul>
-          </div>
-          
-          <div className="tab-content p-3" id="productInfoTabsContent">
-            <div
-              className="tab-pane fade show active"
-              id="description-content"
-              role="tabpanel"
-              aria-labelledby="description-tab"
-            >
-              <p className="text-muted">
-                {product.description || "Informações detalhadas do produto."}
-              </p>
+      {/* Tabs Section (Description & Specs) */}
+      <div className="row mt-5">
+        <div className="col-12">
+            <div className="border-bottom mb-4">
+                <ul className="nav nav-tabs border-0 justify-content-center" id="productTabs" role="tablist">
+                    <li className="nav-item" role="presentation">
+                        <button 
+                            className="nav-link active border-0 fw-bold text-uppercase text-dark" 
+                            id="desc-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#desc-content" 
+                            type="button"
+                        >
+                            Descrição
+                        </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                        <button 
+                            className="nav-link border-0 fw-bold text-uppercase text-muted" 
+                            id="specs-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#specs-content" 
+                            type="button"
+                        >
+                            Especificações Técnicas
+                        </button>
+                    </li>
+                </ul>
             </div>
-            <div
-              className="tab-pane fade"
-              id="specs-content"
-              role="tabpanel"
-              aria-labelledby="specs-tab"
-            >
-              <p className="text-muted">Especificações do produto aqui...</p>
+            
+            <div className="tab-content" id="productTabsContent">
+                <div className="tab-pane fade show active text-center" id="desc-content" role="tabpanel">
+                    <p className="text-muted mx-auto" style={{ maxWidth: "800px" }}>
+                        {product.description || "Descrição detalhada do produto."}
+                    </p>
+                </div>
+                <div className="tab-pane fade text-center" id="specs-content" role="tabpanel">
+                    <p className="text-muted">
+                        Informações técnicas não disponíveis no momento.
+                    </p>
+                </div>
             </div>
-            <div
-              className="tab-pane fade"
-              id="reviews-content"
-              role="tabpanel"
-              aria-labelledby="reviews-tab"
-            >
-              <p className="text-muted">Avaliações dos clientes aqui...</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

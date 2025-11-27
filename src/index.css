@@ -164,3 +164,28 @@ body {
 .payment-icon-bg {
   background-color: rgba(0, 0, 0, 0.2) !important; /* Similar a bg-gray-800 sobre bg-dark */
 }
+
+/* Adicione no seu CSS global se necessário */
+.stock-movement-in {
+  background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.stock-movement-out {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.stock-movement-adjust {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+/* Espaçamento para o conteúdo não ficar atrás do header fixo */
+.content-spacer {
+  padding-top: 100px; /* Ajuste conforme a altura do seu header */
+}
+
+/* Ajuste para mobile se o header for menor */
+@media (max-width: 991px) {
+  .content-spacer {
+    padding-top: 90px;
+  }
+}

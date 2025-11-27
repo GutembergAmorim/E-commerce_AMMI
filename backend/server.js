@@ -1,3 +1,4 @@
+import "./src/config/env.js"; // Must be the first import
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -13,15 +14,10 @@ import productRoutes from "./src/routes/products.js";
 import uploadRoutes from "./src/routes/upload.js";
 import userRoutes from "./src/routes/users.js";
 import paymentRoutes from "./src/routes/payment.js";
+import orderRoutes from './src/routes/orderRoutes.js';
+import stockRoutes from './src/routes/stockRoutes.js';
 
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+// dotenv configured in ./src/config/env.js
 
 const app = express();
 
@@ -48,7 +44,28 @@ app.use(limiter);
 // CORS
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+      ];
+
+      // Add env origin without trailing slash if it exists
+      if (process.env.CORS_ORIGIN) {
+        allowedOrigins.push(process.env.CORS_ORIGIN.replace(/\/$/, ""));
+      }
+
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      // Check if origin is in allowed list OR is a Vercel preview/deployment
+      if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        callback(null, true);
+      } else {
+        console.log("Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -69,6 +86,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use('/api/orders', orderRoutes)
+app.use('/api/stock', stockRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {
