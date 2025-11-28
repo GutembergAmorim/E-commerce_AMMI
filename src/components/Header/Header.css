@@ -58,72 +58,13 @@
   bottom: 0;
   left: 0;
   background-color: currentColor;
-/* Header.css */
-
-.transition-all {
-  transition: all 0.3s ease-in-out;
-}
-
-/* Header Transparente (Estado inicial na Home) */
-.header-transparent {
-  background-color: transparent;
-  box-shadow: none;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-.header-transparent .nav-link-custom {
-  color: rgba(31, 30, 30, 0.9) !important;
-  font-weight: 500;
-}
-
-.header-transparent .nav-link-custom:hover {
-  color: #242323 !important;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
-/* Header Scrolled (Estado ao rolar ou em outras páginas) */
-.header-scrolled {
-  background-color: rgba(255, 255, 255, 0.85); /* Fundo branco translúcido */
-  backdrop-filter: blur(12px); /* Efeito de vidro */
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
-.header-scrolled .nav-link-custom {
-  color: #333 !important;
-  font-weight: 500;
-}
-
-.header-scrolled .nav-link-custom:hover {
-  color: #4f46e5 !important; /* Cor primária */
-}
-
-/* Links de Navegação */
-.nav-link-custom {
-  text-decoration: none;
-  position: relative;
-  padding: 0.5rem 0;
-  transition: color 0.3s ease;
-}
-
-/* Efeito de sublinhado animado */
-.nav-link-custom::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: 0;
-  left: 0;
-  background-color: currentColor;
   transition: width 0.3s ease;
 }
 
 .nav-link-custom:hover::after {
   width: 100%;
 }
+
 /* Ajustes para Mobile */
 @media (max-width: 991px) {
   .header-transparent {
