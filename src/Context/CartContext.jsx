@@ -22,6 +22,9 @@ export const CartProvider = ({ children }) => {
   // Utiliza a inicialização preguiçosa para ler o localStorage apenas uma vez
   const [cartItems, setCartItems] = useState(getInitialCart);
 
+  // Estado para animação do carrinho
+  const [animateCart, setAnimateCart] = useState(false);
+
   useEffect(() => {
     // Salva os itens do carrinho no localStorage sempre que cartItems mudar
     try {
@@ -77,10 +80,15 @@ export const CartProvider = ({ children }) => {
         return updatedItems;
       } else {
         // Adiciona o novo item
-
         return [...currentItems, newItem];
       }
     });
+
+    // Dispara a animação
+    setAnimateCart(true);
+    setTimeout(() => {
+      setAnimateCart(false);
+    }, 500); // Duração da animação
   };
 
   // funcao para limpar o carrinho
@@ -118,6 +126,7 @@ export const CartProvider = ({ children }) => {
         subtotal,
         discount,
         total, 
+        animateCart, // Expõe o estado da animação
       }}
     >
       {children}

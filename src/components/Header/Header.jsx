@@ -7,7 +7,7 @@ import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
 
 function Header() {
-  const { cartItems } = useCart();
+  const { cartItems, animateCart } = useCart();
   const { isAuthenticated, user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -115,7 +115,7 @@ function Header() {
             <div className="d-flex align-items-center gap-3">
               
               {/* Carrinho */}
-              <Link to="/cart" className={`btn-icon position-relative ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
+              <Link to="/cart" className={`btn-icon position-relative ${isHome && !scrolled ? 'text-dark' : 'text-dark'} ${animateCart ? 'cart-bump' : ''}`}>
                 <i className="fas fa-shopping-bag fs-5"></i>
                 {cartItems?.length > 0 && (
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
