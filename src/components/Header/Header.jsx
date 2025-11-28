@@ -100,7 +100,7 @@ function Header() {
             <div className="d-flex align-items-center gap-2">
               <Link to="/" onClick={handleMenuClose} className="d-flex align-items-center text-decoration-none">
                 <img className="img-logo" src={logo} alt="Logo AMMI Fitwear" style={{ maxHeight: '45px' }} />
-                <span className={`ms-2 fs-4 fw-bold font-pacifico ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
+                <span className={`ms-2 fs-4 fw-bold font-brand ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
                   AMMI Fitwear
                 </span>
               </Link>
@@ -166,7 +166,7 @@ function Header() {
       {/* Menu Offcanvas para Mobile */}
       <Offcanvas show={showMenu} onHide={handleMenuClose} placement="end">
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title className="font-pacifico text-custom-primary">AMMI Fitwear</Offcanvas.Title>
+          <Offcanvas.Title className="font-brand text-custom-primary">AMMI Fitwear</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <div className="d-flex flex-column h-100">

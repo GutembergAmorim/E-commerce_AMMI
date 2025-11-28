@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-/* Estilo para a fonte Pacifico no logo, se necessário além do Bootstrap */
-.font-pacifico {
-  font-family: 'Pacifico', cursive;
+/* Estilo para a fonte do logo */
+.font-brand {
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: -0.5px; /* Ajuste para ficar mais elegante */
 }
 
 /* Cor primária similar à do Tailwind (opcional, ou customize o Bootstrap via SASS) */

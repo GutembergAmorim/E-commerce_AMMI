@@ -14,7 +14,6 @@ import {
 
 const Register = () => {
   const [name, setName] = useState("");
-  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,7 +26,7 @@ const Register = () => {
     setError("");
     setSuccess("");
 
-    const result = await register({ name, cpf, email, password });
+    const result = await register({ name, email, password });
 
     if (result.success) {
       setSuccess("Cadastro realizado! Você será redirecionado para o login.");
@@ -64,18 +63,6 @@ const Register = () => {
                     placeholder="Nome Completo"
                   />
                   <label htmlFor="nameInput">Nome Completo</label>
-                </div>
-                <div className="form-floating mb-3">
-                  <input
-                    type="number"
-                    className="form-control"
-                    id="cpfInput"
-                    value={cpf}
-                    onChange={(e) => setCpf(e.target.value)}
-                    required
-                    placeholder="CPF"
-                  />
-                  <label htmlFor="cpfInput">CPF</label>
                 </div>
                 <div className="form-floating mb-3">
                   <input

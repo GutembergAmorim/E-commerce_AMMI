@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
 
+import "./Cart.css";
+
 const Cart = () => {
   const { cartItems, handleQuantityChange, handleRemoveItem, totalItems } =
     useCart();
@@ -63,70 +65,59 @@ const Cart = () => {
         <div className="row g-4">
           {/* Itens do Carrinho */}
           <div className="col-lg-8">
-            <div className="card shadow-sm p-4 mb-4">
-              <h2 className="h4 fw-bold mb-4">
-                Meu Carrinho ({totalItems} {totalItems === 1 ? "item" : "itens"}
-                )
+            <div className="card shadow-sm border-0 rounded-3 p-3 p-md-4 mb-4">
+              <h2 className="h5 fw-bold mb-4 font-brand">
+                Meu Carrinho ({totalItems} {totalItems === 1 ? "item" : "itens"})
               </h2>
 
               {cartItems.length === 0 ? (
-                <p>Seu carrinho está vazio.</p>
+                <div className="text-center py-5">
+                  <i className="fas fa-shopping-bag fs-1 text-muted mb-3"></i>
+                  <p className="text-muted">Seu carrinho está vazio.</p>
+                  <button onClick={() => navigate('/collections')} className="btn btn-dark rounded-pill px-4">
+                    Começar a comprar
+                  </button>
+                </div>
               ) : (
                 cartItems.map((item) => (
                   <div
                     key={`${item.id}-${item.color}-${item.size}`}
-                    className="d-flex flex-column flex-sm-row border-bottom pb-4 mb-4 position-relative align-items-center"
+                    className="cart-item-row d-flex border-bottom py-3 position-relative align-items-start"
                   >
-                    {/* Lado Esquerdo: Imagem + Informações */}
-                    <div className="d-flex flex-grow-1 align-items-center w-100">
-                        <div className="flex-shrink-0 me-3">
-                        <img
-                            src={item.image}
-                            alt={item.name}
-                            className="rounded"
-                            style={{
-                            width: "100px",
-                            height: "100px",
-                            objectFit: "cover",
-                            }}
-                        />
-                        </div>
-                        <div className="flex-grow-1">
-                            <h3 className="h6 fw-bold mb-1">{item.name}</h3>
-                            <p className="small text-muted mb-1">
-                                Tamanho: {item.size} | Cor: {item.color}
-                            </p>
-                            <div className="d-flex align-items-center gap-2">
-                                {item.originalPrice && (
-                                    <span className="text-muted text-decoration-line-through small">
-                                    {formatCurrency(item.originalPrice)}
-                                    </span>
-                                )}
-                                <span className="fw-bold text-primary">
-                                    {formatCurrency(item.price)}
-                                </span>
-                            </div>
-                        </div>
+                    {/* Imagem */}
+                    <div className="flex-shrink-0 me-3">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="cart-item-image"
+                      />
                     </div>
 
-                    {/* Lado Direito: Ações (Lixeira e Quantidade) */}
-                    <div className="d-flex flex-column align-items-end justify-content-between mt-3 mt-sm-0" style={{ minHeight: '100px' }}>
-                        {/* Botão de Excluir (Lixeira Vermelha) */}
-                        <button
-                            onClick={() =>
-                                handleRemoveItem(item.id, item.color, item.size)
-                            }
-                            className="btn btn-link text-danger p-0 mb-auto"
-                            title="Remover item"
-                        >
-                            <i className="fas fa-trash-alt fs-5"></i>
-                        </button>
+                    {/* Detalhes */}
+                    <div className="flex-grow-1 cart-item-details">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <h3 className="h6 fw-bold mb-1 text-dark">{item.name}</h3>
+                          <p className="small text-muted mb-2">
+                            {item.size} | {item.color}
+                          </p>
+                        </div>
+                        {/* Preço (Mobile/Desktop) */}
+                        <div className="text-end d-none d-sm-block">
+                           <span className="fw-bold text-dark d-block">
+                              {formatCurrency(item.price * item.quantity)}
+                            </span>
+                             {item.quantity > 1 && (
+                                <small className="text-muted">
+                                  {formatCurrency(item.price)} cada
+                                </small>
+                             )}
+                        </div>
+                      </div>
 
-                        {/* Controles de Quantidade */}
-                        <div
-                          className="input-group input-group-sm"
-                          style={{ width: "100px" }}
-                        >
+                      <div className="d-flex align-items-center justify-content-between mt-2">
+                         {/* Controles de Quantidade */}
+                        <div className="input-group input-group-sm cart-quantity-control">
                           <button
                             className="btn btn-outline-secondary"
                             type="button"
@@ -143,9 +134,10 @@ const Cart = () => {
                           </button>
                           <input
                             type="text"
-                            className="form-control text-center"
+                            className="form-control text-center border-secondary"
                             value={item.quantity}
                             readOnly
+                            style={{ maxWidth: '40px' }}
                           />
                           <button
                             className="btn btn-outline-secondary"
@@ -162,6 +154,25 @@ const Cart = () => {
                             +
                           </button>
                         </div>
+
+                        {/* Preço (Mobile only) */}
+                        <div className="d-block d-sm-none">
+                           <span className="fw-bold text-dark">
+                              {formatCurrency(item.price * item.quantity)}
+                            </span>
+                        </div>
+
+                         {/* Botão Remover */}
+                        <button
+                            onClick={() =>
+                                handleRemoveItem(item.id, item.color, item.size)
+                            }
+                            className="btn btn-link cart-remove-btn p-2"
+                            title="Remover item"
+                        >
+                            <i className="fas fa-trash-alt"></i>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))
