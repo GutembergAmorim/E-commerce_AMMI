@@ -130,7 +130,7 @@ function Home() {
       {/* Seção de Produtos com Filtro */}
       <section className="products-section-grid ">
         <div className="container">
-          <h2 className="display-5 fw-bold text-center mb-4 font-pacifico">Destaques da Coleção</h2>
+          <h2 className="display-5 fw-bold text-left mb-4 font-pacifico">Destaques</h2>
           <div className="row">
             {/* --- Grelha de Produtos --- */}
             <main className="col-lg-12">
@@ -223,7 +223,7 @@ function Home() {
         </div>
       </section>
       {/* Seção Promoção de Black Friday */}
-      <section className="py-5 text-white promo-gradient-custom">
+      {/* <section className="py-5 text-white promo-gradient-custom">
         <div className="container text-center">
           <h2 className="display-5 fw-bold mb-3">Black Friday Fitness</h2>
           <p className="fs-5 mb-4 mx-auto" style={{ maxWidth: "700px" }}>
@@ -247,9 +247,9 @@ function Home() {
             <button className="btn btn-light text-custom-pink rounded-pill px-5 py-2 fw-bold fs-5">
               Comprar Agora
             </button>
-          </Link>
+          </Link> */}
           {/* --- Divisor de Seção Curvo --- */}
-          <div className="custom-shape-divider-bottom-1716490896">
+          {/* <div className="custom-shape-divider-bottom-1716490896">
             <svg
               data-name="Layer 1"
               xmlns="http://www.w3.org/2000/svg"
@@ -261,9 +261,9 @@ function Home() {
                 className="shape-fill"
               ></path>
             </svg>
-          </div>
-        </div>
-      </section>
+          </div> */}
+        {/* </div>
+      </section> */}
 
       {/* Seção Newsletter */}
       <section className="py-5 bg-light">

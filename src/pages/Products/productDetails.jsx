@@ -10,6 +10,7 @@ const ProductDetails = () => {
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState("desc");
 
   const { addItemToCart } = useCart();
 
@@ -229,7 +230,7 @@ const ProductDetails = () => {
                   <i className="fas fa-truck me-2"></i> Frete fixo para Fortaleza: <span className="text-success fw-bold">R$ 15,00</span>
                 </p>
                 <p className="mb-0 small text-muted">
-                  <i className="fas fa-undo me-2"></i> Devolução grátis em até 30 dias
+                  <i className="fas fa-undo me-2"></i> Devolução grátis em até 7 dias
                 </p>
             </div>
 
@@ -276,10 +277,8 @@ const ProductDetails = () => {
                 <ul className="nav nav-tabs border-0 justify-content-center" id="productTabs" role="tablist">
                     <li className="nav-item" role="presentation">
                         <button 
-                            className="nav-link active border-0 fw-bold text-uppercase text-dark" 
-                            id="desc-tab" 
-                            data-bs-toggle="tab" 
-                            data-bs-target="#desc-content" 
+                            className={`nav-link border-0 fw-bold text-uppercase ${activeTab === 'desc' ? 'active text-dark' : 'text-muted'}`}
+                            onClick={() => setActiveTab('desc')}
                             type="button"
                         >
                             Descrição
@@ -287,10 +286,8 @@ const ProductDetails = () => {
                     </li>
                     <li className="nav-item" role="presentation">
                         <button 
-                            className="nav-link border-0 fw-bold text-uppercase text-muted" 
-                            id="specs-tab" 
-                            data-bs-toggle="tab" 
-                            data-bs-target="#specs-content" 
+                            className={`nav-link border-0 fw-bold text-uppercase ${activeTab === 'specs' ? 'active text-dark' : 'text-muted'}`} 
+                            onClick={() => setActiveTab('specs')}
                             type="button"
                         >
                             Especificações Técnicas
@@ -300,16 +297,20 @@ const ProductDetails = () => {
             </div>
             
             <div className="tab-content" id="productTabsContent">
-                <div className="tab-pane fade show active text-center" id="desc-content" role="tabpanel">
-                    <p className="text-muted mx-auto" style={{ maxWidth: "800px" }}>
-                        {product.description || "Descrição detalhada do produto."}
-                    </p>
-                </div>
-                <div className="tab-pane fade text-center" id="specs-content" role="tabpanel">
-                    <p className="text-muted">
-                        Informações técnicas não disponíveis no momento.
-                    </p>
-                </div>
+                {activeTab === 'desc' && (
+                    <div className="tab-pane fade show active text-center" role="tabpanel">
+                        <p className="text-muted mx-auto" style={{ maxWidth: "800px" }}>
+                            {product.description || "Descrição detalhada do produto."}
+                        </p>
+                    </div>
+                )}
+                {activeTab === 'specs' && (
+                    <div className="tab-pane fade show active text-center" role="tabpanel">
+                        <p className="text-muted">
+                            Informações técnicas não disponíveis no momento.
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
       </div>

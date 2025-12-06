@@ -262,13 +262,13 @@
 @media (max-width: 991px) {
   .colecao-raizes-hero {
     min-height: auto;
-    padding-top: 6rem; /* Espaço para o header */
+    padding-top: 5rem; /* Espaço para o header (Aumentado para evitar sobreposição) */
     padding-bottom: 2rem;
     flex-direction: column;
   }
 
   .hero-container-custom {
-    flex-direction: column-reverse; /* Texto em cima, imagem embaixo */
+    flex-direction: column; 
     padding: 0 1rem;
     justify-content: center;
   }
