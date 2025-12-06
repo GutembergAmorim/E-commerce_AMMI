@@ -168,23 +168,14 @@ const createPix = async (req, res) => {
         quantity: item.quantity,
         unit_amount: Math.round(item.price * 100)
       })),
-      charges: [
+      qr_codes: [
         {
-          reference_id: order._id.toString(),
-          description: `Pedido #${order._id}`,
           amount: {
-            value: totalCents,
-            currency: "BRL"
+            value: totalCents
           },
-          payment_method: {
-            type: "PIX",
-            pix: {
-                expiration_date: new Date(Date.now() + 3600000).toISOString(), // Expira em 1 hora
-            }
-          }
+          expiration_date: new Date(Date.now() + 3600000).toISOString(),
         }
       ],
-      notification_urls: [`${process.env.CLIENT_URL}/api/payment/webhook`],
     };
 
     console.log("📤 Enviando body para PagSeguro:", JSON.stringify(body, null, 2));
