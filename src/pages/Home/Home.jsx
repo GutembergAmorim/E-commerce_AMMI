@@ -101,6 +101,9 @@ function Home() {
 
   return (
     <>
+      <Link to="https://wa.me/5585987703918">
+        <i class="fa-brands fa-whatsapp zap-icon"></i>
+      </Link>
       <section className="colecao-raizes-hero position-relative">
         <div className="hero-container-custom">
           {/* Imagem posicionada (Absolute Bottom-Left) */}

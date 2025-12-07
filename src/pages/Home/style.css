@@ -296,6 +296,15 @@
   .d-flex.justify-content-md-end {
     justify-content: center !important;
   }
+
+  .zap-icon {
+    position: fixed;
+    right: 20px;
+    top: 820px;
+    font-size: 3rem;
+    color: #128764;
+    z-index: 100;
+  }
 }
 
 /* --- Estilos para a nova Secção de Produtos com Grid --- */
