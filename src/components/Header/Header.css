@@ -10,6 +10,7 @@
   box-shadow: none;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  
 }
 
 .header-transparent .nav-link-custom {
@@ -68,8 +69,9 @@
 /* Ajustes para Mobile */
 @media (max-width: 991px) {
   .header-transparent {
-    background-color: rgba(0, 0, 0, 0.2); /* Um pouco de fundo no mobile para legibilidade */
+    background-color: transparent; /* Um pouco de fundo no mobile para legibilidade */
     backdrop-filter: blur(4px);
+    
   }
 }
 

@@ -132,7 +132,7 @@ const ProductCreate = () => {
             <option>Top</option>
             <option>Short</option>
             <option>Legging</option>
-            <option>Conjunto</option>
+            <option>Macaquinho</option>
           </select>
         </div>
 

@@ -53,7 +53,7 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, "Categoria é obrigatória"],
-      enum: ["Top", "Short", "Legging", "Conjunto"],
+      enum: ["Top", "Short", "Legging", "Macaquinho"],
     },
     isNew: {
       type: Boolean,

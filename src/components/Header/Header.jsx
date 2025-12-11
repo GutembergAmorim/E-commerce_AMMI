@@ -63,20 +63,13 @@ function Header() {
       >
         Produtos
       </Link>
-      <Link
+      {/* <Link
         to="/collections?sort=newest" // Exemplo de link para lançamentos
         className="nav-link-custom"
         onClick={isMobile ? handleMenuClose : null}
       >
         Lançamentos
-      </Link>
-      <Link
-        to="/about"
-        className="nav-link-custom"
-        onClick={isMobile ? handleMenuClose : null}
-      >
-        Sobre
-      </Link>
+      </Link> */}     
       
       {isAuthenticated && user?.role === "admin" && (
         <Link
@@ -87,6 +80,13 @@ function Header() {
           Admin
         </Link>
       )}
+      <Link
+        to="/about"
+        className="nav-link-custom"
+        onClick={isMobile ? handleMenuClose : null}
+      >
+        Sobre
+      </Link>
     </nav>
   );
 
@@ -153,7 +153,7 @@ function Header() {
 
               {/* Menu Hambúrguer (Mobile) */}
               <button 
-                className={`btn-icon d-lg-none border-0 bg-transparent ${isHome && !scrolled ? 'text-white' : 'text-dark'}`} 
+                className={`btn-icon d-lg-none border-0 bg-transparent ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`} 
                 onClick={handleMenuShow}
               >
                 <i className="fas fa-bars fs-4"></i>

@@ -10,6 +10,7 @@ import brunaImg from "../../assets/BrunaAlmeida.png";
 import claudiaImg from "../../assets/Claudia.png";
 import ivinaImg from "../../assets/IvinaGasp.png";
 import nayaraImg from "../../assets/Nayara.png";
+import bgTexture from "../../assets/textura-de-concreto-cinza-claro-para-o-fundo.jpg"
 
 function Home() {
   const { products, loading, error } = useProducts();
@@ -104,7 +105,7 @@ function Home() {
       <Link to="https://wa.me/5585987703918">
         <i class="fa-brands fa-whatsapp zap-icon"></i>
       </Link>
-      <section className="colecao-raizes-hero position-relative">
+      <section className="colecao-raizes-hero position-relative" >
         <div className="hero-container-custom">
           {/* Imagem posicionada (Absolute Bottom-Left) */}
           <img
@@ -121,7 +122,7 @@ function Home() {
               ELEGANCIA EM TODO MOVIMENTO
             </p>
 
-            <div className="d-flex justify-content-center justify-content-md-end mt-4">
+            <div className="d-flex justify-content-center justify-content-md-end">
               <Link to="/collections">
                 <button className="btn-ver-colecao">VER COLEÇÃO</button>
               </Link>

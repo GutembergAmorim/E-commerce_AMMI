@@ -163,7 +163,7 @@
 /* Estilo do contentor principal da secção */
 .colecao-raizes-hero {
   font-family: "Montserrat", sans-serif;
-  background-color: #ffffff; /* Fundo branco limpo */
+  background-color: #07284949; /* Fundo branco limpo */
   padding: 0;
   overflow: hidden;
   min-height: 85vh; /* Altura quase total da tela */
@@ -257,6 +257,15 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
+
+.zap-icon {
+    position: fixed;
+    right: 20px;
+    top: 720px;
+    font-size: 3rem;
+    color: #128764;
+    z-index: 100;
+  }
 
 /* Ajustes de responsividade */
 @media (max-width: 991px) {
