@@ -6,9 +6,10 @@ function Footer() {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { href: "#/", icon: "fab fa-instagram", label: "Instagram" },
-    { href: "#/", icon: "fab fa-facebook", label: "Facebook" },
-    { href: "#/", icon: "fab fa-tiktok", label: "TikTok" },
+    { href: "https://www.instagram.com/ammi.fitwear/", icon: "fab fa-instagram", label: "Instagram" },
+    // { href: "#/", icon: "fab fa-facebook", label: "Facebook" },
+    // { href: "#/", icon: "fab fa-tiktok", label: "TikTok" },
+    // { href: "#/", icon: "fab fa-whatsapp", label: "WhatsApp" },
   ];
 
   const institutionalLinks = [
@@ -18,7 +19,7 @@ function Footer() {
 
   const helpLinks = [
     { href: "#/", text: "Trocas e devoluções" },
-    { href: "#/", text: "Entregas e prazos" },
+    { href: "#/", text: "Cuidados com as peças" },
   ];
 
   const paymentMethods = [
@@ -52,9 +53,9 @@ function Footer() {
             </div>
 
             {/* Coluna Institucional */}
-            <div className="col-lg-2 col-md-6">
-              <h4 className="h6 fw-medium mb-3">Institucional</h4> {/* font-medium -> fw-medium */}
-              <ul className="list-unstyled ps-0"> {/* space-y-2 -> mb-1 ou mb-2 em cada li */}
+            {/* <div className="col-lg-2 col-md-6">
+              <h4 className="h6 fw-medium mb-3">Institucional</h4>
+              <ul className="list-unstyled ps-0"> 
                 {institutionalLinks.map(link => (
                   <li key={link.text} className="mb-1">
                     <a href={link.href} className="text-white-50 text-decoration-none small footer-link-hover">
@@ -63,10 +64,10 @@ function Footer() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </div> */}
 
             {/* Coluna Ajuda */}
-            <div className="col-lg-3 col-md-6">
+            <div className="col-lg-4 col-md-6">
               <h4 className="h6 fw-medium mb-3">Ajuda</h4>
               <ul className="list-unstyled ps-0">
                 {helpLinks.map(link => (
@@ -80,7 +81,7 @@ function Footer() {
             </div>
 
             {/* Coluna Formas de Pagamento e Segurança */}
-            <div className="col-lg-3 col-md-6">
+            <div className="col-lg-4 col-md-6">
               <h4 className="h6 fw-medium mb-3">Formas de pagamento</h4>
               <div className="row row-cols-3 g-2 mb-3"> {/* grid grid-cols-3 gap-2 mb-4 -> row row-cols-3 g-2 mb-3 */}
                 {paymentMethods.map(method => (
@@ -91,6 +92,7 @@ function Footer() {
                   </div>
                 ))}
               </div>
+              <span className="small fw-light mb-2">Tudo em até 3x sem juros ou 10% de desconto no pix*</span> 
               <h4 className="h6 fw-medium mb-2">Segurança</h4>
               <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}> {/* flex space-x-2 -> d-flex gap-1 ou style */}
                 <img 

@@ -7,15 +7,17 @@
 /* Header Transparente (Estado inicial na Home) */
 .header-transparent {
   background-color: transparent;
-  box-shadow: none;
-  padding-top: 1rem;
+  box-shadow: none;  
   padding-bottom: 1rem;
   
 }
 
 .header-transparent .nav-link-custom {
+  
   color: rgba(31, 30, 30, 0.9) !important;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 16px; /* Adjusted size */
+  text-transform: uppercase;
 }
 
 .header-transparent .nav-link-custom:hover {
@@ -25,17 +27,18 @@
 
 /* Header Scrolled (Estado ao rolar ou em outras páginas) */
 .header-scrolled {
-  background-color: rgba(255, 255, 255, 0.85); /* Fundo branco translúcido */
+  background-color: rgba(255, 255, 255, 0.95); /* Menos transparente */
   backdrop-filter: blur(12px); /* Efeito de vidro */
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-  padding-top: 0.5rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);  
   padding-bottom: 0.5rem;
 }
 
 .header-scrolled .nav-link-custom {
   color: #333 !important;
   font-weight: 500;
+  font-size: 14px;
+  text-transform: uppercase;
 }
 
 .header-scrolled .nav-link-custom:hover {
@@ -48,6 +51,7 @@
   position: relative;
   padding: 0.5rem 0;
   transition: color 0.3s ease;
+  letter-spacing: 0.5px;
 }
 
 /* Efeito de sublinhado animado */
@@ -95,4 +99,58 @@
 .cart-bump {
   animation: bump 500ms ease-out;
   color: #4f46e5 !important; /* Cor de destaque durante a animação */
+}
+
+/* Search Bar Styling */
+.header-search-container {
+  border: 1px solid #333;
+  border-radius: 50px;
+  padding: 5px 15px;
+  width: 250px;
+  justify-content: space-between;
+  margin-right: 15px;
+}
+
+.header-search-container.search-transparent {
+    border-color: #333;
+}
+.header-search-container.search-scrolled {
+    border-color: #ccc;
+}
+
+
+.search-text {
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+  margin-right: 10px;
+  cursor: text;
+}
+
+.btn-search-icon {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #333;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* Icon Button Alignment */
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.btn-icon:hover {
+    transform: scale(1.1);
 }

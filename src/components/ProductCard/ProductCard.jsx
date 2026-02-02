@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
+import { useFavorites } from '../../Context/FavoritesContext';
 
 const ProductCard = ({ product }) => {
   const { _id, name, price, oldPrice, images, isNew, description } = product;
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   // Formatar preço
   const formatPrice = (value) => {
@@ -16,12 +18,24 @@ const ProductCard = ({ product }) => {
         <div className="product-card shadow-sm border-0 h-100 d-flex flex-column">
           
           {/* Container da Imagem */}
-          <div className="product-image-container">
+          <div className="product-image-container position-relative">
             <img
               src={images?.[0] || "https://via.placeholder.com/300x400?text=Sem+Imagem"}
               alt={name}
               className="product-image"
             />
+
+            {/* Botão de Favoritar - Sempre visível ou no topo */}
+            <button
+              className="btn btn-link position-absolute top-0 end-0 p-3 text-decoration-none"
+              onClick={(e) => {
+                e.preventDefault(); // Evita navegar para o produto
+                toggleFavorite(product);
+              }}
+              style={{ zIndex: 10 }}
+            >
+               <i className={`${isFavorite(_id) ? "fas text-danger" : "far text-dark"} fa-heart fs-5 bg-white rounded-circle p-2 shadow-sm`}></i>
+            </button>
             
             {/* Badges */}
             {/* {isNew && (

@@ -1,0 +1,83 @@
+.category-grid-section {
+  padding: 3rem 0;
+  background-color: #f8f9fa; /* Light gray background like reference */
+}
+
+.category-grid-title {
+  text-align: center;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 2rem;
+  margin-bottom: 2.5rem;
+  letter-spacing: 1px;
+}
+
+.category-card {
+  background-color: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  height: 250px; /* Fixed height for consistency */
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-color: #dee2e6;
+}
+
+.category-card.active {
+  box-shadow: 0 0 0 2px #000; /* Highlight active category replacing 'ring' */
+}
+
+.category-card-content {
+  display: flex;
+  height: 100%;
+}
+
+/* Title Styling - Top Left */
+.category-card-title {
+  position: absolute;
+  top: 0.5rem;
+  left: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #252424;
+  z-index: 2; /* On top of image */
+  text-transform: capitalize;
+}
+
+/* Image Container */
+.category-card-image-wrapper {
+  flex-grow: 1;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: flex-end; /* Align image to right/bottom typically */
+  align-items: flex-end;
+}
+
+.category-card-image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center top; 
+  /* To mimic the reference where subjects are often visible */
+}
+
+@media (max-width: 768px) {
+  .category-card {
+    height: 180px;
+  }
+  
+  .category-card-title {
+    font-size: 1.2rem;
+    top: 1rem;
+    left: 1rem;
+  }
+}

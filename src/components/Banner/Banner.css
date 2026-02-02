@@ -1,0 +1,51 @@
+.banner {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.banner-track {
+  display: flex;
+  transition: transform 0.6s ease-in-out;
+}
+
+.banner-track img {
+  width: 100%;
+  min-width: 660px;
+  height: 80vh;
+  min-height: 280px;
+  max-height: 820px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Bolinhas */
+.dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  border: none;
+  cursor: pointer;
+}
+
+.dot.active {
+  background: #fff;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .banner-track img {
+    height: 400px;
+  }
+}

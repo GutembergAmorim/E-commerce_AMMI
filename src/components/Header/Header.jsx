@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import logo from "../../assets/logo.png";
+import Logo_Header from "../../assets/Logo_Header.png"
+import CartIcon from "../Icons/CartIcon";
 import { Link, useLocation } from "react-router-dom";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import "./Header.css";
@@ -63,14 +64,20 @@ function Header() {
       >
         Produtos
       </Link>
-      {/* <Link
+      <Link
         to="/collections?sort=newest" // Exemplo de link para lançamentos
         className="nav-link-custom"
         onClick={isMobile ? handleMenuClose : null}
       >
-        Lançamentos
-      </Link> */}     
-      
+        Mais vendidos
+      </Link>      
+      <Link
+        to="/about"
+        className="nav-link-custom"
+        onClick={isMobile ? handleMenuClose : null}
+      >
+        Sale
+      </Link>
       {isAuthenticated && user?.role === "admin" && (
         <Link
           to="/admin/dashboard"
@@ -80,49 +87,57 @@ function Header() {
           Admin
         </Link>
       )}
-      <Link
-        to="/about"
-        className="nav-link-custom"
-        onClick={isMobile ? handleMenuClose : null}
-      >
-        Sobre
-      </Link>
     </nav>
   );
 
   return (
     <>
-      <header className={`fixed-top transition-all ${headerClass}`}>
+      <header className={`transition-all ${headerClass}`}>
+        {/* Barra de Frete - Topo */}
+        <div className="bg-dark text-white py-1 font-brand">
+          <div className="container d-flex align-items-center justify-content-center gap-2">
+            <i className="fa-solid fa-truck" style={{ fontSize: '0.9em' }}></i> 
+            <span className="fw-bold" style={{ fontSize: '0.85em', letterSpacing: '0.5px' }}>
+              FRETE GRÁTIS PARA PEDIDOS ACIMA DE R$ 299,00
+            </span>
+          </div>
+        </div>
+
         <div className="container py-3">
           <div className="d-flex align-items-center justify-content-between">
-            
-            {/* Esquerda: Logo e Nome */}
-            <div className="d-flex align-items-center gap-2">
-              <Link to="/" onClick={handleMenuClose} className="d-flex align-items-center text-decoration-none">
-                <img className="img-logo" src={logo} alt="Logo AMMI Fitwear" style={{ maxHeight: '45px' }} />
-                <span className={`ms-2 fs-4 fw-bold font-brand ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
-                  AMMI Fitwear
-                </span>
-              </Link>
-            </div>
-
-            {/* Centro: Navegação (Desktop) */}
+            {/* Menu Hambúrguer (Mobile) */}
+              <button 
+                className={`btn-icon d-lg-none border-0 bg-transparent ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`} 
+                onClick={handleMenuShow}
+              >
+                <i className="fas fa-bars fs-4"></i>
+              </button>           
+            {/* Esquerda: Navegacao */}            
             <div className="d-none d-lg-block">
               <NavLinks isMobile={false} />
             </div>
 
-            {/* Direita: Ações (Carrinho, Login, Menu Mobile) */}
-            <div className="d-flex align-items-center gap-3">
-              
-              {/* Carrinho */}
-              <Link to="/cart" className={`btn-icon position-relative ${isHome && !scrolled ? 'text-dark' : 'text-dark'} ${animateCart ? 'cart-bump' : ''}`}>
-                <i className="fas fa-shopping-bag fs-5"></i>
-                {cartItems?.length > 0 && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
-                    {cartItems.length}
-                  </span>
-                )}
+            {/* Centro: Logo e Navegacao */}
+            <div className="d-flex align-items-center gap-2">
+              <Link to="/" onClick={handleMenuClose} className="d-flex align-items-center text-decoration-none">
+                {/* <img className="img-logo" src={Logo_Header} alt="Logo AMMI Fitwear" style={{ maxHeight: '45px' }} /> */}
+                <span className={` fs-4 ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
+                  <img src={Logo_Header} alt="Logo AMMI Fitwear" style={{ maxHeight: '60px' }} />
+                </span>
               </Link>
+            </div>
+            
+            {/* Direita: Ações (Carrinho, Login, Menu Mobile) */}
+            <div className="d-flex align-items-center gap-3">             
+              
+
+              {/* Barra de Pesquisa */}
+              {/* <div className={`header-search-container d-none d-xl-flex align-items-center ${isHome && !scrolled ? 'search-transparent' : 'search-scrolled'}`}>
+                <span className="search-text">O que você está procurando?</span>
+                <button className="btn-search-icon">
+                  <i className="fas fa-search"></i>
+                </button>
+              </div> */}
 
               {/* Login / Perfil */}
               {isAuthenticated ? (
@@ -133,7 +148,7 @@ function Header() {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     aria-expanded={showUserMenu}
                   >
-                    <i className="fas fa-user me-1"></i>
+                    <i className="fas fa-user me-1 fs-4"></i>
                     <span className="d-none d-sm-inline">{user?.name?.split(' ')[0]}</span>
                   </button>
                   <ul className={`dropdown-menu dropdown-menu-end shadow-sm ${showUserMenu ? 'show' : ''}`} data-bs-popper={showUserMenu ? "static" : null}>
@@ -145,19 +160,26 @@ function Header() {
               ) : (
                 <Link
                   to="/login"
-                  className={`btn rounded-pill px-4 fw-medium ${isHome && !scrolled ? 'btn-dark' : 'btn-dark'}`}
+                  className={`btn-icon ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}
                 >
-                  Entrar
+                  <i className="fa-regular fa-user fs-4" ></i>
                 </Link>
               )}
-
-              {/* Menu Hambúrguer (Mobile) */}
-              <button 
-                className={`btn-icon d-lg-none border-0 bg-transparent ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`} 
-                onClick={handleMenuShow}
-              >
-                <i className="fas fa-bars fs-4"></i>
-              </button>
+              {/* Favorites - Added before Cart */}
+             <Link to="/favorites" className={`btn-icon position-relative ${isHome && !scrolled ? 'text-dark' : 'text-dark'}`}>
+                <i className="far fa-heart fs-4" ></i>
+              </Link>
+              
+              {/* Carrinho */}
+              <Link to="/cart" className={`btn-icon position-relative ${isHome && !scrolled ? 'text-dark' : 'text-dark'} ${animateCart ? 'cart-bump' : ''}`}>
+                <CartIcon className="fs-4" /> {/* CartIcon might need internal adjustment if it doesn't accept className for size, assuming it checks parent font-size */}
+                {cartItems?.length > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem', color: '#1d92a7ff' }}>
+                    {cartItems.length}
+                  </span>
+                )}
+              </Link>
+              
             </div>
           </div>
         </div>

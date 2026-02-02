@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import "./style.css";
 import { useProducts } from "../../hooks/useProducts";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ProductCard from "../../components/ProductCard/ProductCard";
+import Banner from "../../components/Banner/Banner";
+import InfoBanner from "../../components/InfoBanner/InfoBanner";
+import CategoryGrid from "../../components/CategoryGrid/CategoryGrid";
 
 // Importação das imagens das clientes
 import naylaneImg from "../../assets/Naylane.png";
@@ -12,33 +15,42 @@ import ivinaImg from "../../assets/IvinaGasp.png";
 import nayaraImg from "../../assets/Nayara.png";
 import bgTexture from "../../assets/textura-de-concreto-cinza-claro-para-o-fundo.jpg"
 
+
 function Home() {
   const { products, loading, error } = useProducts();
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const navigate = useNavigate();
 
-  // Cria uma lista de categorias únicas a partir dos produtos
+  // Cria uma lista de categorias únicas a partir dos produtos e atribui uma imagem
   const categories = useMemo(() => {
     if (!products.length) return [];
-    const uniqueCategories = products.reduce((acc, product) => {
-      if (
-        product.category &&
-        !acc.some((cat) => cat._id === product.category._id)
-      ) {
-        acc.push(product.category);
+    
+    // Set to track unique categories
+    const processedCategories = new Set();
+    const uniqueCategories = [];
+
+    products.forEach((product) => {
+      // product.category is a String based on the Schema
+      const categoryName = product.category;
+      
+      if (categoryName && !processedCategories.has(categoryName)) {
+        processedCategories.add(categoryName);
+        
+        // Tenta pegar a primeira imagem do produto
+        const categoryImage = product.images?.[0] || null;
+        
+        uniqueCategories.push({
+            _id: categoryName, // Use name as ID for filtering
+            name: categoryName,
+            image: categoryImage
+        });
       }
-      return acc;
-    }, []);
+    });
+
     return uniqueCategories;
   }, [products]);
 
-  const filteredProducts = useMemo(() => {
-    if (!selectedCategory) {
-      return products;
-    }
-    return products.filter(
-      (product) => product.category._id === selectedCategory
-    );
-  }, [products, selectedCategory]);
+  // Removed local filtering logic as we now navigate to Collections page
+
 
   // A data alvo para o countdown. Ex: Black Friday (Novembro é mês 10)
   const targetDate = new Date(new Date().getFullYear(), 10, 24);
@@ -105,16 +117,16 @@ function Home() {
       <Link to="https://wa.me/5585987703918">
         <i class="fa-brands fa-whatsapp zap-icon"></i>
       </Link>
-      <section className="colecao-raizes-hero position-relative" >
+      {/* <section className="colecao-raizes-hero position-relative" >
         <div className="hero-container-custom">
-          {/* Imagem posicionada (Absolute Bottom-Left) */}
+          
           <img
             src="https://res.cloudinary.com/dxaacelde/image/upload/w_700,h_900,c_fill,q_auto,f_auto/Home_0-Photoroom_z7jtga.png"
             alt="Modelo a usar um conjunto verde da Coleção Raízes da AMMI Fitwear"
             className="hero-image-positioned"
           />
 
-          {/* Conteúdo de Texto (Alinhado à direita via CSS) */}
+          
           <div className="hero-text-content">
             <span className="hero-subtitle-top">COLEÇÃO</span>
             <h1 className="hero-title-main">RAÍZES</h1>
@@ -129,12 +141,26 @@ function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
+      <Banner />
 
-      {/* Seção de Produtos com Filtro */}
+      {/* Info Banner Section */}
+      <InfoBanner />
+
+      {/* Category Grid Section */}
+      <CategoryGrid 
+        categories={categories} 
+        onSelectCategory={(categoryId) => {
+            if (categoryId) {
+                navigate(`/collections?category=${categoryId}`);
+            }
+        }} 
+      />
+
+      {/* Seção Mais Vendidos */}
       <section className="products-section-grid ">
         <div className="container">
-          <h2 className="display-5 fw-bold text-left mb-4 font-pacifico">Destaques</h2>
+          <h2 className="display-6 fw-bold text-center mb-4 story-script-regular section-title-separator">Mais Vendidos</h2>
           <div className="row">
             {/* --- Grelha de Produtos --- */}
             <main className="col-lg-12">
@@ -150,7 +176,7 @@ function Home() {
                 </div>
               ) : (
                 <div className="row row-cols-2 row-cols-lg-4 g-4">
-                  {filteredProducts.map((product) => (
+                  {products.slice(0, 8).map((product) => (
                     <div className="col" key={product._id}>
                       <ProductCard product={product} />
                     </div>
@@ -164,7 +190,7 @@ function Home() {
       {/* Seção de Depoimentos de Clientes */}
       <section className="reviews-section">
         <div className="container">
-          <h2 className="display-5 fw-bold text-center mb-5 font-pacifico">Elas Usam AMMI</h2>
+          <h2 className="display-5 fw-bold text-center mb-5 story-script-regular section-title-separator ">Elas Usam AMMI</h2>
           
           <div className="reviews-scroll-container">
             {/* Mock Data de Reviews */}

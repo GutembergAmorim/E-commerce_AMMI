@@ -1,5 +1,37 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap");
 
+.story-script-regular {
+  font-family: "Story Script", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.section-title-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.section-title-separator::before,
+.section-title-separator::after {
+  content: "";
+  display: block;
+  width: 100px;
+  height: 2px;
+  background-color: currentColor;
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .section-title-separator::before,
+  .section-title-separator::after {
+    width: 40px;
+  }
+}
+
+
 .hero-gradient{
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
 }
@@ -169,11 +201,10 @@
   min-height: 85vh; /* Altura quase total da tela */
   display: flex;
   align-items: center;
-  position: relative;
 }
 
 .hero-container-custom {
-  max-width: 1400px; /* Mais largo para telas grandes */
+  max-width: 1500px; /* Mais largo para telas grandes */
   margin: 0 auto;
   width: 100%;
   height: 100%;
@@ -184,10 +215,7 @@
 }
 
 .hero-image-positioned {
-  position: absolute;
-  bottom: 0;
-  left: 5%; /* Posicionada mais à esquerda */
-  height: auto;
+  max-height: 80vh;
   width: 55%; /* Bem grande */
   max-width: 800px;
   object-fit: contain;
@@ -260,12 +288,36 @@
 
 .zap-icon {
     position: fixed;
+    bottom: 20px;
     right: 20px;
-    top: 720px;
-    font-size: 3rem;
-    color: #128764;
-    z-index: 100;
+    width: 60px;
+    height: 60px;
+    background-color: #25d366; /* Cor do WhatsApp */
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 30px;
+    line-height: 60px; /* Centraliza o ícone verticalmente */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    /* Aplica a animação */
+    animation: pulse 1.5s infinite ease-in-out; 
   }
+
+  @keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 20px rgba(37, 211, 102, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+    }
+}
 
 /* Ajustes de responsividade */
 @media (max-width: 991px) {
@@ -308,12 +360,36 @@
 
   .zap-icon {
     position: fixed;
+    bottom: 20px;
     right: 20px;
-    top: 720px;
-    font-size: 3rem;
-    color: #128764;
-    z-index: 100;
+    width: 60px;
+    height: 60px;
+    background-color: #25d366; /* Cor do WhatsApp */
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 30px;
+    line-height: 60px; /* Centraliza o ícone verticalmente */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    /* Aplica a animação */
+    animation: pulse 1.5s infinite ease-in-out; 
   }
+
+  @keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 20px rgba(37, 211, 102, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+    }
+}
 }
 
 /* --- Estilos para a nova Secção de Produtos com Grid --- */
@@ -346,114 +422,7 @@
   color: var(--cor-verde-raizes); /* Muda para a cor principal no hover */
 }
 
-/* --- Estilos da Sidebar de Categorias --- */
-.category-sidebar {
-  background-color: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem; /* Espaçamento para mobile */
-}
 
-.sidebar-title {
-  font-family: "Montserrat", sans-serif;
-  font-weight: 700;
-  color: var(--cor-verde-raizes);
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #eee;
-}
-
-.category-link {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 0.75rem 0;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 500;
-  color: #555;
-  text-decoration: none;
-  transition: color 0.2s ease, background-color 0.2s ease;
-  border-radius: 4px;
-}
-
-.category-link:hover {
-  color: var(--cor-castanho-raizes); /* Um hover mais sutil */
-}
-
-.category-link.active {
-  color: var(--cor-verde-raizes);
-  font-weight: 600; /* Um pouco menos forte que 700 */
-}
-
-/* --- Estilo do Cartão de Produto --- */
-
-.product-card-raizes {
-  border: 1px solid #eee; /* Uma borda muito subtil */
-  border-radius: 8px; /* Cantos levemente arredondados */
-  background-color: #fff;
-  overflow: hidden; /* Garante que a imagem não "vaze" dos cantos arredondados */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 100%; /* Garante que todos os cartões na mesma linha tenham a mesma altura */
-  display: flex;
-  flex-direction: column;
-}
-
-.product-card-raizes:hover {
-  transform: translateY(-5px); /* Efeito de elevação */
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.07); /* Sombra suave ao passar o rato */
-}
-
-/* Contentor da Imagem */
-.card-img-container {
-  height: 380px; /* Altura um pouco menor para caber 3 por linha confortavelmente */
-  overflow: hidden;
-}
-
-/* Imagem do Produto */
-.product-card-raizes .card-img-top {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* ESSENCIAL: Cobre o espaço sem distorcer a imagem */
-  transition: transform 0.4s ease;
-}
-
-@media (max-width: 767px) {
-  .card-img-container {
-    height: 220px; /* Altura reduzida para imagens em telas móveis */
-  }
-}
-
-.product-card-raizes:hover .card-img-top {
-  transform: scale(1.05); /* Efeito de zoom na imagem ao passar o rato */
-}
-
-/* Corpo do Cartão (Nome e Preço) */
-.product-card-raizes .card-body {
-  padding: 1rem;
-  text-align: center;
-  flex-grow: 1; /* Faz o corpo do cartão crescer para ocupar o espaço */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.product-name {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--cor-texto-principal);
-  margin-bottom: 0.5rem;
-}
-
-.product-price {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--cor-verde-raizes);
-  margin: 0;
-}
 
 /* Spinner de Carregamento */
 .spinner-raizes {

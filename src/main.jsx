@@ -28,6 +28,8 @@ import OrderDetails from './pages/Admin/OrderDetails.jsx'
 import StockManagement from './pages/Admin/StockManagement.jsx'
 import StockHistory from './pages/Admin/StockHistory.jsx'
 import PixQrCode from './pages/Payment/PixQrCode.jsx'
+import { FavoritesProvider } from "./Context/FavoritesContext";
+import Favorites from "./pages/Favorites/Favorites";
 
 
 const router = createBrowserRouter([
@@ -162,6 +164,10 @@ const router = createBrowserRouter([
             <StockHistory />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "favorites",
+        element: <Favorites />,
       }
     ],
   },
@@ -199,7 +205,9 @@ ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <AuthProvider>
       <CartProvider>
-        <RouterProvider router={router} />
+        <FavoritesProvider>
+          <RouterProvider router={router} />
+        </FavoritesProvider>
       </CartProvider>
     </AuthProvider>
   </React.StrictMode>

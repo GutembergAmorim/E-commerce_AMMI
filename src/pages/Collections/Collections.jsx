@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import "./style.css";
 import { useProducts } from "../../hooks/useProducts";
 import ProductCard from "../../components/ProductCard/ProductCard";
 
 function Collections() {
+  const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedColors, setSelectedColors] = useState([]);
@@ -34,6 +35,14 @@ function Collections() {
       setPriceRange([0, Math.ceil(max)]);
     }
   }, [fetchProducts]);
+
+  // Update active category from URL params
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      setActiveCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   const filteredProducts = useMemo(
     () =>
