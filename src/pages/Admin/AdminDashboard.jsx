@@ -1,11 +1,12 @@
-// src/pages/Admin/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Package, Users, DollarSign, TrendingUp, 
-  ShoppingCart, AlertCircle, Clock 
+import {
+  Package, Users, DollarSign, TrendingUp,
+  ShoppingCart, AlertCircle, Clock, ChevronRight,
+  ArrowUpRight, BarChart3
 } from 'lucide-react';
 import api from '../../services/api';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -24,16 +25,15 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // Em produção, você teria endpoints específicos para essas estatísticas
       const [ordersResponse, productsResponse, usersResponse] = await Promise.all([
         api.get('/orders?limit=5'),
-        api.get('/products?limit=1'), // Só para contar
-        api.get('/users?limit=1') // Só para contar
+        api.get('/products?limit=1'),
+        api.get('/users?limit=1')
       ]);
 
       const orders = ordersResponse.data.data || [];
       const pendingOrders = orders.filter(order => order.status === 'Processando').length;
-      
+
       const totalRevenue = orders
         .filter(order => order.isPaid)
         .reduce((sum, order) => sum + order.total, 0);
@@ -47,7 +47,6 @@ const AdminDashboard = () => {
       });
 
       setRecentOrders(orders.slice(0, 5));
-
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
     } finally {
@@ -55,168 +54,197 @@ const AdminDashboard = () => {
     }
   };
 
-  const StatCard = ({ title, value, icon, color, subtitle }) => (
-    <div className="card">
-      <div className="card-body">
-        <div className="d-flex align-items-center">
-          <div className={`rounded-circle p-3 bg-${color}-light me-3`}>
-            {React.cloneElement(icon, { size: 24, className: `text-${color}` })}
-          </div>
-          <div>
-            <h4 className="mb-1">{value}</h4>
-            <p className="text-muted mb-0">{title}</p>
-            {subtitle && <small className={`text-${color}`}>{subtitle}</small>}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString('pt-BR');
+
+  const getStatusBadge = (status) => {
+    const map = {
+      'Pago': 'admin-badge--paid',
+      'Processando': 'admin-badge--processing',
+      'Pendente': 'admin-badge--pending',
+      'Cancelado': 'admin-badge--cancelled',
+    };
+    return map[status] || 'admin-badge--default';
+  };
 
   if (loading) {
     return (
-      <div className="container-fluid py-4">
+      <div className="container-fluid py-5">
         <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
+          <div className="spinner-border spinner-border-sm text-dark" role="status">
             <span className="visually-hidden">Carregando...</span>
           </div>
-          <p className="mt-2">Carregando dashboard...</p>
+          <p className="mt-2" style={{ fontSize: '0.85rem', color: '#999' }}>
+            Carregando dashboard...
+          </p>
         </div>
       </div>
     );
   }
 
+  const statCards = [
+    {
+      label: 'Total de Pedidos',
+      value: stats.totalOrders,
+      icon: <ShoppingCart size={20} />,
+      colorClass: 'admin-stat__icon--blue',
+    },
+    {
+      label: 'Faturamento',
+      value: formatCurrency(stats.totalRevenue),
+      icon: <DollarSign size={20} />,
+      colorClass: 'admin-stat__icon--green',
+      badge: { text: 'Total', cls: 'admin-stat__badge--green' },
+    },
+    {
+      label: 'Produtos',
+      value: stats.totalProducts,
+      icon: <Package size={20} />,
+      colorClass: 'admin-stat__icon--purple',
+    },
+    {
+      label: 'Usuários',
+      value: stats.totalUsers,
+      icon: <Users size={20} />,
+      colorClass: 'admin-stat__icon--amber',
+    },
+    {
+      label: 'Pedidos Pendentes',
+      value: stats.pendingOrders,
+      icon: <Clock size={20} />,
+      colorClass: 'admin-stat__icon--red',
+      badge: stats.pendingOrders > 0
+        ? { text: 'Atenção', cls: 'admin-stat__badge--red' }
+        : null,
+    },
+    {
+      label: 'Taxa de Conversão',
+      value: '2.5%',
+      icon: <TrendingUp size={20} />,
+      colorClass: 'admin-stat__icon--teal',
+      badge: { text: '+0.5%', cls: 'admin-stat__badge--green' },
+    },
+  ];
+
+  const quickActions = [
+    {
+      label: 'Adicionar Produto',
+      to: '/admin/products/new',
+      icon: <Package size={18} />,
+      colorClass: 'admin-stat__icon--purple',
+    },
+    {
+      label: 'Gerenciar Pedidos',
+      to: '/admin/orders',
+      icon: <ShoppingCart size={18} />,
+      colorClass: 'admin-stat__icon--blue',
+    },
+    {
+      label: 'Gerenciar Usuários',
+      to: '/admin/users',
+      icon: <Users size={18} />,
+      colorClass: 'admin-stat__icon--amber',
+    },
+    {
+      label: 'Gerenciar Estoque',
+      to: '/admin/stock',
+      icon: <BarChart3 size={18} />,
+      colorClass: 'admin-stat__icon--green',
+    },
+  ];
+
   return (
     <div className="container-fluid py-4">
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="admin-header d-flex justify-content-between align-items-start flex-wrap gap-3">
         <div>
-          <h1 className="h3 mb-2">Dashboard Administrativo</h1>
-          <p className="text-muted">Visão geral da sua loja</p>
+          <h1 className="admin-header__title">Dashboard</h1>
+          <p className="admin-header__subtitle">Visão geral da sua loja</p>
         </div>
-        <div className="btn-group">
-          <button className="btn btn-outline-primary">
-            <TrendingUp size={16} className="me-2" />
-            Relatório Mensal
-          </button>
-        </div>
+        <Link
+          to="/admin/orders"
+          className="admin-link-btn"
+        >
+          <BarChart3 size={14} />
+          Relatório Mensal
+        </Link>
       </div>
 
       {/* Stats Grid */}
-      <div className="row g-4 mb-5">
-        <div className="col-xl-2 col-md-4 col-6">
-          <StatCard
-            title="Total de Pedidos"
-            value={stats.totalOrders}
-            icon={<ShoppingCart />}
-            color="primary"
-          />
-        </div>
-        <div className="col-xl-2 col-md-4 col-6">
-          <StatCard
-            title="Faturamento"
-            value={new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL'
-            }).format(stats.totalRevenue)}
-            icon={<DollarSign />}
-            color="success"
-            subtitle="Total"
-          />
-        </div>
-        <div className="col-xl-2 col-md-4 col-6">
-          <StatCard
-            title="Produtos"
-            value={stats.totalProducts}
-            icon={<Package />}
-            color="info"
-          />
-        </div>
-        <div className="col-xl-2 col-md-4 col-6">
-          <StatCard
-            title="Usuários"
-            value={stats.totalUsers}
-            icon={<Users />}
-            color="warning"
-          />
-        </div>
-        <div className="col-xl-2 col-md-4 col-6">
-          <StatCard
-            title="Pedidos Pendentes"
-            value={stats.pendingOrders}
-            icon={<Clock />}
-            color="danger"
-            subtitle="Precisa de atenção"
-          />
-        </div>
-        <div className="col-xl-2 col-md-4 col-6">
-          <StatCard
-            title="Taxa de Conversão"
-            value="2.5%"
-            icon={<TrendingUp />}
-            color="success"
-            subtitle="+0.5% vs último mês"
-          />
-        </div>
+      <div className="admin-stats">
+        {statCards.map((card) => (
+          <div key={card.label} className="admin-stat">
+            <div className={`admin-stat__icon ${card.colorClass}`}>
+              {card.icon}
+            </div>
+            <p className="admin-stat__value">{card.value}</p>
+            <p className="admin-stat__label">{card.label}</p>
+            {card.badge && (
+              <span className={`admin-stat__badge ${card.badge.cls}`}>
+                {card.badge.text}
+              </span>
+            )}
+          </div>
+        ))}
       </div>
 
       <div className="row g-4">
-        {/* Pedidos Recentes */}
+        {/* Recent Orders */}
         <div className="col-lg-8">
-          <div className="card">
-            <div className="card-header d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Pedidos Recentes</h5>
-              <Link to="/admin/orders" className="btn btn-sm btn-outline-primary">
+          <div className="admin-card">
+            <div className="admin-card__header">
+              <h2 className="admin-card__title">Pedidos Recentes</h2>
+              <Link to="/admin/orders" className="admin-link-btn">
                 Ver Todos
+                <ArrowUpRight size={12} />
               </Link>
             </div>
-            <div className="card-body p-0">
+            <div className="admin-card__body">
               {recentOrders.length === 0 ? (
-                <div className="text-center py-4">
-                  <Package size={48} className="text-muted mb-2" />
-                  <p className="text-muted">Nenhum pedido encontrado</p>
+                <div className="admin-empty">
+                  <div className="admin-empty__icon">
+                    <Package size={24} />
+                  </div>
+                  <p className="admin-empty__text">Nenhum pedido encontrado</p>
                 </div>
               ) : (
                 <div className="table-responsive">
-                  <table className="table table-hover mb-0">
-                    <thead className="table-light">
+                  <table className="admin-table">
+                    <thead>
                       <tr>
                         <th>Pedido</th>
                         <th>Cliente</th>
                         <th>Data</th>
                         <th>Total</th>
                         <th>Status</th>
-                        <th>Ações</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
                       {recentOrders.map((order) => (
                         <tr key={order._id}>
                           <td>
-                            <strong>#{order._id.slice(-8).toUpperCase()}</strong>
+                            <strong style={{ fontSize: '0.82rem' }}>
+                              #{order._id.slice(-8).toUpperCase()}
+                            </strong>
                           </td>
                           <td>{order.user?.name || 'N/A'}</td>
+                          <td>{formatDate(order.createdAt)}</td>
                           <td>
-                            {new Date(order.createdAt).toLocaleDateString('pt-BR')}
+                            <strong>{formatCurrency(order.total)}</strong>
                           </td>
                           <td>
-                            {new Intl.NumberFormat('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL'
-                            }).format(order.total)}
-                          </td>
-                          <td>
-                            <span className={`badge ${
-                              order.status === 'Pago' ? 'bg-success' :
-                              order.status === 'Processando' ? 'bg-warning' :
-                              'bg-secondary'
-                            }`}>
+                            <span className={`admin-badge ${getStatusBadge(order.status)}`}>
                               {order.status}
                             </span>
                           </td>
                           <td>
                             <Link
                               to={`/admin/orders/${order._id}`}
-                              className="btn btn-sm btn-outline-primary"
+                              className="admin-link-btn"
                             >
                               Detalhes
                             </Link>
@@ -231,55 +259,56 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Ações Rápidas */}
+        {/* Right Column */}
         <div className="col-lg-4">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="mb-0">Ações Rápidas</h5>
+          {/* Quick Actions */}
+          <div className="admin-card" style={{ marginBottom: '1.25rem' }}>
+            <div className="admin-card__header">
+              <h2 className="admin-card__title">Ações Rápidas</h2>
             </div>
-            <div className="card-body">
-              <div className="d-grid gap-2">
-                <Link to="/admin/products/new" className="btn btn-primary">
-                  <Package size={16} className="me-2" />
-                  Adicionar Produto
-                </Link>
-                <Link to="/admin/orders" className="btn btn-outline-primary">
-                  <ShoppingCart size={16} className="me-2" />
-                  Gerenciar Pedidos
-                </Link>
-                <Link to="/admin/users" className="btn btn-outline-primary">
-                  <Users size={16} className="me-2" />
-                  Gerenciar Usuários
-                </Link>
-                <Link to="/admin/stock" className="btn btn-outline-primary">
-                  <TrendingUp size={16} className="me-2" />
-                  Gerenciar Stock
-                </Link>
+            <div className="admin-card__body--padded">
+              <div className="admin-actions">
+                {quickActions.map((action) => (
+                  <Link
+                    key={action.label}
+                    to={action.to}
+                    className="admin-action-btn"
+                  >
+                    <div className={`admin-action-btn__icon ${action.colorClass}`}>
+                      {action.icon}
+                    </div>
+                    {action.label}
+                    <ChevronRight size={16} className="admin-action-btn__arrow" />
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Alertas */}
-          <div className="card mt-4 border-warning">
-            <div className="card-header bg-warning bg-opacity-10">
-              <div className="d-flex align-items-center">
-                <AlertCircle size={20} className="text-warning me-2" />
-                <h6 className="mb-0">Alertas</h6>
-              </div>
+          {/* Alerts */}
+          <div className="admin-card">
+            <div className="admin-card__header">
+              <h2 className="admin-card__title">Alertas</h2>
             </div>
-            <div className="card-body">
+            <div className="admin-card__body--padded">
               {stats.pendingOrders > 0 ? (
-                <div className="alert alert-warning mb-2">
-                  <strong>{stats.pendingOrders} pedidos</strong> precisam de atenção
+                <div className="admin-alert admin-alert--warning">
+                  <AlertCircle size={18} className="admin-alert__icon" />
+                  <span>
+                    <strong>{stats.pendingOrders} pedidos</strong> precisam de atenção
+                  </span>
                 </div>
               ) : (
-                <div className="alert alert-success">
-                  Todos os pedidos estão em dia! 🎉
+                <div className="admin-alert admin-alert--success">
+                  <span>🎉 Todos os pedidos estão em dia!</span>
                 </div>
               )}
-              
-              <div className="alert alert-info">
-                <strong>5 produtos</strong> com estoque baixo
+
+              <div className="admin-alert admin-alert--info">
+                <Package size={18} className="admin-alert__icon" />
+                <span>
+                  <strong>5 produtos</strong> com estoque baixo
+                </span>
               </div>
             </div>
           </div>

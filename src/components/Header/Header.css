@@ -1,51 +1,57 @@
 /* Header.css */
 
+/* ===== Transição Global ===== */
 .transition-all {
   transition: all 0.3s ease-in-out;
 }
 
-/* Header Transparente (Estado inicial na Home) */
+/* ===== Sticky Header ===== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+/* ===== Header Transparente (Home, antes do scroll) ===== */
 .header-transparent {
   background-color: transparent;
-  box-shadow: none;  
+  box-shadow: none;
   padding-bottom: 1rem;
-  
 }
 
 .header-transparent .nav-link-custom {
-  
-  color: rgba(31, 30, 30, 0.9) !important;
+  color: rgba(31, 30, 30, 0.9);
   font-weight: 600;
-  font-size: 16px; /* Adjusted size */
+  font-size: 16px;
   text-transform: uppercase;
 }
 
 .header-transparent .nav-link-custom:hover {
-  color: #242323 !important;
+  color: #242323;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-/* Header Scrolled (Estado ao rolar ou em outras páginas) */
+/* ===== Header Scrolled (após scroll ou páginas internas) ===== */
 .header-scrolled {
-  background-color: rgba(255, 255, 255, 0.95); /* Menos transparente */
-  backdrop-filter: blur(12px); /* Efeito de vidro */
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);  
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
   padding-bottom: 0.5rem;
 }
 
 .header-scrolled .nav-link-custom {
-  color: #333 !important;
+  color: #333;
   font-weight: 500;
   font-size: 14px;
   text-transform: uppercase;
 }
 
 .header-scrolled .nav-link-custom:hover {
-  color: #4f46e5 !important; /* Cor primária */
+  color: #1a1a1a;
 }
 
-/* Links de Navegação */
+/* ===== Links de Navegação ===== */
 .nav-link-custom {
   text-decoration: none;
   position: relative;
@@ -54,7 +60,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Efeito de sublinhado animado */
+/* Sublinhado animado no hover */
 .nav-link-custom::after {
   content: '';
   position: absolute;
@@ -70,24 +76,52 @@
   width: 100%;
 }
 
-/* Ajustes para Mobile */
+/* Link ativo — sublinhado permanente */
+.nav-link-custom.active::after {
+  width: 100%;
+}
+
+.nav-link-custom.active {
+  font-weight: 700;
+}
+
+/* ===== Top Bar (frete grátis) ===== */
+.top-bar-icon {
+  font-size: 0.9em;
+}
+
+.top-bar-text {
+  font-size: 0.80em;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Logo ===== */
+.header-logo {
+  max-height: 60px;
+}
+
+/* ===== Cart Badge ===== */
+.cart-badge {
+  font-size: 0.6rem;
+}
+
+/* ===== Mobile ===== */
 @media (max-width: 991px) {
   .header-transparent {
-    background-color: transparent; /* Um pouco de fundo no mobile para legibilidade */
+    background-color: transparent;
     backdrop-filter: blur(4px);
-    
   }
 }
 
-/* Dropdown Hover Effect */
+/* Dropdown hover no desktop */
 @media (min-width: 992px) {
   .dropdown:hover .dropdown-menu {
     display: block;
-    margin-top: 0; /* Remove default margin to ensure mouse can travel to menu */
+    margin-top: 0;
   }
 }
 
-/* Animação do Carrinho */
+/* ===== Animação do Carrinho ===== */
 @keyframes bump {
   0% { transform: scale(1); }
   25% { transform: scale(1.3); }
@@ -98,59 +132,30 @@
 
 .cart-bump {
   animation: bump 500ms ease-out;
-  color: #4f46e5 !important; /* Cor de destaque durante a animação */
+  color: #1a1a1a;
 }
 
-/* Search Bar Styling */
-.header-search-container {
-  border: 1px solid #333;
-  border-radius: 50px;
-  padding: 5px 15px;
-  width: 250px;
-  justify-content: space-between;
-  margin-right: 15px;
-}
-
-.header-search-container.search-transparent {
-    border-color: #333;
-}
-.header-search-container.search-scrolled {
-    border-color: #ccc;
-}
-
-
-.search-text {
-  font-size: 0.85rem;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-grow: 1;
-  margin-right: 10px;
-  cursor: text;
-}
-
-.btn-search-icon {
-  background: none;
-  border: none;
-  padding: 0;
-  color: #333;
-  font-size: 1.1rem;
-  cursor: pointer;
+/* ===== Icon Button ===== */
+.btn-icon {
   display: flex;
   align-items: center;
-}
-
-/* Icon Button Alignment */
-.btn-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px;
-    text-decoration: none;
-    transition: transform 0.2s;
+  justify-content: center;
+  padding: 5px;
+  text-decoration: none;
+  transition: transform 0.2s;
 }
 
 .btn-icon:hover {
-    transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+/* ===== Offcanvas Profile ===== */
+.offcanvas-user-greeting {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.offcanvas-user-name {
+  font-weight: 600;
+  font-size: 1.1rem;
 }

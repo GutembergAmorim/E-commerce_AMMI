@@ -45,6 +45,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    phone: {
+      type: String,
+      default: '',
+    },
+    cpf: {
+      type: String,
+      default: '',
+    },
+    settings: {
+      emailNotifications: { type: Boolean, default: true },
+      promotionalEmails: { type: Boolean, default: false },
+      smsNotifications: { type: Boolean, default: true },
+      twoFactorAuth: { type: Boolean, default: false },
+    },
     addresses: [addressSchema],
     createdAt: {
       type: Date,

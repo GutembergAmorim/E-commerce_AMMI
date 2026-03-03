@@ -154,40 +154,41 @@ const CreditCardForm = ({  onPaymentSubmit, isProcessing, totalAmount  }) => {
           onChange={(e) => handleInputChange('installments', parseInt(e.target.value))}
           className="form-select"
         >
-          {[1, 2, 3, 4, 5, 6].map(num => (
-            <option key={num} value={num}>
-              {num}x de R$ {(totalAmount / num).toFixed(2)} {num === 1 ? '(à vista)' : ''}
-            </option>
-          ))}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => {
+            let interestRate = 0;
+            if (num >= 4) {
+              interestRate = 0.05 + ((num - 4) * 0.01);
+            }
+            
+            const amount = totalAmount * (1 + interestRate);
+            const installmentValue = (amount / num).toFixed(2);
+            const label = num === 1 ? '(à vista)' : num <= 3 ? '(sem juros)' : `(${Math.round(interestRate * 100)}% juros)`;
+            
+            return (
+              <option key={num} value={num}>
+                {num}x de R$ {installmentValue} {label}
+              </option>
+            );
+          })}
         </select>
       </div>
 
       <button
         type="submit"
         disabled={isProcessing}
-        className={`btn btn-primary w-100 fw-bold py-2 ${
-          isProcessing ? 'disabled' : ''
-        }`}
+        className="checkout-btn checkout-btn--primary mt-3"
       >
         {isProcessing ? (
           <>
-            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+            <span className="spinner-border spinner-border-sm" role="status"></span>
             Processando...
           </>
         ) : (
-          `Pagar R$ ${totalAmount.toFixed(2)}`
+          `Pagar R$ ${(cardData.installments >= 4 
+            ? totalAmount * (1 + 0.05 + ((cardData.installments - 4) * 0.01)) 
+            : totalAmount).toFixed(2)}`
         )}
       </button>
-
-      {/* Cartões de Teste */}
-      {/* <div className="mt-3 p-3 bg-warning bg-opacity-10 rounded">
-        <small className="text-muted">
-          <strong>💡 Cartões de Teste (Sandbox):</strong><br/>
-          Visa: 4111 1111 1111 1111<br/>
-          MasterCard: 5555 6666 7777 8884<br/>
-          CVV: 123 | Validade: Qualquer data futura
-        </small>
-      </div> */}
     </form>
   );
 }

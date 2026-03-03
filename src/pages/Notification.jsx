@@ -1,22 +1,29 @@
-// components/UI/Notification.jsx
 import React from "react";
 
 const Notification = ({ show, message, type, onClose }) => {
-  if (!show) return null;
-
-  const alertClass = `alert alert-${type} alert-dismissible fade show`;
+  const iconMap = {
+    error: "fas fa-exclamation-circle",
+    success: "fas fa-check-circle",
+    info: "fas fa-info-circle",
+  };
 
   return (
-    <div className="container mb-4">
-      <div className={alertClass} role="alert">
-        {message}
-        <button
-          type="button"
-          className="btn-close"
-          onClick={onClose}
-          aria-label="Close"
-        ></button>
-      </div>
+    <div
+      className={`checkout-toast checkout-toast--${type || "info"} ${
+        show ? "checkout-toast--visible" : ""
+      }`}
+      role="alert"
+    >
+      <i className={`checkout-toast__icon ${iconMap[type] || iconMap.info}`}></i>
+      <span>{message}</span>
+      <button
+        type="button"
+        className="checkout-toast__close"
+        onClick={onClose}
+        aria-label="Fechar"
+      >
+        <i className="fas fa-times"></i>
+      </button>
     </div>
   );
 };

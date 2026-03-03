@@ -6,10 +6,15 @@ import {
   updateUserRole,
   updateUserStatus,
   deleteUser,
+  updateProfile,
 } from '../controllers/userController.js';
 
 const router = express.Router();
 
+// Rota do perfil do próprio usuário (não requer admin)
+router.put('/profile', protect, updateProfile);
+
+// Rotas admin
 router.use(protect, admin);
 
 router.get('/', listUsers);

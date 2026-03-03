@@ -83,7 +83,6 @@ const orderSchema = new mongoose.Schema(
       enum: ["PIX", "CREDIT_CARD", "Cartão de Débito", "Boleto", "PagSeguro"],
     },
     pgOrderId: String,
-    pgOrderId: String,
     pgChargeId: String,
     pixQrCodeText: String,
     pixQrCodeLink: String,

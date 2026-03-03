@@ -1,8 +1,8 @@
-// src/pages/profile/OrderHistory.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Eye, Calendar, DollarSign } from 'lucide-react';
+import { Package, Eye, ShoppingBag } from 'lucide-react';
 import api from '../../services/api';
+import './Profile.css';
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -23,114 +23,113 @@ const OrderHistory = () => {
     }
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
+  const formatCurrency = (v) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      'Pago': { class: 'bg-success', text: 'Pago' },
-      'Processando': { class: 'bg-warning', text: 'Processando' },
-      'Pendente': { class: 'bg-secondary', text: 'Pendente' },
-      'Cancelado': { class: 'bg-danger', text: 'Cancelado' },
-      'Enviado': { class: 'bg-info', text: 'Enviado' },
-      'Entregue': { class: 'bg-success', text: 'Entregue' }
+    const map = {
+      'Pago': 'admin-badge--paid',
+      'Processando': 'admin-badge--processing',
+      'Pendente': 'admin-badge--pending',
+      'Cancelado': 'admin-badge--cancelled',
+      'Enviado': 'admin-badge--paid',
+      'Entregue': 'admin-badge--paid',
     };
-
-    const config = statusConfig[status] || { class: 'bg-secondary', text: status };
-    
-    return <span className={`badge ${config.class}`}>{config.text}</span>;
+    return map[status] || 'admin-badge--default';
   };
 
   if (loading) {
     return (
-      <div className="text-center py-4">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Carregando...</span>
-        </div>
-        <p className="mt-2">Carregando seus pedidos...</p>
+      <div className="text-center py-5">
+        <div className="spinner-border spinner-border-sm text-dark" role="status"></div>
+        <p className="mt-2" style={{ fontSize: '0.85rem', color: '#999' }}>Carregando pedidos...</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="d-flex align-items-center mb-4">
-        <Package size={24} className="text-primary me-2" />
-        <h4 className="mb-0">Meus Pedidos</h4>
-      </div>
+      <h2 className="profile-page-title">Meus Pedidos</h2>
+      <p className="profile-page-subtitle">{orders.length} pedido(s) realizados</p>
 
       {orders.length === 0 ? (
-        <div className="text-center py-5">
-          <Package size={64} className="text-muted mb-3" />
-          <h5>Nenhum pedido encontrado</h5>
-          <p className="text-muted mb-4">
-            Você ainda não fez nenhum pedido em nossa loja.
-          </p>
-          <Link to="/products" className="btn btn-primary">
-            Fazer Minha Primeira Compra
-          </Link>
+        <div className="profile-card">
+          <div className="profile-card__body" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%', background: '#f5f5f5',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 12, color: '#ccc',
+            }}>
+              <ShoppingBag size={24} />
+            </div>
+            <p style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1a1a1a', margin: '0 0 4px' }}>
+              Nenhum pedido encontrado
+            </p>
+            <p style={{ fontSize: '0.82rem', color: '#999', margin: '0 0 16px' }}>
+              Você ainda não fez nenhum pedido.
+            </p>
+            <Link
+              to="/collections"
+              className="checkout-btn checkout-btn--primary"
+              style={{ width: 'auto', display: 'inline-flex', padding: '10px 28px', textDecoration: 'none' }}
+            >
+              Fazer Minha Primeira Compra
+            </Link>
+          </div>
         </div>
       ) : (
-        <div className="table-responsive">
-          <table className="table table-hover">
-            <thead className="table-light">
-              <tr>
-                <th>Pedido</th>
-                <th>Data</th>
-                <th>Itens</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order._id}>
-                  <td>
-                    <strong>#{order._id.slice(-8).toUpperCase()}</strong>
-                  </td>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <Calendar size={16} className="text-muted me-2" />
-                      {formatDate(order.createdAt)}
-                    </div>
-                  </td>
-                  <td>
-                    <small>
-                      {order.orderItems.length} item
-                      {order.orderItems.length !== 1 ? 's' : ''}
-                    </small>
-                  </td>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <DollarSign size={16} className="text-success me-1" />
-                      <strong>{formatPrice(order.total)}</strong>
-                    </div>
-                  </td>
-                  <td>
-                    {getStatusBadge(order.status)}
-                  </td>
-                  <td>
-                    <Link
-                      to={`/order-confirmation/${order._id}`}
-                      className="btn btn-sm btn-outline-primary"
-                    >
-                      <Eye size={16} className="me-1" />
-                      Detalhes
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div>
+          {orders.map((order) => (
+            <div key={order._id} className="profile-order">
+              <div className="profile-order__header">
+                <div>
+                  <span className="profile-order__id">#{order._id.slice(-8).toUpperCase()}</span>
+                  <span className="profile-order__date" style={{ marginLeft: 10 }}>
+                    {formatDate(order.createdAt)}
+                  </span>
+                </div>
+                <span className={`admin-badge ${getStatusBadge(order.status)}`}>
+                  {order.status}
+                </span>
+              </div>
+
+              {/* Product Thumbnails */}
+              <div className="profile-order__items">
+                {order.orderItems?.slice(0, 4).map((item, i) => (
+                  <img key={i} src={item.image} alt={item.name} className="profile-order__thumb" />
+                ))}
+                {order.orderItems?.length > 4 && (
+                  <div
+                    className="profile-order__thumb"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: '#f5f5f5', color: '#999', fontSize: '0.72rem', fontWeight: 700,
+                    }}
+                  >
+                    +{order.orderItems.length - 4}
+                  </div>
+                )}
+              </div>
+
+              <div className="profile-order__footer">
+                <div>
+                  <span className="profile-order__total">{formatCurrency(order.total)}</span>
+                  <span style={{ fontSize: '0.72rem', color: '#999', marginLeft: 6 }}>
+                    {order.orderItems?.length} item{order.orderItems?.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <Link
+                  to={`/order-confirmation/${order._id}`}
+                  className="admin-link-btn"
+                >
+                  <Eye size={13} /> Detalhes
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

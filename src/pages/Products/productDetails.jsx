@@ -1,7 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useCart } from "../../Context/CartContext";
+import { useFavorites } from "../../Context/FavoritesContext";
 import { useProduct } from "../../hooks/useProducts";
+import tabela_de_medidas from "../../assets/tabela_de_medidas.png";
+import CartToast from "../../components/CartToast/CartToast";
+import "./ProductDetails.css";
+
+// ── Skeleton Loader ──
+const ProductSkeleton = () => (
+  <div className="container py-5">
+    <div className="row g-4">
+      <div className="col-lg-7">
+        <div className="pdp-skeleton">
+          <div className="pdp-skeleton__thumbs">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="pdp-skeleton__thumb" />
+            ))}
+          </div>
+          <div className="pdp-skeleton__main-img" />
+        </div>
+      </div>
+      <div className="col-lg-5">
+        <div className="pdp-skeleton__info">
+          <div className="pdp-skeleton__line pdp-skeleton__line--title" />
+          <div className="pdp-skeleton__line pdp-skeleton__line--price" />
+          <div className="pdp-skeleton__line pdp-skeleton__line--desc" />
+          <div className="pdp-skeleton__line pdp-skeleton__line--desc2" />
+          <div className="pdp-skeleton__line pdp-skeleton__line--desc" />
+          <div className="pdp-skeleton__line pdp-skeleton__line--btn" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -11,72 +43,79 @@ const ProductDetails = () => {
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("desc");
+  const [buttonState, setButtonState] = useState("idle");
+  const [showToast, setShowToast] = useState(false);
+  const [toastProduct, setToastProduct] = useState(null);
+  const buttonTimerRef = useRef(null);
 
   const { addItemToCart } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const productImages = product?.images || [];
   const productColors = product?.colors || [];
   const productSizes = product?.sizes || [];
 
-  // Definir imagem selecionada quando o produto carregar
+  const isFav = product ? isFavorite(product._id) : false;
+
+  // Imagem selecionada quando produto carrega
   useEffect(() => {
-    if (product && product.images && product.images.length > 0) {
+    if (product?.images?.length > 0) {
       setSelectedImage(product.images[0]);
     }
   }, [product]);
 
-  const handleThumbnailClick = (imageUrl) => {
-    setSelectedImage(imageUrl);
-  };
-
-  const handleColorChange = (item) => {
-    setColor(item);
-  };
-
-  const handleSizeChange = (item) => {
-    setSize(item);
-  };
-
-  const incrementQuantity = () => {
-    setQuantity((prevQuantity) => prevQuantity + 1);
-  };
-
-  const decrementQuantity = () => {
-    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
-  };
+  const incrementQuantity = () => setQuantity((q) => q + 1);
+  const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
   const addToCart = () => {
     if (!product || !color || !size || quantity <= 0) {
-      alert("Por favor, selecione todas as opções antes de adicionar ao carrinho.");
+      setButtonState("shake");
+      setTimeout(() => setButtonState("idle"), 500);
       return;
     }
 
-    const productItem = {
+    const productImage = product.images?.[0] || selectedImage;
+
+    addItemToCart({
       id: product._id,
       name: product.name,
       price: product.price,
-      quantity: quantity,
-      color: color,
-      size: size,
-      image: product.images?.[0] || selectedImage,
+      quantity,
+      color,
+      size,
+      image: productImage,
       originalPrice: product.oldPrice || null,
-    };
+    });
 
-    addItemToCart(productItem);
-    alert(`Produto adicionado ao carrinho: ${product.name}`);
+    if (buttonTimerRef.current) clearTimeout(buttonTimerRef.current);
+    setButtonState("added");
+    buttonTimerRef.current = setTimeout(() => setButtonState("idle"), 2000);
+
+    setToastProduct({
+      name: product.name,
+      image: productImage,
+      color,
+      size,
+    });
+    setShowToast(true);
   };
 
-  if (loading) {
-    return (
-      <div className="container py-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Carregando...</span>
-        </div>
-        <p className="mt-3">Carregando detalhes do produto...</p>
-      </div>
-    );
-  }
+  const handleToggleFavorite = () => {
+    if (product) {
+      toggleFavorite(product);
+    }
+  };
 
+  // Calcular desconto
+  const discountPercent =
+    product?.oldPrice && product?.price
+      ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
+      : 0;
+
+  // ── Loading ──
+  if (loading) return <ProductSkeleton />;
+
+  // ── Error ──
   if (error) {
     return (
       <div className="container py-5 text-center">
@@ -88,233 +127,211 @@ const ProductDetails = () => {
     );
   }
 
+  // ── Not Found ──
   if (!product) {
     return (
       <div className="container py-5 text-center">
         <div className="alert alert-warning" role="alert">
           <h4 className="alert-heading">Produto não encontrado</h4>
           <p>O produto que você está procurando não existe ou foi removido.</p>
+          <Link to="/collections" className="btn btn-dark rounded-pill px-4 mt-2">
+            Ver coleção
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container py-5">
-      <div className="row g-5">
-        {/* Product Images Section */}
-        <div className="col-lg-7">
-          <div className="d-flex gap-3">
-             {/* Thumbnails (Vertical) */}
-             <div className="d-flex flex-column gap-2" style={{ width: "100px" }}>
+    <>
+      <div className="container py-5">
+        <div className="row g-5">
+          {/* ━━ Image Gallery ━━ */}
+          <div className="col-lg-7">
+            <div className="pdp-gallery">
+              {/* Thumbnails */}
+              <div className="pdp-thumbs">
                 {productImages.length > 0
                   ? productImages.map((imgUrl, index) => (
                       <div
                         key={index}
-                        className={`cursor-pointer rounded border ${
-                          selectedImage === imgUrl
-                            ? "border-dark border-2"
-                            : "border-light"
-                        } overflow-hidden`}
-                        onClick={() => handleThumbnailClick(imgUrl)}
-                        style={{ height: "100px", width: "100px" }}
+                        className={`pdp-thumb ${selectedImage === imgUrl ? "pdp-thumb--active" : ""}`}
+                        onClick={() => setSelectedImage(imgUrl)}
                       >
-                        <img
-                          src={imgUrl}
-                          alt={`Miniatura ${index + 1}`}
-                          className="w-100 h-100"
-                          style={{ objectFit: "cover" }}
-                        />
+                        <img src={imgUrl} alt={`${product.name} - foto ${index + 1}`} />
                       </div>
                     ))
-                  : Array.from({ length: 4 }).map((_, index) => (
-                      <div
-                        key={index}
-                        className="bg-light rounded d-flex align-items-center justify-content-center"
-                        style={{ height: "100px", width: "100px" }}
-                      >
-                        <span className="small text-muted">Img</span>
+                  : [...Array(4)].map((_, i) => (
+                      <div key={i} className="pdp-thumb pdp-thumb--placeholder">
+                        <span>Img</span>
                       </div>
                     ))}
-             </div>
+              </div>
 
-             {/* Main Image */}
-             <div className="flex-grow-1 bg-white rounded shadow-sm overflow-hidden" style={{ height: "500px" }}>
+              {/* Main Image */}
+              <div className="pdp-main-image">
                 <img
-                  id="mainImage"
-                  src={selectedImage || "https://via.placeholder.com/600x600/cccccc/ffffff?text=Imagem+Principal"}
+                  src={selectedImage || "https://via.placeholder.com/600x600/cccccc/ffffff?text=Imagem"}
                   alt={product.name}
-                  className="w-100 h-100"
-                  style={{ objectFit: "cover" }}
                 />
-             </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Product Details Section */}
-        <div className="col-lg-5">
-          <div className="ps-lg-4">
-            {/* Product Title (Centered) */}
-            <h1 className="h2 fw-bold text-dark mb-4 text-center">
-              {product.name || "Nome do Produto"}
-            </h1>
+          {/* ━━ Product Info ━━ */}
+          <div className="col-lg-5">
+            <div className="pdp-info">
+              {/* Title + Favorite */}
+              <div className="pdp-title-row">
+                <h1 className="pdp-title">{product.name}</h1>
+                <button
+                  className={`pdp-fav-btn ${isFav ? "pdp-fav-btn--active" : ""}`}
+                  onClick={handleToggleFavorite}
+                  title={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                  type="button"
+                >
+                  <i className={`${isFav ? "fas" : "far"} fa-heart fs-4`}></i>
+                </button>
+              </div>
 
-            {/* Price (Left Aligned) */}
-            <div className="mb-4">
-              <span className="display-6 fw-bold text-dark">
-                R$ {product.price?.toFixed(2).replace(".", ",") || "0,00"}
-              </span>
-              {product.oldPrice && (
-                <span className="fs-5 text-muted text-decoration-line-through ms-2">
-                  R$ {product.oldPrice.toFixed(2).replace(".", ",")}
+              {/* Price */}
+              <div className="pdp-price">
+                <span className="pdp-price__current">
+                  R$ {product.price?.toFixed(2).replace(".", ",")}
                 </span>
+                {product.oldPrice && (
+                  <>
+                    <span className="pdp-price__old">
+                      R$ {product.oldPrice.toFixed(2).replace(".", ",")}
+                    </span>
+                    {discountPercent > 0 && (
+                      <span className="pdp-price__discount">-{discountPercent}%</span>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Description */}
+              {product.description && (
+                <p className="pdp-description">{product.description}</p>
               )}
-            </div>
 
-            {/* Description (Short) */}
-            <div className="mb-4">
-              <p className="text-muted">
-                {product.description || "lorem ipsum dolor sit amet consectetur adipiscing elit lorem ipsum dolor sit amet consectetur adipiscing elit lorem ipsum dolor sit amet consectetur adipiscing elit lorem ipsum dolor sit amet consectetur adipiscing elit"}
-              </p>
-            </div>
+              {/* Colors */}
+              {productColors.length > 0 && (
+                <div className="mb-3">
+                  <p className="pdp-label">
+                    Cor{color && <span style={{ textTransform: "none", fontWeight: 500 }}> — {productColors.find(c => c.value === color)?.name || color}</span>}
+                  </p>
+                  <div className="pdp-colors">
+                    {productColors.map((opt) => (
+                      <button
+                        key={opt.value}
+                        className={`pdp-color-swatch ${color === opt.value ? "pdp-color-swatch--active" : ""}`}
+                        style={{ backgroundColor: opt.colorCode }}
+                        onClick={() => setColor(opt.value)}
+                        title={opt.name}
+                        type="button"
+                        aria-label={`Cor ${opt.name}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            {/* Colors */}
-            <div className="mb-4">
-              <h6 className="fw-bold text-dark mb-2">Cores</h6>
-              <div className="d-flex gap-2">
-                {productColors.map((opt) => (
-                  <button
-                    key={opt.value}
-                    className={`rounded-circle border ${
-                      color === opt.value
-                        ? "border-dark border-2 shadow-sm"
-                        : "border-secondary"
-                    }`}
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      backgroundColor: opt.colorCode,
-                    }}
-                    onClick={() => handleColorChange(opt.value)}
-                    title={opt.name}
-                    type="button"
-                  ></button>
-                ))}
+              {/* Sizes */}
+              {productSizes.length > 0 && (
+                <div className="mb-3">
+                  <p className="pdp-label">Tamanho</p>
+                  <div className="pdp-sizes">
+                    {productSizes.map((sizeOption) => (
+                      <button
+                        key={sizeOption}
+                        className={`pdp-size-btn ${size === sizeOption ? "pdp-size-btn--active" : ""}`}
+                        onClick={() => setSize(sizeOption)}
+                        type="button"
+                      >
+                        {sizeOption}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Shipping */}
+              <div className="pdp-shipping">
+                <div className="pdp-shipping__row">
+                  <div className="pdp-shipping__icon pdp-shipping__icon--truck">
+                    <i className="fas fa-truck"></i>
+                  </div>
+                  <span>
+                    Frete fixo para Fortaleza: <strong className="text-success">R$ 15,00</strong>
+                  </span>
+                </div>
+                <div className="pdp-shipping__row">
+                  <div className="pdp-shipping__icon pdp-shipping__icon--return">
+                    <i className="fas fa-undo"></i>
+                  </div>
+                  <span>Devolução grátis em até 7 dias</span>
+                </div>
               </div>
-            </div>
 
-            {/* Sizes */}
-            <div className="mb-4">
-              <h6 className="fw-bold text-dark mb-2">Tamanhos</h6>
-              <div className="d-flex flex-wrap gap-2">
-                {productSizes.map((sizeOption) => (
-                  <button
-                    key={sizeOption}
-                    className={`btn btn-sm ${
-                      size === sizeOption ? "btn-dark" : "btn-outline-secondary"
-                    }`}
-                    onClick={() => handleSizeChange(sizeOption)}
-                    title={sizeOption}
-                    type="button"
-                    style={{ minWidth: "40px" }}
-                  >
-                    {sizeOption}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Shipping Info (Static) */}
-            <div className="mb-4 p-3 bg-light rounded">
-                <p className="mb-1 fw-medium">
-                  <i className="fas fa-truck me-2"></i> Frete fixo para Fortaleza: <span className="text-success fw-bold">R$ 15,00</span>
-                </p>
-                <p className="mb-0 small text-muted">
-                  <i className="fas fa-undo me-2"></i> Devolução grátis em até 7 dias
-                </p>
-            </div>
-
-            {/* Add to Cart */}
-            <div className="d-flex gap-3">
-              <div className="input-group" style={{ maxWidth: "120px" }}>
+              {/* Quantity + Add to Cart */}
+              <div className="pdp-actions">
+                <div className="pdp-qty">
+                  <button className="pdp-qty__btn" onClick={decrementQuantity} type="button">−</button>
+                  <span className="pdp-qty__value">{quantity}</span>
+                  <button className="pdp-qty__btn" onClick={incrementQuantity} type="button">+</button>
+                </div>
                 <button
-                  className="btn btn-outline-secondary"
-                  onClick={decrementQuantity}
+                  className={`pdp-add-btn ${buttonState === "added" ? "pdp-add-btn--added" : ""} ${buttonState === "shake" ? "pdp-add-btn--shake" : ""}`}
+                  onClick={addToCart}
                   type="button"
+                  disabled={buttonState === "added"}
                 >
-                  -
-                </button>
-                <input
-                  type="text"
-                  value={quantity}
-                  className="form-control text-center"
-                  readOnly
-                />
-                <button
-                  className="btn btn-outline-secondary"
-                  onClick={incrementQuantity}
-                  type="button"
-                >
-                  +
+                  {buttonState === "added" ? "✓ Adicionado!" : "Adicionar ao carrinho"}
                 </button>
               </div>
-              <button
-                className="btn btn-dark flex-grow-1 py-2 fw-bold"
-                onClick={addToCart}
-                type="button"
-              >
-                ADICIONAR AO CARRINHO
-              </button>
             </div>
+          </div>
+        </div>
+
+        {/* ━━ Tabs ━━ */}
+        <div className="pdp-tabs">
+          <div className="pdp-tabs__nav">
+            <button
+              className={`pdp-tab-btn ${activeTab === "desc" ? "pdp-tab-btn--active" : ""}`}
+              onClick={() => setActiveTab("desc")}
+              type="button"
+            >
+              Descrição
+            </button>
+            <button
+              className={`pdp-tab-btn ${activeTab === "specs" ? "pdp-tab-btn--active" : ""}`}
+              onClick={() => setActiveTab("specs")}
+              type="button"
+            >
+              Especificações Técnicas
+            </button>
+          </div>
+
+          <div className="pdp-tab-content">
+            {activeTab === "desc" && (
+              <p>{product.description || "Descrição detalhada do produto."}</p>
+            )}
+            {activeTab === "specs" && (
+              <img src={tabela_de_medidas} alt="Tabela de Medidas" />
+            )}
           </div>
         </div>
       </div>
 
-      {/* Tabs Section (Description & Specs) */}
-      <div className="row mt-5">
-        <div className="col-12">
-            <div className="border-bottom mb-4">
-                <ul className="nav nav-tabs border-0 justify-content-center" id="productTabs" role="tablist">
-                    <li className="nav-item" role="presentation">
-                        <button 
-                            className={`nav-link border-0 fw-bold text-uppercase ${activeTab === 'desc' ? 'active text-dark' : 'text-muted'}`}
-                            onClick={() => setActiveTab('desc')}
-                            type="button"
-                        >
-                            Descrição
-                        </button>
-                    </li>
-                    <li className="nav-item" role="presentation">
-                        <button 
-                            className={`nav-link border-0 fw-bold text-uppercase ${activeTab === 'specs' ? 'active text-dark' : 'text-muted'}`} 
-                            onClick={() => setActiveTab('specs')}
-                            type="button"
-                        >
-                            Especificações Técnicas
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            
-            <div className="tab-content" id="productTabsContent">
-                {activeTab === 'desc' && (
-                    <div className="tab-pane fade show active text-center" role="tabpanel">
-                        <p className="text-muted mx-auto" style={{ maxWidth: "800px" }}>
-                            {product.description || "Descrição detalhada do produto."}
-                        </p>
-                    </div>
-                )}
-                {activeTab === 'specs' && (
-                    <div className="tab-pane fade show active text-center" role="tabpanel">
-                        <p className="text-muted">
-                            Informações técnicas não disponíveis no momento.
-                        </p>
-                    </div>
-                )}
-            </div>
-        </div>
-      </div>
-    </div>
+      {/* Toast */}
+      <CartToast
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        product={toastProduct}
+      />
+    </>
   );
 };
 

@@ -95,7 +95,7 @@ async function testAuth() {
 
 const createPix = async (req, res) => {
   try {
-    const { cartItems, shippingAddress } = req.body;
+    const { cartItems, shippingAddress, shippingPrice } = req.body;
 
     if (!cartItems || !cartItems.length) {
       return res.status(400).json({ success: false, message: "Carrinho vazio" });
@@ -116,9 +116,9 @@ const createPix = async (req, res) => {
 
     // Calcula valores
     const itemsPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const shippingPrice = 0;
+    const finalShippingPrice = Number(shippingPrice) || 0;
     const taxPrice = 0;
-    const total = itemsPrice + shippingPrice + taxPrice;
+    const total = itemsPrice + finalShippingPrice + taxPrice;
     const totalCents = Math.round(total * 100);
 
     // Cria pedido
@@ -146,7 +146,7 @@ const createPix = async (req, res) => {
       paymentMethod: "PIX",
       itemsPrice,
       taxPrice,
-      shippingPrice,
+      shippingPrice: finalShippingPrice,
       total,
       status: "Pendente",
       isPaid: false,
@@ -294,7 +294,7 @@ const createPix = async (req, res) => {
 };
 
 const createCreditCardPayment = async (req, res) => {
-  const { cartItems, shippingAddress, cardData, installments } = req.body;
+  const { cartItems, shippingAddress, cardData, installments, shippingPrice } = req.body;
   
   if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
     return res.status(400).json({ 
@@ -316,7 +316,16 @@ const createCreditCardPayment = async (req, res) => {
     validateClientURL();
 
     const itemsPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const total = itemsPrice;
+    const finalShippingPrice = Number(shippingPrice) || 0;
+    
+    let total = itemsPrice + finalShippingPrice;
+    
+    // Aplica juros progressivos: 5% em 4x, +1% a cada parcela adicional
+    if (installments && Number(installments) >= 4) {
+      const numInstallments = Number(installments);
+      const interestRate = 0.05 + ((numInstallments - 4) * 0.01);
+      total = total * (1 + interestRate);
+    }
 
     const orderItems = cartItems.map((item) => ({
       product: item.id || item.product,
@@ -344,7 +353,7 @@ const createCreditCardPayment = async (req, res) => {
       paymentMethod: 'CREDIT_CARD',
       itemsPrice,
       taxPrice: 0,
-      shippingPrice: 0,
+      shippingPrice: finalShippingPrice,
       total,
       status: "Processando",
       isPaid: false,

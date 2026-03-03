@@ -1,17 +1,28 @@
-// src/pages/Admin/OrderManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, Edit, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  Search, Eye, ChevronRight, Package,
+  ArrowUpRight, CheckCircle, X
+} from 'lucide-react';
 import api from '../../services/api';
+import './AdminDashboard.css';
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [updatingId, setUpdatingId] = useState(null);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 4000);
+  };
 
   const fetchOrders = async () => {
     try {
@@ -25,48 +36,55 @@ const OrderManagement = () => {
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
+    setUpdatingId(orderId);
     try {
       await api.put(`/orders/${orderId}/status`, { status: newStatus });
-      fetchOrders(); // Recarrega a lista
+      await fetchOrders();
+      showNotification(`Status atualizado para "${newStatus}"`, 'success');
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
+      showNotification(error.response?.data?.message || 'Erro ao atualizar status', 'error');
+    } finally {
+      setUpdatingId(null);
     }
   };
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
+    const matchesSearch =
       order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    
     return matchesSearch && matchesStatus;
   });
 
+  const formatCurrency = (v) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      'Pendente': 'bg-secondary',
-      'Processando': 'bg-warning',
-      'Pago': 'bg-info',
-      'Enviado': 'bg-primary',
-      'Entregue': 'bg-success',
-      'Cancelado': 'bg-danger'
+    const map = {
+      'Pago': 'admin-badge--paid',
+      'Processando': 'admin-badge--processing',
+      'Pendente': 'admin-badge--pending',
+      'Cancelado': 'admin-badge--cancelled',
+      'Enviado': 'admin-badge--paid',
+      'Entregue': 'admin-badge--paid',
     };
-    
-    return <span className={`badge ${statusConfig[status] || 'bg-secondary'}`}>
-      {status}
-    </span>;
+    return map[status] || 'admin-badge--default';
   };
+
+  // Stats
+  const totalRevenue = orders.filter(o => o.isPaid).reduce((s, o) => s + o.total, 0);
+  const pendingCount = orders.filter(o => o.status === 'Pendente' || o.status === 'Processando').length;
 
   if (loading) {
     return (
-      <div className="container-fluid py-4">
+      <div className="container-fluid py-5">
         <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Carregando...</span>
-          </div>
-          <p className="mt-2">Carregando pedidos...</p>
+          <div className="spinner-border spinner-border-sm text-dark" role="status"></div>
+          <p className="mt-2" style={{ fontSize: '0.85rem', color: '#999' }}>Carregando pedidos...</p>
         </div>
       </div>
     );
@@ -74,43 +92,65 @@ const OrderManagement = () => {
 
   return (
     <div className="container-fluid py-4">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 className="h3 mb-2">Gerenciar Pedidos</h1>
-          <p className="text-muted">
-            {filteredOrders.length} pedido(s) encontrado(s)
-          </p>
-        </div>
-        <div className="btn-group">
-          <button className="btn btn-outline-primary">
-            <Download size={16} className="me-2" />
-            Exportar
+      {/* Toast */}
+      {notification.show && (
+        <div className={`checkout-toast checkout-toast--${notification.type} checkout-toast--visible`} role="alert">
+          <span>{notification.message}</span>
+          <button className="checkout-toast__close" onClick={() => setNotification({ show: false, message: '', type: '' })}>
+            <X size={14} />
           </button>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="admin-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <h1 className="admin-header__title">Gerenciar Pedidos</h1>
+          <p className="admin-header__subtitle">{orders.length} pedido(s) no total</p>
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="card mb-4">
-        <div className="card-body">
+      {/* Stats */}
+      <div className="admin-stats" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginBottom: '1.5rem' }}>
+        <div className="admin-stat">
+          <div className="admin-stat__icon admin-stat__icon--blue"><Package size={18} /></div>
+          <p className="admin-stat__value">{orders.length}</p>
+          <p className="admin-stat__label">Total Pedidos</p>
+        </div>
+        <div className="admin-stat">
+          <div className="admin-stat__icon admin-stat__icon--green"><CheckCircle size={18} /></div>
+          <p className="admin-stat__value">{formatCurrency(totalRevenue)}</p>
+          <p className="admin-stat__label">Faturamento Pago</p>
+        </div>
+        <div className="admin-stat">
+          <div className="admin-stat__icon admin-stat__icon--amber"><Search size={18} /></div>
+          <p className="admin-stat__value">{pendingCount}</p>
+          <p className="admin-stat__label">Pendentes</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="admin-card" style={{ marginBottom: '1.25rem' }}>
+        <div className="admin-card__body--padded">
           <div className="row g-3">
-            <div className="col-md-6">
+            <div className="col-md-8">
               <div className="input-group">
-                <span className="input-group-text">
-                  <Search size={16} />
+                <span className="input-group-text" style={{ background: '#fafafa', border: '1px solid #e0e0e0', borderRadius: '10px 0 0 10px' }}>
+                  <Search size={15} color="#999" />
                 </span>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control checkout-input"
+                  style={{ borderRadius: '0 10px 10px 0' }}
                   placeholder="Buscar por ID, nome ou email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-4">
               <select
-                className="form-select"
+                className="form-select checkout-input"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -123,98 +163,82 @@ const OrderManagement = () => {
                 <option value="Cancelado">Cancelado</option>
               </select>
             </div>
-            <div className="col-md-3">
-              <button className="btn btn-outline-secondary w-100">
-                <Filter size={16} className="me-2" />
-                Mais Filtros
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Tabela de Pedidos */}
-      <div className="card">
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-hover mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>Pedido</th>
-                  <th>Cliente</th>
-                  <th>Data</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Pagamento</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order) => (
-                  <tr key={order._id}>
-                    <td>
-                      <strong>#{order._id.slice(-8).toUpperCase()}</strong>
-                    </td>
-                    <td>
-                      <div>
-                        <div className="fw-medium">{order.user?.name || 'N/A'}</div>
-                        <small className="text-muted">{order.user?.email}</small>
-                      </div>
-                    </td>
-                    <td>
-                      {new Date(order.createdAt).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td>
-                      {new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                      }).format(order.total)}
-                    </td>
-                    <td>
-                      <select
-                        className="form-select form-select-sm"
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                        style={{ width: 'auto' }}
-                      >
-                        <option value="Pendente">Pendente</option>
-                        <option value="Processando">Processando</option>
-                        <option value="Pago">Pago</option>
-                        <option value="Enviado">Enviado</option>
-                        <option value="Entregue">Entregue</option>
-                        <option value="Cancelado">Cancelado</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span className={`badge ${
-                        order.isPaid ? 'bg-success' : 'bg-warning'
-                      }`}>
-                        {order.isPaid ? 'Pago' : 'Pendente'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="btn-group btn-group-sm">
-                        <button className="btn btn-outline-primary">
-                          <Eye size={14} />
-                        </button>
-                        <button className="btn btn-outline-secondary">
-                          <Edit size={14} />
-                        </button>
-                      </div>
-                    </td>
+      {/* Orders Table */}
+      <div className="admin-card">
+        <div className="admin-card__header">
+          <h2 className="admin-card__title">{filteredOrders.length} pedido(s) encontrado(s)</h2>
+        </div>
+        <div className="admin-card__body">
+          {filteredOrders.length === 0 ? (
+            <div className="admin-empty">
+              <div className="admin-empty__icon"><Search size={24} /></div>
+              <p className="admin-empty__text">Nenhum pedido encontrado</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Data</th>
+                    <th>Total</th>
+                    <th>Pagamento</th>
+                    <th>Status</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {filteredOrders.length === 0 && (
-            <div className="text-center py-5">
-              <Search size={48} className="text-muted mb-3" />
-              <h5>Nenhum pedido encontrado</h5>
-              <p className="text-muted">
-                Tente ajustar os filtros de busca
-              </p>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((order) => (
+                    <tr key={order._id}>
+                      <td>
+                        <strong style={{ fontSize: '0.82rem' }}>
+                          #{order._id.slice(-8).toUpperCase()}
+                        </strong>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{order.user?.name || 'N/A'}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#999' }}>{order.user?.email}</div>
+                      </td>
+                      <td>{formatDate(order.createdAt)}</td>
+                      <td><strong>{formatCurrency(order.total)}</strong></td>
+                      <td>
+                        <span className={`admin-badge ${order.isPaid ? 'admin-badge--paid' : 'admin-badge--pending'}`}>
+                          {order.isPaid ? 'Pago' : 'Pendente'}
+                        </span>
+                      </td>
+                      <td>
+                        <select
+                          className="form-select checkout-input"
+                          style={{ width: 'auto', padding: '4px 28px 4px 10px', fontSize: '0.78rem', minWidth: 130 }}
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                          disabled={updatingId === order._id}
+                        >
+                          <option value="Pendente">Pendente</option>
+                          <option value="Processando">Processando</option>
+                          <option value="Pago">Pago</option>
+                          <option value="Enviado">Enviado</option>
+                          <option value="Entregue">Entregue</option>
+                          <option value="Cancelado">Cancelado</option>
+                        </select>
+                      </td>
+                      <td>
+                        <Link
+                          to={`/admin/orders/${order._id}`}
+                          className="admin-link-btn"
+                        >
+                          <Eye size={13} /> Ver
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 // src/controllers/stockController.js
 import Product from '../models/Product.js';
-import StockService from '../../../src/services/stockService.js';
+import StockService from '../services/stockService.js';
 
 // Ajuste manual de estoque
 const adjustStock = async (req, res) => {

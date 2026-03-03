@@ -1,50 +1,214 @@
-.btn-outline-secondary.active {
-  background-color: #e83e8c; /* Cor custom-pink */
-  color: white;
-  border-color: #e83e8c;
+/* ============================
+   Collections Page
+   ============================ */
+
+/* ---- Page Header ---- */
+.collections-header {
+  padding: 1.5rem 0 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 1.5rem;
 }
 
-.product-card-custom a {
-  color: inherit;
-  text-decoration: none;
+.collections-header__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
 }
 
-.product-card-custom:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+.collections-header__subtitle {
+  font-size: 0.85rem;
+  color: #999;
+  margin: 4px 0 0;
 }
 
-/* Sidebar Styles */
+/* ---- Toolbar (counter + sort + mobile filter btn) ---- */
+.collections-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.collections-toolbar__count {
+  font-size: 0.82rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.collections-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.collections-toolbar__sort {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 6px 32px 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #333;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.collections-toolbar__sort:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.collections-toolbar__filter-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.collections-toolbar__filter-btn:hover {
+  border-color: #1a1a1a;
+}
+
+/* ---- Active Filter Chips ---- */
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: #f5f5f5;
+  color: #555;
+  border: 1px solid #e8e8e8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-chip:hover {
+  background: #eee;
+  border-color: #ccc;
+}
+
+.filter-chip__x {
+  font-size: 0.85rem;
+  line-height: 1;
+  color: #999;
+  font-weight: 400;
+}
+
+.filter-chip--clear {
+  background: transparent;
+  border: none;
+  color: #999;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  padding: 4px 6px;
+}
+
+.filter-chip--clear:hover {
+  color: #333;
+  background: transparent;
+}
+
+/* ---- Sidebar ---- */
 .filter-sidebar {
   position: sticky;
-  top: 20px;
+  top: 100px;
 }
 
-/* Dual Range Slider Styles */
+.filter-section {
+  margin-bottom: 1.5rem;
+}
+
+.filter-section__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  margin-bottom: 10px;
+}
+
+.filter-category-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-category-btn:hover {
+  background: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.filter-category-btn--active {
+  background: #1a1a1a;
+  color: #fff;
+  font-weight: 600;
+}
+
+.filter-category-btn--active:hover {
+  background: #333;
+  color: #fff;
+}
+
+/* Price slider */
 .price-slider-container {
   position: relative;
   width: 100%;
 }
 
 input[type=range] {
-  -webkit-appearance: none; 
+  -webkit-appearance: none;
   appearance: none;
   pointer-events: none;
-  background: transparent; /* Remove default track */
+  background: transparent;
 }
 
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  pointer-events: auto; /* Re-enable pointer events for thumb */
+  pointer-events: auto;
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #e83e8c;
+  background: #1a1a1a;
   cursor: pointer;
-  margin-top: -6px; /* Center thumb on track */
+  margin-top: -6px;
   position: relative;
   z-index: 10;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 input[type=range]::-moz-range-thumb {
@@ -52,64 +216,37 @@ input[type=range]::-moz-range-thumb {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #e83e8c;
+  background: #1a1a1a;
   cursor: pointer;
   border: none;
   position: relative;
   z-index: 10;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
-/* Create a custom track background */
 input[type=range]::-webkit-slider-runnable-track {
-  width: 100%;
+  background: transparent;
   height: 4px;
-  cursor: pointer;
-  background: #dee2e6;
-  border-radius: 2px;
 }
 
 input[type=range]::-moz-range-track {
-  width: 100%;
+  background: transparent;
   height: 4px;
-  cursor: pointer;
-  background: #dee2e6;
-  border-radius: 2px;
 }
-
-/* Adjust the second slider to not show the track again, or overlap perfectly */
-/* Actually, for dual slider with standard inputs, we need to make the track transparent on the inputs and put a fake track behind them, OR use a specific trick. 
-   The simplest way is to make the inputs absolute and transparent, and have a div behind them acting as the track.
-*/
 
 input[type=range] {
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
-  height: 4px; /* Match track height */
+  height: 4px;
   outline: none;
 }
 
-/* We need to override the track style for the inputs to be transparent so we can see the one behind, 
-   BUT we want the thumbs to be visible. 
-*/
-
-input[type=range]::-webkit-slider-runnable-track {
-  background: transparent; 
-}
-
-input[type=range]::-moz-range-track {
-  background: transparent;
-}
-
-/* Add a background track div in JSX or here? 
-   It's easier to add a background div in JSX. 
-   I will add a .slider-track class in JSX.
-*/
 .slider-track {
   width: 100%;
   height: 4px;
-  background: #dee2e6;
+  background: #e8e8e8;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -119,9 +256,123 @@ input[type=range]::-moz-range-track {
 
 .slider-track-active {
   height: 4px;
-  background: #e83e8c;
+  background: #1a1a1a;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 0;
+}
+
+/* Color checkbox */
+.filter-color-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.filter-color-check input[type="checkbox"] {
+  accent-color: #1a1a1a;
+}
+
+.filter-color-check label {
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* ---- Loading Skeleton ---- */
+.skeleton-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.skeleton-image {
+  width: 100%;
+  padding-top: 130%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+.skeleton-text {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  margin-top: 12px;
+}
+
+.skeleton-text--short {
+  width: 60%;
+}
+
+.skeleton-text--price {
+  width: 40%;
+  height: 18px;
+  margin-top: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- Empty State ---- */
+.collections-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.collections-empty__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: #ccc;
+}
+
+.collections-empty__text {
+  font-size: 0.9rem;
+  color: #999;
+  margin: 0;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 991px) {
+  .collections-toolbar__filter-btn {
+    display: flex;
+  }
+
+  .filter-sidebar-desktop {
+    display: none;
+  }
+}
+
+/* Offcanvas overrides for filter drawer */
+.filter-offcanvas .offcanvas-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 20px;
+}
+
+.filter-offcanvas .offcanvas-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.filter-offcanvas .offcanvas-body {
+  padding: 20px;
 }

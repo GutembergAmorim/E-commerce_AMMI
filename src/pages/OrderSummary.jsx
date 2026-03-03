@@ -1,87 +1,89 @@
 import React from "react";
 import { useCart } from "../Context/CartContext";
 
-const OrderSummary = ({ onCheckout, isProcessing, isFormValid }) => {
-  const { cartItems, subtotal, discount, total } = useCart();
+const OrderSummary = ({
+  paymentDiscount = 0,
+  paymentMethodLabel = "",
+  finalTotal,
+}) => {
+  const { cartItems, subtotal, discount, total, frete } = useCart();
+
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
   return (
-    <div className="card shadow-sm p-4 mt-4 mt-md-0">
-      <h2 className="text-center h4 fw-bold mb-4">Resumo do Pedido</h2>
-      
-      <ul className="list-group list-group-flush mb-4">
+    <>
+      <h2 className="checkout-summary__title">Resumo do Pedido</h2>
+
+      {/* Product List */}
+      <div style={{ marginBottom: "1rem" }}>
         {cartItems.map((item) => (
-          <li
+          <div
             key={`${item.id}-${item.color}-${item.size}`}
-            className="list-group-item d-flex justify-content-between align-items-center px-0 border-0"
+            className="checkout-summary-item"
           >
-            <div className="d-flex align-items-center">
-              <div className="me-3">
-                <img
-                  className="rounded"
-                  style={{ width: "60px", height: "60px", objectFit: "cover" }}
-                  src={item.image}
-                  alt={item.name}
-                />
-              </div>
-              <div>
-                <h6 className="my-0 fw-bold">{item.name}</h6>
-                <small className="text-muted">
-                  {item.quantity} × R$ {item.price.toFixed(2)}
-                  {item.color && ` • Cor: ${item.color}`}
-                  {item.size && ` • Tam: ${item.size}`}
-                </small>
-              </div>
+            <img
+              className="checkout-summary-item__img"
+              src={item.image}
+              alt={item.name}
+            />
+            <div style={{ minWidth: 0 }}>
+              <p className="checkout-summary-item__name">{item.name}</p>
+              <p className="checkout-summary-item__meta">
+                {item.quantity}× {formatCurrency(item.price)}
+                {item.color && ` • ${item.color}`}
+                {item.size && ` • ${item.size}`}
+              </p>
             </div>
-            <span className="fw-bold">
-              R$ {(item.quantity * item.price).toFixed(2)}
+            <span className="checkout-summary-item__price">
+              {formatCurrency(item.quantity * item.price)}
             </span>
-          </li>
+          </div>
         ))}
-      </ul>
-      
-      
-      <div className="border-top pt-3">
-        <div className="d-flex justify-content-between mb-2">
-          <span>Subtotal</span>
-          <strong>R$ {(subtotal || 0).toFixed(2)}</strong>
+      </div>
+
+      {/* Totals */}
+      <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: "12px" }}>
+        <div className="checkout-summary__row">
+          <span className="text-muted">Subtotal</span>
+          <span className="fw-medium">{formatCurrency(subtotal || 0)}</span>
         </div>
+
         {discount > 0 && (
-          <div className="d-flex justify-content-between text-success mb-2">
-            <span>Descontos</span>
-            <strong>- R$ {(discount || 0).toFixed(2)}</strong>
+          <div className="checkout-summary__row">
+            <span className="text-muted">Descontos</span>
+            <span className="text-success fw-medium">
+              - {formatCurrency(discount || 0)}
+            </span>
           </div>
         )}
-        <div className="d-flex justify-content-between fw-bold fs-5 mt-3 pt-2 border-top">
-          <span>Total</span>
-          <span>R$ {(total || 0).toFixed(2)}</span>
+
+        {frete > 0 && (
+          <div className="checkout-summary__row">
+            <span className="text-muted">Frete</span>
+            <span className="fw-medium">{formatCurrency(frete || 0)}</span>
+          </div>
+        )}
+
+        {paymentDiscount > 0 && (
+          <div className="checkout-summary__row">
+            <span className="text-muted">
+              {paymentMethodLabel || "Desconto"}
+            </span>
+            <span className="text-success fw-medium">
+              - {formatCurrency(paymentDiscount)}
+            </span>
+          </div>
+        )}
+
+        <div className="checkout-summary__total">
+          <span className="checkout-summary__total-label">Total</span>
+          <span className="checkout-summary__total-value">
+            {formatCurrency(finalTotal != null ? finalTotal : total || 0)}
+          </span>
         </div>
       </div>
-      
-      {/* <div className="mt-4">
-        <button
-          type="submit"
-          className="btn btn-primary w-100 fw-bold py-2"
-          disabled={isProcessing || !isFormValid}
-          onClick={onCheckout}
-        >
-          {isProcessing ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-              Processando...
-            </>
-          ) : (
-            "Finalizar Compra"
-          )}
-        </button>
-        
-        <div className="mt-3 text-center">
-          <small className="text-muted">
-            <i className="bi bi-lock-fill me-1"></i>
-            Pagamento seguro via PagSeguro
-          </small>
-        </div>
-      </div> */}
-    </div>
+    </>
   );
 };
 

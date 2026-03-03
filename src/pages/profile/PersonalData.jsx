@@ -1,8 +1,8 @@
-// src/pages/profile/PersonalData.jsx
 import React, { useState } from 'react';
-import { User, Save, Mail, Phone } from 'lucide-react';
+import { User, Mail, Phone, CreditCard, Save, X } from 'lucide-react';
 import { useAuth } from '../../Context/AuthContext';
 import api from '../../services/api';
+import './Profile.css';
 
 const PersonalData = () => {
   const { user, updateUser } = useAuth();
@@ -13,120 +13,95 @@ const PersonalData = () => {
     cpf: user?.cpf || ''
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 4000);
+  };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
 
     try {
       const response = await api.put('/users/profile', formData);
       updateUser(response.data.data);
-      setMessage('Dados atualizados com sucesso!');
+      showNotification('✅ Dados atualizados com sucesso!', 'success');
     } catch (error) {
-      console.error('Erro ao atualizar dados:', error);
-      setMessage('Erro ao atualizar dados. Tente novamente.');
+      showNotification(error.response?.data?.message || 'Erro ao atualizar dados.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  const fields = [
+    { name: 'name', label: 'Nome Completo', type: 'text', icon: <User size={15} />, required: true },
+    { name: 'email', label: 'E-mail', type: 'email', icon: <Mail size={15} />, required: true },
+    { name: 'phone', label: 'Telefone', type: 'tel', icon: <Phone size={15} />, placeholder: '(11) 99999-9999' },
+    { name: 'cpf', label: 'CPF', type: 'text', icon: <CreditCard size={15} />, placeholder: '000.000.000-00' },
+  ];
+
   return (
     <div>
-      <div className="d-flex align-items-center mb-4">
-        <User size={24} className="text-primary me-2" />
-        <h4 className="mb-0">Meus Dados Pessoais</h4>
-      </div>
-
-      {message && (
-        <div className={`alert ${message.includes('sucesso') ? 'alert-success' : 'alert-danger'}`}>
-          {message}
+      {/* Toast */}
+      {notification.show && (
+        <div className={`checkout-toast checkout-toast--${notification.type} checkout-toast--visible`} role="alert">
+          <span>{notification.message}</span>
+          <button className="checkout-toast__close" onClick={() => setNotification({ show: false, message: '', type: '' })}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
+      <h2 className="profile-page-title">Meus Dados Pessoais</h2>
+      <p className="profile-page-subtitle">Atualize suas informações de cadastro</p>
+
       <form onSubmit={handleSubmit}>
-        <div className="row">
-          <div className="col-md-6 mb-3">
-            <label htmlFor="name" className="form-label">
-              Nome Completo *
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="col-md-6 mb-3">
-            <label htmlFor="email" className="form-label">
-              <Mail size={16} className="me-1" />
-              E-mail *
-            </label>
-            <input
-              type="email"
-              className="form-control"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="col-md-6 mb-3">
-            <label htmlFor="phone" className="form-label">
-              <Phone size={16} className="me-1" />
-              Telefone
-            </label>
-            <input
-              type="tel"
-              className="form-control"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="(11) 99999-9999"
-            />
-          </div>
-
-          <div className="col-md-6 mb-3">
-            <label htmlFor="cpf" className="form-label">
-              CPF
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="cpf"
-              name="cpf"
-              value={formData.cpf}
-              onChange={handleChange}
-              placeholder="000.000.000-00"
-            />
+        <div className="profile-card">
+          <div className="profile-card__body">
+            <div className="row g-3">
+              {fields.map((field) => (
+                <div key={field.name} className="col-md-6">
+                  <label className="checkout-label d-flex align-items-center gap-1">
+                    {field.icon} {field.label} {field.required && '*'}
+                  </label>
+                  <input
+                    type={field.type}
+                    className="form-control checkout-input"
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={handleChange}
+                    placeholder={field.placeholder || ''}
+                    required={field.required}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="mt-4">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            <Save size={16} className="me-2" />
-            {loading ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="checkout-btn checkout-btn--primary"
+          style={{ maxWidth: 280 }}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span className="spinner-border spinner-border-sm" role="status"></span>
+              Salvando...
+            </>
+          ) : (
+            <>
+              <Save size={16} /> Salvar Alterações
+            </>
+          )}
+        </button>
       </form>
     </div>
   );

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, Package, Truck, CreditCard, Download } from 'lucide-react';
+import { CheckCircle, Package, Truck, CreditCard, Download, MapPin, Copy, Calendar } from 'lucide-react';
 import api from '../../services/api';
-import { useAuth } from '../../Context/AuthContext'
+import { useAuth } from '../../Context/AuthContext';
+import './OrderConfirmation.css';
 
 const OrderConfirmation = () => {
   const { orderId } = useParams();
@@ -44,6 +45,11 @@ const OrderConfirmation = () => {
     }).format(price);
   };
 
+  const shortOrderId = (id) => {
+    if (!id) return '';
+    return id.slice(-8).toUpperCase();
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -52,10 +58,10 @@ const OrderConfirmation = () => {
     return (
       <div className="container py-5">
         <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
+          <div className="spinner-border text-dark" role="status">
             <span className="visually-hidden">Carregando...</span>
           </div>
-          <p className="mt-3">Carregando detalhes do pedido...</p>
+          <p className="mt-3 text-muted">Carregando detalhes do pedido...</p>
         </div>
       </div>
     );
@@ -65,9 +71,9 @@ const OrderConfirmation = () => {
     return (
       <div className="container py-5">
         <div className="text-center">
-          <h1>Pedido não encontrado</h1>
+          <h1 className="h3">Pedido não encontrado</h1>
           <p className="text-muted mb-4">{error || 'O pedido solicitado não existe.'}</p>
-          <Link to="/orders" className="btn btn-primary">
+          <Link to="/orders" className="btn btn-dark rounded-pill px-4">
             Ver Meus Pedidos
           </Link>
         </div>
@@ -75,164 +81,122 @@ const OrderConfirmation = () => {
     );
   }
 
+  const paymentLabel = order.paymentMethod === 'CREDIT_CARD' ? 'Cartão de Crédito' : order.paymentMethod;
+
   return (
     <div className="container py-5">
-      {/* Header de Sucesso */}
-      <div className="row justify-content-center mb-5">
-        <div className="col-lg-8">
-          <div className="text-center">
-            <CheckCircle size={64} className="text-success mb-3" />
-            <h1 className="h2 mb-3">Pedido Confirmado!</h1>
-            <p className="text-muted mb-4">
-              Obrigado por sua compra! Seu pedido #{order._id} foi recebido e está sendo processado.
-            </p>
-            <div className="d-flex gap-2 justify-content-center flex-wrap">
-              <button onClick={handlePrint} className="btn btn-outline-primary">
-                <Download size={16} className="me-2" />
-                Imprimir Recibo
-              </button>
-              <Link to="/collections" className="btn btn-primary">
-                Continuar Comprando
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="row justify-content-center">
-        <div className="col-lg-10">
-          {/* Resumo do Pedido */}
-          <div className="card shadow-sm mb-4">
-            <div className="card-header bg-light">
-              <h5 className="mb-0">
-                <Package className="me-2" size={20} />
-                Resumo do Pedido
-              </h5>
+        <div className="col-lg-9">
+
+          {/* ---- Success Header ---- */}
+          <div className="confirmation-header">
+            <div className="confirmation-header__icon">
+              <CheckCircle size={36} />
             </div>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-6">
-                  <h6>Informações do Pedido</h6>
-                  <table className="table table-sm">
-                    <tbody>
-                      <tr>
-                        <td><strong>Número do Pedido:</strong></td>
-                        <td>#{order._id}</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Data:</strong></td>
-                        <td>{formatDate(order.createdAt)}</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Status:</strong></td>
-                        <td>
-                          <span className={`badge ${
-                            order.status === 'Pago' ? 'bg-success' : 
-                            order.status === 'Processando' ? 'bg-warning' : 'bg-secondary'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td><strong>Método de Pagamento:</strong></td>
-                        <td className="text-capitalize">
-                          {order.paymentMethod === 'CREDIT_CARD' ? 'Cartão de Crédito' : order.paymentMethod}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+            <h1 className="confirmation-header__title">Pedido Confirmado!</h1>
+            <p className="confirmation-header__subtitle">
+              Obrigado por sua compra! Seu pedido foi recebido e está sendo processado.
+            </p>
+            <span className="confirmation-header__order-id">
+              <Package size={14} />
+              Pedido #{shortOrderId(order._id)}
+            </span>
+          </div>
+
+          {/* ---- Quick Summary Grid ---- */}
+          <div className="confirmation-summary">
+            <div className="confirmation-summary__item">
+              <span className="confirmation-summary__label">Data do Pedido</span>
+              <span className="confirmation-summary__value">{formatDate(order.createdAt)}</span>
+            </div>
+            <div className="confirmation-summary__item">
+              <span className="confirmation-summary__label">Pagamento</span>
+              <span className="confirmation-summary__value">{paymentLabel}</span>
+            </div>
+            <div className="confirmation-summary__item">
+              <span className="confirmation-summary__label">Status</span>
+              <span className="confirmation-summary__value">
+                <span className={`badge ${
+                  order.status === 'Pago' ? 'bg-success' :
+                  order.status === 'Processando' ? 'bg-warning text-dark' :
+                  order.status === 'Pendente' ? 'bg-secondary' : 'bg-info'
+                }`} style={{ fontSize: '0.78rem' }}>
+                  {order.status}
+                </span>
+              </span>
+            </div>
+            <div className="confirmation-summary__item">
+              <span className="confirmation-summary__label">Total</span>
+              <span className="confirmation-summary__value">{formatPrice(order.total)}</span>
+            </div>
+          </div>
+
+          {/* ---- Product Items ---- */}
+          <div className="confirm-info-card mb-4">
+            <div className="confirm-info-card__header">
+              <Package size={18} />
+              Itens do Pedido ({order.orderItems?.length || 0})
+            </div>
+            <div className="confirm-info-card__body">
+              {order.orderItems.map((item, index) => (
+                <div key={index} className="confirm-product-item">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="confirm-product-item__image"
+                  />
+                  <div className="confirm-product-item__info">
+                    <p className="confirm-product-item__name">{item.name}</p>
+                    <p className="confirm-product-item__meta">
+                      {item.color && `Cor: ${item.color}`}
+                      {item.color && item.size && ' • '}
+                      {item.size && `Tam: ${item.size}`}
+                    </p>
+                  </div>
+                  <div className="confirm-product-item__price">
+                    <p className="confirm-product-item__price-main">{formatPrice(item.price * item.quantity)}</p>
+                    <p className="confirm-product-item__price-unit">
+                      {item.quantity > 1 ? `${item.quantity}x ${formatPrice(item.price)}` : `Qtd: ${item.quantity}`}
+                    </p>
+                  </div>
                 </div>
-                <div className="col-md-6">
-                  <h6>Informações de Pagamento</h6>
-                  <table className="table table-sm">
-                    <tbody>
-                      <tr>
-                        <td><strong>Subtotal:</strong></td>
-                        <td>{formatPrice(order.itemsPrice)}</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Frete:</strong></td>
-                        <td>{formatPrice(order.shippingPrice)}</td>
-                      </tr>
-                      {order.taxPrice > 0 && (
-                        <tr>
-                          <td><strong>Taxas:</strong></td>
-                          <td>{formatPrice(order.taxPrice)}</td>
-                        </tr>
-                      )}
-                      <tr className="table-active">
-                        <td><strong>Total:</strong></td>
-                        <td><strong>{formatPrice(order.total)}</strong></td>
-                      </tr>
-                    </tbody>
-                  </table>
+              ))}
+
+              {/* Financial Summary inside products card */}
+              <div className="pt-3 mt-2" style={{ borderTop: '2px solid #f0f0f0' }}>
+                <div className="confirm-financial-row">
+                  <span className="text-muted">Subtotal</span>
+                  <span>{formatPrice(order.itemsPrice)}</span>
+                </div>
+                <div className="confirm-financial-row">
+                  <span className="text-muted">Frete</span>
+                  <span>{formatPrice(order.shippingPrice)}</span>
+                </div>
+                {order.taxPrice > 0 && (
+                  <div className="confirm-financial-row">
+                    <span className="text-muted">Taxas</span>
+                    <span>{formatPrice(order.taxPrice)}</span>
+                  </div>
+                )}
+                <div className="confirm-financial-row confirm-financial-row--total">
+                  <span>Total</span>
+                  <span>{formatPrice(order.total)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Itens do Pedido */}
-          <div className="card shadow-sm mb-4">
-            <div className="card-header bg-light">
-              <h5 className="mb-0">Itens do Pedido</h5>
-            </div>
-            <div className="card-body p-0">
-              <div className="table-responsive">
-                <table className="table table-hover mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Produto</th>
-                      <th>Preço</th>
-                      <th>Quantidade</th>
-                      <th>Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {order.orderItems.map((item, index) => (
-                      <tr key={index}>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <img 
-                              src={item.image} 
-                              alt={item.name}
-                              className="rounded me-3"
-                              style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                            />
-                            <div>
-                              <h6 className="mb-1">{item.name}</h6>
-                              {item.color && (
-                                <small className="text-muted">Cor: {item.color}</small>
-                              )}
-                              {item.size && (
-                                <small className="text-muted ms-2">Tamanho: {item.size}</small>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td>{formatPrice(item.price)}</td>
-                        <td>{item.quantity}</td>
-                        <td>{formatPrice(item.price * item.quantity)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Informações de Entrega */}
-          <div className="row">
+          {/* ---- Info Cards Row ---- */}
+          <div className="row g-3 mb-4">
+            {/* Endereço de Entrega */}
             <div className="col-md-6">
-              <div className="card shadow-sm">
-                <div className="card-header bg-light">
-                  <h5 className="mb-0">
-                    <Truck className="me-2" size={20} />
-                    Endereço de Entrega
-                  </h5>
+              <div className="confirm-info-card h-100">
+                <div className="confirm-info-card__header">
+                  <MapPin size={18} />
+                  Endereço de Entrega
                 </div>
-                <div className="card-body">
-                  <address className="mb-0">
+                <div className="confirm-info-card__body">
+                  <address className="mb-0 small" style={{ lineHeight: 1.7 }}>
                     <strong>{user?.name}</strong><br />
                     {order.shippingAddress.address}, {order.shippingAddress.number}<br />
                     {order.shippingAddress.complement && (
@@ -242,72 +206,66 @@ const OrderConfirmation = () => {
                     {order.shippingAddress.city} - {order.shippingAddress.state}<br />
                     CEP: {order.shippingAddress.postalCode}
                   </address>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    marginTop: '12px', paddingTop: '12px',
+                    borderTop: '1px dashed #e0e0e0',
+                    fontSize: '0.82rem', color: '#16a34a', fontWeight: 600
+                  }}>
+                    <Truck size={16} />
+                    Previsão: 5-7 dias úteis
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Pagamento */}
             <div className="col-md-6">
-              <div className="card shadow-sm">
-                <div className="card-header bg-light">
-                  <h5 className="mb-0">
-                    <CreditCard className="me-2" size={20} />
-                    Informações de Pagamento
-                  </h5>
+              <div className="confirm-info-card h-100">
+                <div className="confirm-info-card__header">
+                  <CreditCard size={18} />
+                  Informações de Pagamento
                 </div>
-                <div className="card-body">
-                  <p className="mb-2">
-                    <strong>Método:</strong><br />
-                    {order.paymentMethod === 'CREDIT_CARD' ? 'Cartão de Crédito' : 'PIX'}
-                  </p>
-                  {order.paymentMethod === 'CREDIT_CARD' && order.installments > 1 && (
-                    <p className="mb-2">
-                      <strong>Parcelas:</strong><br />
-                      {order.installments}x de {formatPrice(order.total / order.installments)}
-                    </p>
-                  )}
-                  <p className="mb-0">
-                    <strong>Status do Pagamento:</strong><br />
-                    <span className="badge bg-success">Aprovado</span>
-                  </p>
+                <div className="confirm-info-card__body">
+                  <div className="small" style={{ lineHeight: 1.8 }}>
+                    <div className="d-flex justify-content-between">
+                      <span className="text-muted">Método</span>
+                      <span className="fw-semibold">{paymentLabel}</span>
+                    </div>
+                    {order.paymentMethod === 'CREDIT_CARD' && order.installments > 1 && (
+                      <div className="d-flex justify-content-between">
+                        <span className="text-muted">Parcelas</span>
+                        <span className="fw-semibold">
+                          {order.installments}x de {formatPrice(order.total / order.installments)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="d-flex justify-content-between">
+                      <span className="text-muted">Status</span>
+                      <span className="badge bg-success" style={{ fontSize: '0.75rem' }}>Aprovado</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Ações */}
-          <div className="text-center mt-5">
-            <div className="d-flex gap-2 justify-content-center flex-wrap">
-              <Link to="/profile/orders" className="btn btn-outline-primary">
-                Ver Todos os Pedidos
-              </Link>
-              <Link to="/" className="btn btn-primary">
-                Continuar Comprando
-              </Link>
-              {order.paymentMethod === 'PIX' && order.pgChargeId && (
-                <Link 
-                  to={`/payment/pix/${order.pgChargeId}`}
-                  className="btn btn-success"
-                >
-                  Ver QR Code PIX
-                </Link>
-              )}
-            </div>
+          {/* ---- Actions ---- */}
+          <div className="confirmation-actions">
+            <button onClick={handlePrint} className="btn btn-outline-dark">
+              <Download size={16} className="me-2" />
+              Imprimir Recibo
+            </button>
+            <Link to={`/order-status/${order._id}`} className="btn btn-dark">
+              Acompanhar Pedido
+            </Link>
+            <Link to="/collections" className="btn btn-outline-dark">
+              Continuar Comprando
+            </Link>
           </div>
+
         </div>
       </div>
-
-      {/* Estilos para impressão */}
-      <style>{`
-        @media print {
-          .btn, .navbar, .footer {
-            display: none !important;
-          }
-          .card {
-            border: 1px solid #000 !important;
-            box-shadow: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };

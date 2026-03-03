@@ -16,6 +16,7 @@ import userRoutes from "./src/routes/users.js";
 import paymentRoutes from "./src/routes/payment.js";
 import orderRoutes from './src/routes/orderRoutes.js';
 import stockRoutes from './src/routes/stockRoutes.js';
+import newsletterRoutes from './src/routes/newsletter.js';
 
 // dotenv configured in ./src/config/env.js
 
@@ -88,6 +89,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use('/api/orders', orderRoutes)
 app.use('/api/stock', stockRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {

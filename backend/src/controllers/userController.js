@@ -182,4 +182,68 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { listUsers, getUserById, updateUserRole, updateUserStatus, deleteUser };
+// Atualizar perfil do próprio usuário
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+    }
+
+    // Campos permitidos
+    const { name, email, phone, cpf, addresses, settings, currentPassword, newPassword } = req.body;
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone !== undefined) user.phone = phone;
+    if (cpf !== undefined) user.cpf = cpf;
+    if (settings !== undefined) user.settings = settings;
+
+    // Atualizar endereços
+    if (addresses !== undefined) {
+      user.addresses = addresses.map(addr => ({
+        street: addr.address || addr.street || '',
+        number: addr.number || '',
+        complement: addr.complement || '',
+        neighborhood: addr.neighborhood || '',
+        city: addr.city || '',
+        state: addr.state || '',
+        zipCode: addr.postalCode || addr.zipCode || '',
+        isPrimary: addr.isDefault || addr.isPrimary || false,
+      }));
+    }
+
+    // Alterar senha
+    if (currentPassword && newPassword) {
+      const isMatch = await user.matchPassword(currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({ success: false, message: 'Senha atual incorreta' });
+      }
+      user.password = newPassword;
+    }
+
+    await user.save();
+
+    const sanitized = await User.findById(user._id).select('-password');
+
+    // Converter endereços de volta para o formato do frontend
+    const userObj = sanitized.toObject();
+    userObj.addresses = (userObj.addresses || []).map(addr => ({
+      ...addr,
+      address: addr.street,
+      postalCode: addr.zipCode,
+      isDefault: addr.isPrimary,
+      name: addr.name || (addr.isPrimary ? 'Principal' : 'Endereço'),
+    }));
+
+    res.json({ success: true, data: userObj });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao atualizar perfil',
+      error: error.message,
+    });
+  }
+};
+
+export { listUsers, getUserById, updateUserRole, updateUserStatus, deleteUser, updateProfile };
