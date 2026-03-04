@@ -69,9 +69,39 @@ const CreditCardForm = ({  onPaymentSubmit, isProcessing, totalAmount  }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      onPaymentSubmit(cardData);
+    if (!validateForm()) return;
+
+    // Encrypt card data using PagBank SDK
+    const publicKey = import.meta.env.VITE_PAGSEGURO_PUBLIC_KEY;
+    
+    if (!window.PagSeguro || !window.PagSeguro.encryptCard) {
+      console.error("PagSeguro SDK not loaded");
+      onPaymentSubmit({ ...cardData, encryptionError: "SDK do PagBank não carregado. Recarregue a página." });
+      return;
     }
+
+    const card = window.PagSeguro.encryptCard({
+      publicKey: publicKey,
+      holder: cardData.holder,
+      number: cardData.number.replace(/\s/g, ''),
+      expMonth: cardData.exp_month,
+      expYear: cardData.exp_year,
+      securityCode: cardData.security_code
+    });
+
+    if (card.hasErrors) {
+      const errorMessages = card.errors.map(err => err.message || err.code || err).join(', ');
+      console.error("Card encryption errors:", card.errors);
+      onPaymentSubmit({ ...cardData, encryptionError: `Erro na criptografia: ${errorMessages}` });
+      return;
+    }
+
+    // Send encrypted card + metadata (no raw card data)
+    onPaymentSubmit({
+      encrypted: card.encryptedCard,
+      holder: cardData.holder,
+      installments: cardData.installments,
+    });
   };
 
   return (

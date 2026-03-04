@@ -2,21 +2,14 @@ import React, { useState } from "react";
 import logo from "../../assets/logo.png";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
+import { GoogleLogin } from "@react-oauth/google";
 import "./Login.css";
-import { Button } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-import {
-  faFacebook,
-  faApple,
-  faGoogle,
-} from "@fortawesome/free-brands-svg-icons";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,6 +25,24 @@ const Login = () => {
     } else {
       setError(result.message || "Email ou senha inválidos. Tente novamente.");
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setError("");
+      const result = await loginWithGoogle(credentialResponse.credential);
+      if (result.success) {
+        navigate(from, { replace: true });
+      } else {
+        setError(result.message || "Erro ao fazer login com Google.");
+      }
+    } catch (err) {
+      setError(err.message || "Erro ao fazer login com Google.");
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Erro ao conectar com o Google. Tente novamente.");
   };
 
   return (
@@ -89,57 +100,19 @@ const Login = () => {
               <div className="d-flex align-items-center my-4">
                 <hr className="flex-grow-1" style={{ borderColor: "gray" }} />
                 <span className="mx-3 text-muted">ou</span>
-                <hr className="flex-grow-1" style={{ borderColor: "#gray" }} />
+                <hr className="flex-grow-1" style={{ borderColor: "gray" }} />
               </div>
-              <div className="d-flex justify-content-around mb-4">
-                {/* Botão Facebook */}
-                <Button
-                  variant="light"
-                  className="rounded-circle p-3 d-flex justify-content-center align-items-center"
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                    border: "1px solid #ddd",
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faFacebook}
-                    size="2x"
-                    style={{ color: "#3b5998" }}
-                  />
-                </Button>
-                {/* Botão Apple */}
-                <Button
-                  variant="light"
-                  className="rounded-circle p-3 d-flex justify-content-center align-items-center"
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                    border: "1px solid #ddd",
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faApple}
-                    size="2x"
-                    style={{ color: "#000" }}
-                  />
-                </Button>
-                {/* Botão Google */}
-                <Button
-                  variant="light"
-                  className="rounded-circle p-3 d-flex justify-content-center align-items-center"
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                    border: "1px solid #ddd",
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faGoogle}
-                    size="2x"
-                    style={{ color: "#db4437" }}
-                  />
-                </Button>
+              <div className="d-flex justify-content-center mb-4">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  size="large"
+                  width="100%"
+                  text="continue_with"
+                  shape="pill"
+                  locale="pt-BR"
+                />
               </div>
               <Link to="/register" className="text-decoration-none">
                 <button

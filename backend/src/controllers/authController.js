@@ -1,5 +1,8 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Gerar JWT Token
 const generateToken = (id) => {
@@ -18,6 +21,13 @@ const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Senha é obrigatória e deve ter pelo menos 6 caracteres",
+      });
+    }
+
     // Verificar se usuário já existe
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -32,6 +42,7 @@ const register = async (req, res) => {
       name,
       email,
       password,
+      authProvider: "local",
     });
 
     if (user) {
@@ -74,6 +85,13 @@ const login = async (req, res) => {
     }
 
     // Verificar usuário ativo e senha
+    if (user.authProvider === "google" && !user.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Esta conta usa login com Google. Clique em 'Login com Google' para acessar.",
+      });
+    }
+
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       console.warn("[AUTH] Senha inválida para:", { email });
@@ -129,4 +147,93 @@ const getMe = async (req, res) => {
   }
 };
 
-export { register, login, getMe };
+// @desc    Login com Google
+// @route   POST /api/auth/google
+// @access  Public
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: "Token do Google não fornecido",
+      });
+    }
+
+    // Verificar o token JWT do Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Não foi possível obter o e-mail da conta Google",
+      });
+    }
+
+    // Buscar usuário por googleId ou email
+    let user = await User.findOne({
+      $or: [{ googleId }, { email }],
+    });
+
+    if (user) {
+      // Usuário existe — atualizar googleId se necessário
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.authProvider = "google";
+        await user.save();
+      }
+    } else {
+      // Criar novo usuário (sem senha)
+      user = await User.create({
+        name: name || email.split("@")[0],
+        email,
+        googleId,
+        authProvider: "google",
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Usuário desativado",
+      });
+    }
+
+    console.log("[AUTH] Login Google bem-sucedido:", { email, name });
+
+    res.json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error("Erro no login Google:", error);
+
+    if (error.message?.includes("Token used too late") || error.message?.includes("Invalid token")) {
+      return res.status(401).json({
+        success: false,
+        message: "Token do Google expirado ou inválido. Tente novamente.",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Erro ao fazer login com Google",
+      error: error.message,
+    });
+  }
+};
+
+export { register, login, getMe, googleLogin };

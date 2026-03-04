@@ -137,6 +137,13 @@ function Checkout() {
   const handleCreditCardPayment = async (cardData) => {
     setIsProcessing(true);
 
+    // Check for encryption errors from CreditCardForm
+    if (cardData.encryptionError) {
+      showNotification(cardData.encryptionError, "error");
+      setIsProcessing(false);
+      return;
+    }
+
     if (!user) {
       showNotification("Você precisa estar logado para finalizar a compra.", "error");
       setIsProcessing(false);
@@ -170,7 +177,8 @@ function Checkout() {
       const response = await api.post("/payment/create-credit-card", {
         cartItems,
         shippingAddress,
-        cardData,
+        encryptedCard: cardData.encrypted,
+        holderName: cardData.holder,
         installments: cardData.installments || 1,
         shippingPrice: frete,
       });

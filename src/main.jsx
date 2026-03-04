@@ -30,6 +30,7 @@ import StockHistory from './pages/Admin/StockHistory.jsx'
 import PixQrCode from './pages/Payment/PixQrCode.jsx'
 import { FavoritesProvider } from "./Context/FavoritesContext";
 import Favorites from "./pages/Favorites/Favorites";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 
 const router = createBrowserRouter([
@@ -203,12 +204,14 @@ const root = document.getElementById("root");
 
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
-    <AuthProvider>
-      <CartProvider>
-        <FavoritesProvider>
-          <RouterProvider router={router} />
-        </FavoritesProvider>
-      </CartProvider>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <CartProvider>
+          <FavoritesProvider>
+            <RouterProvider router={router} />
+          </FavoritesProvider>
+        </CartProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );

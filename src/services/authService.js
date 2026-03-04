@@ -31,6 +31,16 @@ export const authService = {
     }
   },
 
+  // Login com Google
+  async googleLogin(credential) {
+    try {
+      const response = await api.post('/auth/google', { credential });
+      return handleAuthSuccess(response);
+    } catch (error) {
+      throw error.response?.data || { message: 'Erro ao fazer login com Google' };
+    }
+  },
+
   // Logout
   logout() {
     localStorage.removeItem('token');

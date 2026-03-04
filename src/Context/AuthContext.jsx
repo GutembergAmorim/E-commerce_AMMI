@@ -73,6 +73,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (credential) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await authService.googleLogin(credential);
+      if (response.success) {
+        setUser(response.data);
+      }
+      return response;
+    } catch (error) {
+      setError(error.message);
+      return { success: false, message: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -87,6 +104,7 @@ export const AuthProvider = ({ children }) => {
     user, 
     isAuthenticated, 
     login, 
+    loginWithGoogle,
     logout, 
     register, 
     updateUser,

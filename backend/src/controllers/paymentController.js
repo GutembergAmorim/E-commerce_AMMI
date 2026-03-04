@@ -154,18 +154,27 @@ const createPix = async (req, res) => {
 
     const idempotencyKey = crypto.randomUUID();
 
-    // Body PIX para PagSeguro com estrutura de charges
+    // Body PIX para PagSeguro conforme documentação oficial
+    const clientUrl = validateClientURL();
     const body = {
       reference_id: order._id.toString(),
       customer: {
-        name: user.name,
+        name: user.name || "Cliente",
         email: user.email,
         tax_id: "12345678909", // CPF fixo para teste sandbox
+        phones: [
+          {
+            country: "55",
+            area: "11",
+            number: "999999999",
+            type: "MOBILE"
+          }
+        ]
       },
       items: cartItems.map(item => ({
-        reference_id: item.id,
+        reference_id: (item.id || "item").toString(),
         name: item.name,
-        quantity: item.quantity,
+        quantity: Number(item.quantity) || 1,
         unit_amount: Math.round(item.price * 100)
       })),
       qr_codes: [
@@ -175,6 +184,21 @@ const createPix = async (req, res) => {
           },
           expiration_date: new Date(Date.now() + 3600000).toISOString(),
         }
+      ],
+      shipping: {
+        address: {
+          street: shippingAddress?.logradouro || "Não informado",
+          number: shippingAddress?.numero || "S/N",
+          complement: shippingAddress?.complemento || "",
+          locality: shippingAddress?.bairro || "Centro",
+          city: shippingAddress?.localidade || "São Paulo",
+          region_code: shippingAddress?.uf || "SP",
+          country: "BRA",
+          postal_code: (shippingAddress?.cep || "01452002").replace(/\D/g, '')
+        }
+      },
+      notification_urls: [
+        `${clientUrl}/api/payment/webhook`
       ],
     };
 
@@ -294,7 +318,7 @@ const createPix = async (req, res) => {
 };
 
 const createCreditCardPayment = async (req, res) => {
-  const { cartItems, shippingAddress, cardData, installments, shippingPrice } = req.body;
+  const { cartItems, shippingAddress, encryptedCard, holderName, installments, shippingPrice } = req.body;
   
   if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
     return res.status(400).json({ 
@@ -303,17 +327,17 @@ const createCreditCardPayment = async (req, res) => {
     });
   }
 
-  if (!cardData || !cardData.number || !cardData.holder || !cardData.exp_month || !cardData.exp_year || !cardData.security_code) {
+  if (!encryptedCard) {
     return res.status(400).json({
       success: false,
-      message: "Dados do cartão incompletos."
+      message: "Dados do cartão criptografados são obrigatórios."
     });
   }
 
   try {
     const user = validateUser(req.user);
     await validateStock(cartItems);
-    validateClientURL();
+    const clientUrl = validateClientURL();
 
     const itemsPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const finalShippingPrice = Number(shippingPrice) || 0;
@@ -365,62 +389,103 @@ const createCreditCardPayment = async (req, res) => {
     const idempotencyKey = crypto.randomUUID();
     const amountInCents = Math.round(total * 100);
 
+    // Body conforme documentação oficial PagSeguro: POST /orders com charges[]
     const body = {
       reference_id: order._id.toString(),
-      description: `Pedido #${order._id}`,
-      amount: {
-        value: amountInCents,
-        currency: "BRL"
-      },
-      payment_method: {
-        type: "CREDIT_CARD",
-        capture: true,
-        installments: installments || 1,
-        card: {
-          number: cardData.number.replace(/\s/g, ''),
-          exp_month: String(cardData.exp_month).padStart(2, '0'),
-          exp_year: String(cardData.exp_year),
-          security_code: cardData.security_code,
-          holder: {
-            name: cardData.holder
+      customer: {
+        name: user.name || holderName || "Cliente",
+        email: user.email,
+        tax_id: "12345678909",
+        phones: [
+          {
+            country: "55",
+            area: "11",
+            number: "999999999",
+            type: "MOBILE"
           }
+        ]
+      },
+      items: cartItems.map(item => ({
+        reference_id: (item.id || item.product || "item").toString(),
+        name: item.name,
+        quantity: Number(item.quantity) || 1,
+        unit_amount: Math.round(item.price * 100)
+      })),
+      shipping: {
+        address: {
+          street: shippingAddress?.logradouro || "Não informado",
+          number: shippingAddress?.numero || "S/N",
+          complement: shippingAddress?.complemento || "",
+          locality: shippingAddress?.bairro || "Centro",
+          city: shippingAddress?.localidade || "São Paulo",
+          region_code: shippingAddress?.uf || "SP",
+          country: "BRA",
+          postal_code: (shippingAddress?.cep || "01452002").replace(/\D/g, '')
         }
       },
       notification_urls: [
-        `${process.env.CLIENT_URL}/api/payment/webhook`
+        `${clientUrl}/api/payment/webhook`
+      ],
+      charges: [
+        {
+          reference_id: `charge-${order._id.toString()}`,
+          description: `Pedido #${order._id}`,
+          amount: {
+            value: amountInCents,
+            currency: "BRL"
+          },
+          payment_method: {
+            type: "CREDIT_CARD",
+            installments: Number(installments) || 1,
+            capture: true,
+            card: {
+              encrypted: encryptedCard,
+              store: false
+            },
+            holder: {
+              name: holderName || user.name || "Cliente",
+              tax_id: "12345678909"
+            }
+          }
+        }
       ]
     };
 
-    console.log("💳 Enviando para /charges...");
+    console.log("💳 Enviando para /orders (cartão criptografado)...");
+    console.log("📤 Body:", JSON.stringify(body, null, 2));
     
-    const response = await pagseguroApi.post("/charges", body, {
+    const response = await pagseguroApi.post("/orders", body, {
       headers: { 
         "x-idempotency-key": idempotencyKey 
       }
     });
 
-    const data = response.data;
-    console.log("✅ Resposta do PagSeguro:", data.status);
+    const pgOrder = response.data;
+    console.log("✅ Resposta do PagSeguro:", JSON.stringify(pgOrder, null, 2));
 
-    const charge = data;
+    // Extrair dados da charge dentro da resposta da order
+    const charge = pgOrder.charges && pgOrder.charges.length > 0 ? pgOrder.charges[0] : null;
     
     // Atualizar ordem com dados do pagamento
-    order.pgChargeId = charge.id;
-    order.status = mapPgStatus(charge.status);
+    order.pgChargeId = pgOrder.id;
     
-    if (charge.status === 'PAID' || charge.status === 'AUTHORIZED') {
-      order.isPaid = true;
-      order.paidAt = new Date();
-      order.status = "Pago";
+    if (charge) {
+      order.status = mapPgStatus(charge.status);
       
-      // Atualizar estoque
-      if (!order.stockUpdated) {
-        for (const item of order.orderItems) {
-          await Product.findByIdAndUpdate(item.product, { 
-            $inc: { stock: -item.quantity } 
-          });
+      if (charge.status === 'PAID' || charge.status === 'AUTHORIZED') {
+        order.isPaid = true;
+        order.paidAt = new Date();
+        order.status = "Pago";
+        
+        // Atualizar estoque
+        if (!order.stockUpdated) {
+          for (const item of order.orderItems) {
+            await Product.findByIdAndUpdate(item.product, { 
+              $inc: { stock: -item.quantity } 
+            });
+          }
+          order.stockUpdated = true;
         }
-        order.stockUpdated = true;
       }
     }
     
@@ -429,15 +494,14 @@ const createCreditCardPayment = async (req, res) => {
     res.status(201).json({
       success: true,
       orderId: order._id,
-      chargeId: charge.id,
+      chargeId: charge?.id || pgOrder.id,
       status: order.status,
       isPaid: order.isPaid,
       paymentResponse: {
-        id: charge.id,
-        status: charge.status,
-        authorization_code: charge.payment_response?.raw_data?.authorization_code,
-        nsu: charge.payment_response?.raw_data?.nsu,
-        message: charge.payment_response?.message
+        id: charge?.id || pgOrder.id,
+        status: charge?.status || pgOrder.status,
+        authorization_code: charge?.payment_response?.reference,
+        message: charge?.payment_response?.message
       }
     });
 
