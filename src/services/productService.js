@@ -10,11 +10,34 @@ export const productService = {
       if (filters.isNew) params.append('isNew', filters.isNew);
       if (filters.isHighlighted) params.append('isHighlighted', filters.isHighlighted);
       if (filters.search) params.append('search', filters.search);
+      if (filters.sort) params.append('sort', filters.sort);
+      if (filters.sale) params.append('sale', filters.sale);
+      if (filters.limit) params.append('limit', filters.limit);
 
       const response = await api.get(`/products?${params.toString()}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Erro ao buscar produtos' };
+    }
+  },
+
+  // Buscar mais vendidos
+  async getBestSellers(limit = 8) {
+    try {
+      const response = await api.get(`/products?sort=best-sellers&limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Erro ao buscar mais vendidos' };
+    }
+  },
+
+  // Buscar produtos em promoção
+  async getSaleProducts() {
+    try {
+      const response = await api.get('/products?sale=true');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Erro ao buscar promoções' };
     }
   },
 

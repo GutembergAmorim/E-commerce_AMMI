@@ -5,7 +5,7 @@ import Product from "../models/Product.js";
 // @access  Public
 const getProducts = async (req, res) => {
   try {
-    const { category, isNew, isHighlighted, search } = req.query;
+    const { category, isNew, isHighlighted, search, sort, sale, limit } = req.query;
 
     // Construir filtros
     const filter = { isActive: true };
@@ -22,11 +22,28 @@ const getProducts = async (req, res) => {
       filter.isHighlighted = true;
     }
 
+    if (sale === "true") {
+      filter.oldPrice = { $exists: true, $gt: 0 };
+      filter.$expr = { $gt: ["$oldPrice", "$price"] };
+    }
+
     if (search) {
       filter.$text = { $search: search };
     }
 
-    const products = await Product.find(filter).sort({ createdAt: -1 });
+    // Determinar ordenação
+    let sortOption = { createdAt: -1 };
+    if (sort === "best-sellers") {
+      sortOption = { totalSold: -1, createdAt: -1 };
+    }
+
+    let query = Product.find(filter).sort(sortOption);
+
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const products = await query;
 
     res.json({
       success: true,

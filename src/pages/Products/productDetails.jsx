@@ -3,6 +3,9 @@ import { useParams, Link } from "react-router-dom";
 import { useCart } from "../../Context/CartContext";
 import { useFavorites } from "../../Context/FavoritesContext";
 import { useProduct } from "../../hooks/useProducts";
+import StarRating from "../../components/StarRating/StarRating";
+import ProductReviews from "../../components/ProductReviews/ProductReviews";
+import RelatedProducts from "../../components/RelatedProducts/RelatedProducts";
 import tabela_de_medidas from "../../assets/tabela_de_medidas.png";
 import CartToast from "../../components/CartToast/CartToast";
 import "./ProductDetails.css";
@@ -35,6 +38,31 @@ const ProductSkeleton = () => (
   </div>
 );
 
+// ── Helper: get variation stock for a color+size combo ──
+const getVariationStock = (variations, color, size) => {
+  if (!variations || variations.length === 0) return null; // no variation data
+  const match = variations.find(
+    (v) => v.color === color && v.size === size
+  );
+  return match ? match.stock : null;
+};
+
+// ── Helper: check if a size has any stock across all colors ──
+const sizeHasStock = (variations, sizeOption) => {
+  if (!variations || variations.length === 0) return true; // no variation data = assume available
+  const sizeVariations = variations.filter((v) => v.size === sizeOption);
+  if (sizeVariations.length === 0) return true; // size not tracked in variations
+  return sizeVariations.some((v) => v.stock > 0);
+};
+
+// ── Helper: check if a color has any stock across all sizes ──
+const colorHasStock = (variations, colorValue) => {
+  if (!variations || variations.length === 0) return true;
+  const colorVariations = variations.filter((v) => v.color === colorValue);
+  if (colorVariations.length === 0) return true;
+  return colorVariations.some((v) => v.stock > 0);
+};
+
 const ProductDetails = () => {
   const { id } = useParams();
   const { product, loading, error } = useProduct(id);
@@ -54,8 +82,29 @@ const ProductDetails = () => {
   const productImages = product?.images || [];
   const productColors = product?.colors || [];
   const productSizes = product?.sizes || [];
+  const productVariations = product?.variations || [];
 
   const isFav = product ? isFavorite(product._id) : false;
+
+  // Stock calculations
+  const globalStock = typeof product?.stock === "number" ? product.stock : null;
+  const lowStockAlert = product?.lowStockAlert ?? 5;
+  const isGlobalOutOfStock = globalStock !== null && globalStock === 0;
+  const isGlobalLowStock = globalStock !== null && globalStock > 0 && globalStock <= lowStockAlert;
+
+  // Selected variation stock
+  const selectedVariationStock =
+    color && size ? getVariationStock(productVariations, color, size) : null;
+  const isSelectedOutOfStock =
+    selectedVariationStock !== null ? selectedVariationStock === 0 : false;
+
+  // Max quantity for selected variation
+  const maxQuantity =
+    selectedVariationStock !== null
+      ? selectedVariationStock
+      : globalStock !== null
+      ? globalStock
+      : 99;
 
   // Imagem selecionada quando produto carrega
   useEffect(() => {
@@ -64,11 +113,24 @@ const ProductDetails = () => {
     }
   }, [product]);
 
-  const incrementQuantity = () => setQuantity((q) => q + 1);
+  // Reset quantity when variation changes
+  useEffect(() => {
+    setQuantity(1);
+  }, [color, size]);
+
+  const incrementQuantity = () =>
+    setQuantity((q) => (q < maxQuantity ? q + 1 : q));
   const decrementQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
+  const canAddToCart = () => {
+    if (!product || !color || !size || quantity <= 0) return false;
+    if (isGlobalOutOfStock) return false;
+    if (isSelectedOutOfStock) return false;
+    return true;
+  };
+
   const addToCart = () => {
-    if (!product || !color || !size || quantity <= 0) {
+    if (!canAddToCart()) {
       setButtonState("shake");
       setTimeout(() => setButtonState("idle"), 500);
       return;
@@ -174,6 +236,12 @@ const ProductDetails = () => {
                   src={selectedImage || "https://via.placeholder.com/600x600/cccccc/ffffff?text=Imagem"}
                   alt={product.name}
                 />
+                {/* Out of stock overlay */}
+                {isGlobalOutOfStock && (
+                  <div className="pdp-sold-out-overlay">
+                    <span>ESGOTADO</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -183,7 +251,32 @@ const ProductDetails = () => {
             <div className="pdp-info">
               {/* Title + Favorite */}
               <div className="pdp-title-row">
-                <h1 className="pdp-title">{product.name}</h1>
+                <div>
+                  <h1 className="pdp-title">{product.name}</h1>
+                  {/* Star Rating */}
+                  {product.numReviews > 0 && (
+                    <div style={{ marginBottom: 6 }}>
+                      <StarRating
+                        rating={product.averageRating || 0}
+                        size={14}
+                        count={product.numReviews}
+                      />
+                    </div>
+                  )}
+                  {/* Stock badges */}
+                  {isGlobalOutOfStock && (
+                    <span className="pdp-stock-badge pdp-stock-badge--out">
+                      <i className="fas fa-ban" style={{ marginRight: 5 }}></i>
+                      Produto Esgotado
+                    </span>
+                  )}
+                  {isGlobalLowStock && (
+                    <span className="pdp-stock-badge pdp-stock-badge--low">
+                      <i className="fas fa-fire" style={{ marginRight: 5 }}></i>
+                      Últimas {globalStock} unidades!
+                    </span>
+                  )}
+                </div>
                 <button
                   className={`pdp-fav-btn ${isFav ? "pdp-fav-btn--active" : ""}`}
                   onClick={handleToggleFavorite}
@@ -223,17 +316,21 @@ const ProductDetails = () => {
                     Cor{color && <span style={{ textTransform: "none", fontWeight: 500 }}> — {productColors.find(c => c.value === color)?.name || color}</span>}
                   </p>
                   <div className="pdp-colors">
-                    {productColors.map((opt) => (
-                      <button
-                        key={opt.value}
-                        className={`pdp-color-swatch ${color === opt.value ? "pdp-color-swatch--active" : ""}`}
-                        style={{ backgroundColor: opt.colorCode }}
-                        onClick={() => setColor(opt.value)}
-                        title={opt.name}
-                        type="button"
-                        aria-label={`Cor ${opt.name}`}
-                      />
-                    ))}
+                    {productColors.map((opt) => {
+                      const hasStock = colorHasStock(productVariations, opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          className={`pdp-color-swatch ${color === opt.value ? "pdp-color-swatch--active" : ""} ${!hasStock ? "pdp-color-swatch--disabled" : ""}`}
+                          style={{ backgroundColor: opt.colorCode }}
+                          onClick={() => hasStock && setColor(opt.value)}
+                          title={hasStock ? opt.name : `${opt.name} — Esgotado`}
+                          type="button"
+                          aria-label={`Cor ${opt.name}${!hasStock ? " — Esgotado" : ""}`}
+                          disabled={!hasStock}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -243,17 +340,30 @@ const ProductDetails = () => {
                 <div className="mb-3">
                   <p className="pdp-label">Tamanho</p>
                   <div className="pdp-sizes">
-                    {productSizes.map((sizeOption) => (
-                      <button
-                        key={sizeOption}
-                        className={`pdp-size-btn ${size === sizeOption ? "pdp-size-btn--active" : ""}`}
-                        onClick={() => setSize(sizeOption)}
-                        type="button"
-                      >
-                        {sizeOption}
-                      </button>
-                    ))}
+                    {productSizes.map((sizeOption) => {
+                      const hasStock = sizeHasStock(productVariations, sizeOption);
+                      return (
+                        <button
+                          key={sizeOption}
+                          className={`pdp-size-btn ${size === sizeOption ? "pdp-size-btn--active" : ""} ${!hasStock ? "pdp-size-btn--disabled" : ""}`}
+                          onClick={() => hasStock && setSize(sizeOption)}
+                          type="button"
+                          title={!hasStock ? "Esgotado" : sizeOption}
+                          disabled={!hasStock}
+                        >
+                          {sizeOption}
+                        </button>
+                      );
+                    })}
                   </div>
+                </div>
+              )}
+
+              {/* Selected variation out-of-stock notice */}
+              {color && size && isSelectedOutOfStock && (
+                <div className="pdp-variation-notice">
+                  <i className="fas fa-info-circle"></i>
+                  Esta combinação de cor e tamanho está esgotada.
                 </div>
               )}
 
@@ -278,17 +388,23 @@ const ProductDetails = () => {
               {/* Quantity + Add to Cart */}
               <div className="pdp-actions">
                 <div className="pdp-qty">
-                  <button className="pdp-qty__btn" onClick={decrementQuantity} type="button">−</button>
+                  <button className="pdp-qty__btn" onClick={decrementQuantity} type="button" disabled={isGlobalOutOfStock}>−</button>
                   <span className="pdp-qty__value">{quantity}</span>
-                  <button className="pdp-qty__btn" onClick={incrementQuantity} type="button">+</button>
+                  <button className="pdp-qty__btn" onClick={incrementQuantity} type="button" disabled={isGlobalOutOfStock || quantity >= maxQuantity}>+</button>
                 </div>
                 <button
-                  className={`pdp-add-btn ${buttonState === "added" ? "pdp-add-btn--added" : ""} ${buttonState === "shake" ? "pdp-add-btn--shake" : ""}`}
+                  className={`pdp-add-btn ${buttonState === "added" ? "pdp-add-btn--added" : ""} ${buttonState === "shake" ? "pdp-add-btn--shake" : ""} ${isGlobalOutOfStock || isSelectedOutOfStock ? "pdp-add-btn--disabled" : ""}`}
                   onClick={addToCart}
                   type="button"
-                  disabled={buttonState === "added"}
+                  disabled={buttonState === "added" || isGlobalOutOfStock || isSelectedOutOfStock}
                 >
-                  {buttonState === "added" ? "✓ Adicionado!" : "Adicionar ao carrinho"}
+                  {isGlobalOutOfStock
+                    ? "Produto Esgotado"
+                    : isSelectedOutOfStock
+                    ? "Combinação Indisponível"
+                    : buttonState === "added"
+                    ? "✓ Adicionado!"
+                    : "Adicionar ao carrinho"}
                 </button>
               </div>
             </div>
@@ -323,6 +439,12 @@ const ProductDetails = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="container pb-5">
+        <ProductReviews productId={id} />
+        <RelatedProducts currentProductId={id} category={product?.category} />
       </div>
 
       {/* Toast */}

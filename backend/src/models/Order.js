@@ -80,7 +80,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["PIX", "CREDIT_CARD", "Cartão de Débito", "Boleto", "PagSeguro"],
+      enum: ["PIX", "CREDIT_CARD", "DEBIT_CARD", "Cartão de Débito", "Boleto", "PagSeguro"],
     },
     pgOrderId: String,
     pgChargeId: String,
@@ -126,7 +126,7 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ["Pendente", "Processando", "Pago", "Enviado", "Entregue", "Cancelado"],
+      enum: ["Pendente", "Processando", "Pago", "Preparando", "Enviado", "Entregue", "Cancelado"],
       default: "Pendente",
     },
   },

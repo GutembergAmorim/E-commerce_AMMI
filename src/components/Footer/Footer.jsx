@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 // Se você criou Custom.css e precisa das classes customizadas, importe-o:
 // import './Custom.css';
 
@@ -13,13 +14,11 @@ function Footer() {
   ];
 
   const institutionalLinks = [
-    { href: "#/", text: "Sobre nós" },
-    { href: "#/", text: "Nossa história" },
+    { to: "/sobre", text: "Sobre nós" },
   ];
 
   const helpLinks = [
-    { href: "#/", text: "Trocas e devoluções" },
-    { href: "#/", text: "Cuidados com as peças" },
+    { to: "/trocas", text: "Trocas e devoluções" },
   ];
 
   const paymentMethods = [
@@ -53,28 +52,28 @@ function Footer() {
             </div>
 
             {/* Coluna Institucional */}
-            {/* <div className="col-lg-2 col-md-6">
+            <div className="col-lg-2 col-md-6">
               <h4 className="h6 fw-medium mb-3">Institucional</h4>
-              <ul className="list-unstyled ps-0"> 
+              <ul className="list-unstyled ps-0">
                 {institutionalLinks.map(link => (
                   <li key={link.text} className="mb-1">
-                    <a href={link.href} className="text-white-50 text-decoration-none small footer-link-hover">
+                    <Link to={link.to} className="text-white-50 text-decoration-none small footer-link-hover">
                       {link.text}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
-            </div> */}
+            </div>
 
             {/* Coluna Ajuda */}
-            <div className="col-lg-4 col-md-6">
+            <div className="col-lg-2 col-md-6">
               <h4 className="h6 fw-medium mb-3">Ajuda</h4>
               <ul className="list-unstyled ps-0">
                 {helpLinks.map(link => (
                   <li key={link.text} className="mb-1">
-                    <a href={link.href} className="text-white-50 text-decoration-none small footer-link-hover">
+                    <Link to={link.to} className="text-white-50 text-decoration-none small footer-link-hover">
                       {link.text}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -110,9 +109,9 @@ function Footer() {
             <p className="text-white-50 small mb-2 mb-md-0"> {/* text-sm -> small */}
               © {currentYear} AMMI. Todos os direitos reservados.
             </p>
-            <div className="d-flex" style={{ gap: '1rem' }}> {/* space-x-4 -> gap-3 ou style */}
-              <a href="#/" className="text-white-50 text-decoration-none small footer-link-hover">Termos de uso</a>
-              <a href="#/" className="text-white-50 text-decoration-none small footer-link-hover">Política de privacidade</a>
+            <div className="d-flex" style={{ gap: '1rem' }}>
+              <Link to="/termos" className="text-white-50 text-decoration-none small footer-link-hover">Termos de uso</Link>
+              <Link to="/termos" className="text-white-50 text-decoration-none small footer-link-hover">Política de privacidade</Link>
             </div>
           </div>
         </div>

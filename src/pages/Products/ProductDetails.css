@@ -547,3 +547,116 @@
     font-size: 0.78rem;
   }
 }
+
+/* ---- Stock Badges ---- */
+.pdp-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 50px;
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+
+.pdp-stock-badge--low {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  animation: pdp-stock-pulse 2.5s ease-in-out infinite;
+}
+
+.pdp-stock-badge--out {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+@keyframes pdp-stock-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.03); opacity: 0.9; }
+}
+
+/* ---- Sold Out Overlay on Main Image ---- */
+.pdp-sold-out-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.pdp-sold-out-overlay span {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a1a1a;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  padding: 10px 28px;
+  border-radius: 6px;
+}
+
+/* ---- Disabled Size Button ---- */
+.pdp-size-btn--disabled {
+  opacity: 0.3;
+  cursor: not-allowed !important;
+  position: relative;
+  color: #bbb !important;
+  border-color: #e0e0e0 !important;
+  background: #fafafa !important;
+  pointer-events: none;
+}
+
+.pdp-size-btn--disabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -2px;
+  right: -2px;
+  height: 1px;
+  background: #999;
+  transform: rotate(-15deg);
+}
+
+/* ---- Disabled Color Swatch ---- */
+.pdp-color-swatch--disabled {
+  opacity: 0.25;
+  cursor: not-allowed !important;
+  position: relative;
+  pointer-events: none;
+}
+
+.pdp-color-swatch--disabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -3px;
+  right: -3px;
+  height: 2px;
+  background: #666;
+  transform: rotate(-45deg);
+}
+
+/* ---- Disabled Add to Cart ---- */
+.pdp-add-btn--disabled {
+  background: #d1d5db !important;
+  color: #6b7280 !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---- Variation Notice ---- */
+.pdp-variation-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #92400e;
+  margin-bottom: 1rem;
+}

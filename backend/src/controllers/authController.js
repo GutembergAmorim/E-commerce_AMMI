@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -236,4 +237,92 @@ const googleLogin = async (req, res) => {
   }
 };
 
-export { register, login, getMe, googleLogin };
+// @desc    Solicitar recuperação de senha
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Nenhuma conta encontrada com este e-mail",
+      });
+    }
+
+    if (user.authProvider === "google" && !user.password) {
+      return res.status(400).json({
+        success: false,
+        message: "Esta conta usa login com Google. Não é possível redefinir a senha.",
+      });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    user.resetPasswordExpire = Date.now() + 30 * 60 * 1000; // 30 minutes
+    await user.save({ validateBeforeSave: false });
+
+    // TODO: Send email with reset link
+    // For now, return the token in the response for development
+    const resetUrl = `${process.env.CORS_ORIGIN || 'http://localhost:5173'}/reset-password/${resetToken}`;
+
+    console.log(`[AUTH] Reset password link for ${email}: ${resetUrl}`);
+
+    res.json({
+      success: true,
+      message: "Instruções de recuperação enviadas. Verifique seu e-mail.",
+      // Remove in production:
+      resetUrl,
+    });
+  } catch (error) {
+    console.error("Erro no forgot password:", error);
+    res.status(500).json({ success: false, message: "Erro ao processar solicitação" });
+  }
+};
+
+// @desc    Redefinir senha com token
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+const resetPassword = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Token inválido ou expirado. Solicite uma nova recuperação.",
+      });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Senha deve ter pelo menos 6 caracteres",
+      });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Senha redefinida com sucesso! Você já pode fazer login.",
+    });
+  } catch (error) {
+    console.error("Erro no reset password:", error);
+    res.status(500).json({ success: false, message: "Erro ao redefinir senha" });
+  }
+};
+
+export { register, login, getMe, googleLogin, forgotPassword, resetPassword };

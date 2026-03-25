@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import { SlidersHorizontal, Package, X } from "lucide-react";
+import { SlidersHorizontal, Package, X, Flame, Tag } from "lucide-react";
 import "./style.css";
 import { useProducts } from "../../hooks/useProducts";
 import ProductCard from "../../components/ProductCard/ProductCard";
@@ -16,6 +16,38 @@ function Collections() {
   const [showFilters, setShowFilters] = useState(false);
 
   const { products: fetchProducts, loading, error } = useProducts();
+
+  // Read URL params for sort, sale, and search modes
+  const urlSort = searchParams.get("sort");
+  const urlSale = searchParams.get("sale");
+  const urlSearch = searchParams.get("search");
+  const isSaleMode = urlSale === "true";
+  const isBestSellersMode = urlSort === "best-sellers";
+  const isSearchMode = !!urlSearch;
+
+  // Sync sortBy from URL
+  useEffect(() => {
+    if (isBestSellersMode) {
+      setSortBy("best-sellers");
+    }
+  }, [isBestSellersMode]);
+
+  // Dynamic page title
+  const pageTitle = isSearchMode
+    ? `Resultados para "${urlSearch}"`
+    : isSaleMode
+    ? "Promoções"
+    : isBestSellersMode
+    ? "Mais Vendidos"
+    : "Nossa Coleção";
+
+  const pageSubtitle = isSearchMode
+    ? "Veja o que encontramos para você"
+    : isSaleMode
+    ? "Aproveite os melhores preços em produtos selecionados"
+    : isBestSellersMode
+    ? "Os favoritos das nossas clientes"
+    : "Encontre o look perfeito para seu treino";
 
   // Extract unique categories
   const categories = useMemo(
@@ -59,7 +91,20 @@ function Collections() {
       const colorMatch =
         selectedColors.length === 0 ||
         (product.colors && product.colors.some((c) => selectedColors.includes(c.name)));
-      return categoryMatch && priceMatch && colorMatch;
+
+      // Sale filter: only products with oldPrice > price
+      const saleMatch = isSaleMode
+        ? product.oldPrice && product.oldPrice > product.price
+        : true;
+
+      // Search filter
+      const searchMatch = isSearchMode
+        ? product.name?.toLowerCase().includes(urlSearch.toLowerCase()) ||
+          product.description?.toLowerCase().includes(urlSearch.toLowerCase()) ||
+          product.category?.toLowerCase().includes(urlSearch.toLowerCase())
+        : true;
+
+      return categoryMatch && priceMatch && colorMatch && saleMatch && searchMatch;
     });
 
     // Sort
@@ -73,6 +118,16 @@ function Collections() {
       case "name-asc":
         result = [...result].sort((a, b) => a.name.localeCompare(b.name));
         break;
+      case "best-sellers":
+        result = [...result].sort((a, b) => (b.totalSold || 0) - (a.totalSold || 0));
+        break;
+      case "discount":
+        result = [...result].sort((a, b) => {
+          const discA = a.oldPrice ? ((a.oldPrice - a.price) / a.oldPrice) * 100 : 0;
+          const discB = b.oldPrice ? ((b.oldPrice - b.price) / b.oldPrice) * 100 : 0;
+          return discB - discA;
+        });
+        break;
       case "newest":
       default:
         // Keep original order (newest first from API)
@@ -80,7 +135,7 @@ function Collections() {
     }
 
     return result;
-  }, [activeCategory, priceRange, selectedColors, fetchProducts, sortBy]);
+  }, [activeCategory, priceRange, selectedColors, fetchProducts, sortBy, isSaleMode, isSearchMode, urlSearch]);
 
   const handleColorChange = (color) => {
     setSelectedColors((prev) =>
@@ -217,11 +272,15 @@ function Collections() {
 
   return (
     <div className="container py-4">
-      {/* ---- Compact Header ---- */}
+      {/* ---- Header ---- */}
       <div className="collections-header">
-        <h1 className="collections-header__title">Nossa Coleção</h1>
+        <div className="d-flex align-items-center justify-content-center gap-2">
+          {isSaleMode && <Tag size={24} style={{ color: '#ef4444' }} />}
+          {isBestSellersMode && <Flame size={24} style={{ color: '#f59e0b' }} />}
+          <h1 className="collections-header__title">{pageTitle}</h1>
+        </div>
         <p className="collections-header__subtitle">
-          Encontre o look perfeito para seu treino
+          {pageSubtitle}
         </p>
       </div>
 
@@ -249,9 +308,11 @@ function Collections() {
                 onChange={(e) => setSortBy(e.target.value)}
               >
                 <option value="newest">Mais Recentes</option>
+                <option value="best-sellers">Mais Vendidos</option>
                 <option value="price-asc">Menor Preço</option>
                 <option value="price-desc">Maior Preço</option>
                 <option value="name-asc">A - Z</option>
+                {isSaleMode && <option value="discount">Maior Desconto</option>}
               </select>
               <button
                 className="collections-toolbar__filter-btn"
@@ -309,7 +370,9 @@ function Collections() {
                 <Package size={28} />
               </div>
               <p className="collections-empty__text">
-                Nenhum produto encontrado com os filtros selecionados.
+                {isSaleMode
+                  ? "Nenhum produto em promoção no momento."
+                  : "Nenhum produto encontrado com os filtros selecionados."}
               </p>
               {hasActiveFilters && (
                 <button

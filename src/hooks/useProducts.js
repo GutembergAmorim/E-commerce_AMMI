@@ -94,3 +94,32 @@ export const useHighlightedProducts = () => {
 
   return { products, loading, error };
 };
+
+export const useBestSellers = (limit = 8) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBestSellers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await productService.getBestSellers(limit);
+        if (response.success) {
+          setProducts(response.data);
+        } else {
+          setError(response.message || "Erro ao buscar mais vendidos");
+        }
+      } catch (err) {
+        setError(err.message || "Erro ao buscar mais vendidos");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBestSellers();
+  }, [limit]);
+
+  return { products, loading, error };
+};

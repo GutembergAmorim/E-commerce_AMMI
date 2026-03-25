@@ -95,7 +95,7 @@ async function testAuth() {
 
 const createPix = async (req, res) => {
   try {
-    const { cartItems, shippingAddress, shippingPrice } = req.body;
+    const { cartItems, shippingAddress, shippingPrice, pixDiscount: clientPixDiscount } = req.body;
 
     if (!cartItems || !cartItems.length) {
       return res.status(400).json({ success: false, message: "Carrinho vazio" });
@@ -118,7 +118,8 @@ const createPix = async (req, res) => {
     const itemsPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const finalShippingPrice = Number(shippingPrice) || 0;
     const taxPrice = 0;
-    const total = itemsPrice + finalShippingPrice + taxPrice;
+    const pixDiscountAmount = Number(clientPixDiscount) || 0;
+    const total = itemsPrice + finalShippingPrice + taxPrice - pixDiscountAmount;
     const totalCents = Math.round(total * 100);
 
     // Cria pedido
@@ -832,4 +833,251 @@ const getPixQrCode = async (req, res) => {
   }
 };
 
-export { createPix, createCreditCardPayment, handleWebhook, getPaymentStatus, getPixQrCode };
+// Criar sessão 3DS para autenticação de cartão de débito
+const create3dsSession = async (req, res) => {
+  try {
+    const baseUrl = process.env.PAGSEGURO_BASE_URL || "https://sandbox.api.pagseguro.com";
+    // Endpoint de sessão 3DS usa domínio diferente
+    const sessionUrl = baseUrl.includes("sandbox")
+      ? "https://sandbox.sdk.pagseguro.com/checkout-sdk/sessions"
+      : "https://sdk.pagseguro.com/checkout-sdk/sessions";
+
+    console.log("🔐 Criando sessão 3DS em:", sessionUrl);
+
+    const response = await axios.post(sessionUrl, {}, {
+      headers: {
+        "Authorization": `Bearer ${process.env.PAGSEGURO_TOKEN}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    console.log("✅ Sessão 3DS criada:", response.data);
+
+    res.json({
+      success: true,
+      session: response.data.session,
+      expiresAt: response.data.expires_at
+    });
+
+  } catch (error) {
+    console.error("❌ Erro ao criar sessão 3DS:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      message: "Erro ao criar sessão de autenticação 3DS",
+      error: error.response?.data || error.message
+    });
+  }
+};
+
+// Criar pagamento com cartão de débito (requer 3DS)
+const createDebitCardPayment = async (req, res) => {
+  const { cartItems, shippingAddress, encryptedCard, holderName, authenticationId, shippingPrice } = req.body;
+
+  if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "O carrinho está vazio ou é inválido."
+    });
+  }
+
+  if (!encryptedCard) {
+    return res.status(400).json({
+      success: false,
+      message: "Dados do cartão criptografados são obrigatórios."
+    });
+  }
+
+  if (!authenticationId) {
+    return res.status(400).json({
+      success: false,
+      message: "ID de autenticação 3DS é obrigatório para cartão de débito."
+    });
+  }
+
+  try {
+    const user = validateUser(req.user);
+    await validateStock(cartItems);
+    const clientUrl = validateClientURL();
+
+    const itemsPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const finalShippingPrice = Number(shippingPrice) || 0;
+    const total = itemsPrice + finalShippingPrice; // Débito é sempre à vista, sem juros
+
+    const orderItems = cartItems.map((item) => ({
+      product: item.id || item.product,
+      name: item.name,
+      price: item.price,
+      quantity: Number(item.quantity) || 1,
+      color: item.color || '',
+      size: item.size || '',
+      image: item.image || ''
+    }));
+
+    const order = await Order.create({
+      user: user.id,
+      orderItems: orderItems,
+      shippingAddress: {
+        address: shippingAddress?.logradouro || '',
+        number: shippingAddress?.numero || '',
+        complement: shippingAddress?.complemento || '',
+        neighborhood: shippingAddress?.bairro || '',
+        city: shippingAddress?.localidade || '',
+        state: shippingAddress?.uf || '',
+        postalCode: shippingAddress?.cep || '',
+        country: "Brasil",
+      },
+      paymentMethod: 'DEBIT_CARD',
+      itemsPrice,
+      taxPrice: 0,
+      shippingPrice: finalShippingPrice,
+      total,
+      status: "Processando",
+      isPaid: false,
+      installments: 1
+    });
+
+    console.log("✅ Order (débito) criada com sucesso:", order._id);
+
+    const idempotencyKey = crypto.randomUUID();
+    const amountInCents = Math.round(total * 100);
+
+    // Body conforme documentação oficial PagSeguro: POST /orders com charges[] + 3DS
+    const body = {
+      reference_id: order._id.toString(),
+      customer: {
+        name: user.name || holderName || "Cliente",
+        email: user.email,
+        tax_id: "12345678909",
+        phones: [
+          {
+            country: "55",
+            area: "11",
+            number: "999999999",
+            type: "MOBILE"
+          }
+        ]
+      },
+      items: cartItems.map(item => ({
+        reference_id: (item.id || item.product || "item").toString(),
+        name: item.name,
+        quantity: Number(item.quantity) || 1,
+        unit_amount: Math.round(item.price * 100)
+      })),
+      shipping: {
+        address: {
+          street: shippingAddress?.logradouro || "Não informado",
+          number: shippingAddress?.numero || "S/N",
+          complement: shippingAddress?.complemento || "",
+          locality: shippingAddress?.bairro || "Centro",
+          city: shippingAddress?.localidade || "São Paulo",
+          region_code: shippingAddress?.uf || "SP",
+          country: "BRA",
+          postal_code: (shippingAddress?.cep || "01452002").replace(/\D/g, '')
+        }
+      },
+      notification_urls: [
+        `${clientUrl}/api/payment/webhook`
+      ],
+      charges: [
+        {
+          reference_id: `charge-${order._id.toString()}`,
+          description: `Pedido #${order._id}`,
+          amount: {
+            value: amountInCents,
+            currency: "BRL"
+          },
+          payment_method: {
+            type: "DEBIT_CARD",
+            card: {
+              encrypted: encryptedCard,
+              store: false
+            },
+            holder: {
+              name: holderName || user.name || "Cliente",
+              tax_id: "12345678909"
+            },
+            authentication_method: {
+              type: "THREEDS",
+              id: authenticationId
+            }
+          }
+        }
+      ]
+    };
+
+    console.log("💳 Enviando para /orders (débito com 3DS)...");
+    console.log("📤 Body:", JSON.stringify(body, null, 2));
+
+    const response = await pagseguroApi.post("/orders", body, {
+      headers: {
+        "x-idempotency-key": idempotencyKey
+      }
+    });
+
+    const pgOrder = response.data;
+    console.log("✅ Resposta do PagSeguro (débito):", JSON.stringify(pgOrder, null, 2));
+
+    // Extrair dados da charge dentro da resposta da order
+    const charge = pgOrder.charges && pgOrder.charges.length > 0 ? pgOrder.charges[0] : null;
+
+    // Atualizar ordem com dados do pagamento
+    order.pgChargeId = pgOrder.id;
+
+    if (charge) {
+      order.status = mapPgStatus(charge.status);
+
+      if (charge.status === 'PAID' || charge.status === 'AUTHORIZED') {
+        order.isPaid = true;
+        order.paidAt = new Date();
+        order.status = "Pago";
+
+        // Atualizar estoque
+        if (!order.stockUpdated) {
+          for (const item of order.orderItems) {
+            await Product.findByIdAndUpdate(item.product, {
+              $inc: { stock: -item.quantity }
+            });
+          }
+          order.stockUpdated = true;
+        }
+      }
+    }
+
+    await order.save();
+
+    res.status(201).json({
+      success: true,
+      orderId: order._id,
+      chargeId: charge?.id || pgOrder.id,
+      status: order.status,
+      isPaid: order.isPaid,
+      paymentResponse: {
+        id: charge?.id || pgOrder.id,
+        status: charge?.status || pgOrder.status,
+        authorization_code: charge?.payment_response?.reference,
+        message: charge?.payment_response?.message
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Erro no pagamento com débito:", error.response?.data || error.message);
+
+    let statusCode = error.response?.status || 500;
+    let errorMessage = "Erro ao processar pagamento com débito";
+
+    if (error.response?.data?.error_messages) {
+      errorMessage = error.response.data.error_messages.map(msg =>
+        `${msg.description} (${msg.code})`
+      ).join(', ');
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    res.status(statusCode).json({
+      success: false,
+      message: errorMessage
+    });
+  }
+};
+
+export { createPix, createCreditCardPayment, createDebitCardPayment, create3dsSession, handleWebhook, getPaymentStatus, getPixQrCode };

@@ -34,6 +34,7 @@ const OrderHistory = () => {
       'Pago': 'admin-badge--paid',
       'Processando': 'admin-badge--processing',
       'Pendente': 'admin-badge--pending',
+      'Preparando': 'admin-badge--processing',
       'Cancelado': 'admin-badge--cancelled',
       'Enviado': 'admin-badge--paid',
       'Entregue': 'admin-badge--paid',

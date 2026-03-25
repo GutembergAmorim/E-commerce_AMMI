@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./style.css";
-import { useProducts } from "../../hooks/useProducts";
+import { useProducts, useBestSellers } from "../../hooks/useProducts";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, ArrowRight } from "lucide-react";
 import ProductCard from "../../components/ProductCard/ProductCard";
@@ -25,7 +25,8 @@ const REVIEWS = [
 ];
 
 function Home() {
-  const { products, loading, error } = useProducts();
+  const { products, loading: productsLoading } = useProducts();
+  const { products: bestSellers, loading: bestSellersLoading, error: bestSellersError } = useBestSellers(8);
   const navigate = useNavigate();
 
   // Newsletter state
@@ -121,14 +122,14 @@ function Home() {
             </p>
           </div>
 
-          {loading ? (
+          {bestSellersLoading ? (
             <SkeletonGrid />
-          ) : error ? (
-            <div className="alert alert-warning" role="alert">{error}</div>
+          ) : bestSellersError ? (
+            <div className="alert alert-warning" role="alert">{bestSellersError}</div>
           ) : (
             <>
               <div className="row row-cols-2 row-cols-lg-4 g-4">
-                {products.slice(0, 8).map((product) => (
+                {bestSellers.map((product) => (
                   <div className="col" key={product._id}>
                     <ProductCard product={product} />
                   </div>

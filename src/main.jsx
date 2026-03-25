@@ -27,6 +27,14 @@ import OrderManagement from './pages/Admin/OrderManagement.jsx'
 import OrderDetails from './pages/Admin/OrderDetails.jsx'
 import StockManagement from './pages/Admin/StockManagement.jsx'
 import StockHistory from './pages/Admin/StockHistory.jsx'
+import ProductEdit from './pages/Admin/ProductEdit.jsx'
+import CouponManagement from './pages/Admin/CouponManagement.jsx'
+import AdminReports from './pages/Admin/AdminReports.jsx'
+import ForgotPassword from './pages/Login/ForgotPassword.jsx'
+import ResetPassword from './pages/Login/ResetPassword.jsx'
+import AboutUs from './pages/Institutional/AboutUs.jsx'
+import ExchangePolicy from './pages/Institutional/ExchangePolicy.jsx'
+import TermsAndPrivacy from './pages/Institutional/TermsAndPrivacy.jsx'
 import PixQrCode from './pages/Payment/PixQrCode.jsx'
 import { FavoritesProvider } from "./Context/FavoritesContext";
 import Favorites from "./pages/Favorites/Favorites";
@@ -41,6 +49,14 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
   },
   {
     path: "/",
@@ -61,6 +77,18 @@ const router = createBrowserRouter([
       {
         path: "cart",
         element: <Cart />,
+      },
+      {
+        path: "sobre",
+        element: <AboutUs />,
+      },
+      {
+        path: "trocas",
+        element: <ExchangePolicy />,
+      },
+      {
+        path: "termos",
+        element: <TermsAndPrivacy />,
       },
       {
         path: "checkout",
@@ -143,10 +171,26 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "admin/products/edit/:id",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <ProductEdit />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "admin/users",
         element: (
           <ProtectedRoute roles={["admin"]}>
             <Users />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/coupons",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <CouponManagement />
           </ProtectedRoute>
         ),
       },

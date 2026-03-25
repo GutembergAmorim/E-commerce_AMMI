@@ -82,9 +82,9 @@ const Login = () => {
                   <label htmlFor="passwordInput">Senha</label>
                 </div>                
                 <div className="text-center form-check mb-3">
-                  <a href="" className="text-muted fw-bold">
+                  <Link to="/forgot-password" className="text-muted fw-bold" style={{ textDecoration: 'none' }}>
                     Esqueceu seus dados de acesso?
-                  </a>
+                  </Link>
                 </div>
 
                 <div className="d-grid">

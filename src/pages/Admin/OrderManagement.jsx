@@ -68,6 +68,7 @@ const OrderManagement = () => {
       'Pago': 'admin-badge--paid',
       'Processando': 'admin-badge--processing',
       'Pendente': 'admin-badge--pending',
+      'Preparando': 'admin-badge--processing',
       'Cancelado': 'admin-badge--cancelled',
       'Enviado': 'admin-badge--paid',
       'Entregue': 'admin-badge--paid',
@@ -158,6 +159,7 @@ const OrderManagement = () => {
                 <option value="Pendente">Pendente</option>
                 <option value="Processando">Processando</option>
                 <option value="Pago">Pago</option>
+                <option value="Preparando">Preparando</option>
                 <option value="Enviado">Enviado</option>
                 <option value="Entregue">Entregue</option>
                 <option value="Cancelado">Cancelado</option>
@@ -222,6 +224,7 @@ const OrderManagement = () => {
                           <option value="Pendente">Pendente</option>
                           <option value="Processando">Processando</option>
                           <option value="Pago">Pago</option>
+                          <option value="Preparando">Preparando</option>
                           <option value="Enviado">Enviado</option>
                           <option value="Entregue">Entregue</option>
                           <option value="Cancelado">Cancelado</option>

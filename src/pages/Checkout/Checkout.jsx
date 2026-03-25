@@ -10,6 +10,7 @@ import AddressForm from "../AddressForm";
 import OrderSummary from "../OrderSummary";
 import Notification from "../Notification";
 import CreditCardForm from "../../components/CreditCardForm";
+import DebitCardForm from "../../components/DebitCardForm";
 import "./Checkout.css";
 
 // Função de debounce
@@ -217,6 +218,82 @@ function Checkout() {
     }
   };
 
+  // Pagamento com cartão de débito (3DS)
+  const handleDebitCardPayment = async (cardData) => {
+    setIsProcessing(true);
+
+    if (cardData.encryptionError) {
+      showNotification(cardData.encryptionError, "error");
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!user) {
+      showNotification("Você precisa estar logado para finalizar a compra.", "error");
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!isFormValid) {
+      showNotification("Por favor, preencha todos os campos obrigatórios do endereço.", "error");
+      setIsProcessing(false);
+      return;
+    }
+
+    try {
+      const shippingAddress = {
+        logradouro: address.logradouro,
+        numero: address.numero,
+        complemento: address.complemento || "",
+        bairro: address.bairro,
+        localidade: address.localidade,
+        uf: address.uf,
+        cep: address.cep,
+      };
+
+      const response = await api.post("/payment/create-debit-card", {
+        cartItems,
+        shippingAddress,
+        encryptedCard: cardData.encrypted,
+        holderName: cardData.holder,
+        authenticationId: cardData.authenticationId,
+        shippingPrice: frete,
+      });
+
+      const { orderId, status, isPaid } = response.data;
+
+      if (isPaid) {
+        showNotification("🎉 Pagamento aprovado com sucesso!", "success");
+        setOrderPlaced(true);
+        clearCart();
+        navigate(`/order-confirmation/${orderId}`);
+      } else {
+        showNotification(
+          `Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`,
+          "info"
+        );
+        setOrderPlaced(true);
+        clearCart();
+        navigate(`/order-status/${orderId}`);
+      }
+    } catch (error) {
+      let errorMessage = "Erro ao processar pagamento com débito";
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        if (errorData.error_messages && Array.isArray(errorData.error_messages)) {
+          errorMessage = errorData.error_messages
+            .map((msg) => `${msg.description} (${msg.code})`)
+            .join(", ");
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      }
+      showNotification(errorMessage, "error");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // Pagamento com PIX
   const handleCreatePreference = async (event) => {
     if (event) event.preventDefault();
@@ -249,6 +326,7 @@ function Checkout() {
         cartItems,
         shippingAddress,
         shippingPrice: frete,
+        pixDiscount: pixDiscount,
       });
 
       if (!response.data.success) {
@@ -454,6 +532,26 @@ function Checkout() {
                   Até 12× no crédito
                 </small>
               </div>
+
+              <div
+                className={`checkout-payment-option ${
+                  paymentMethod === "debit_card"
+                    ? "checkout-payment-option--selected"
+                    : ""
+                }`}
+                onClick={() => setPaymentMethod("debit_card")}
+              >
+                <span className="checkout-payment-option__check">
+                  <i className="fas fa-check"></i>
+                </span>
+                <span className="checkout-payment-option__icon">🏦</span>
+                <span className="checkout-payment-option__label">Débito</span>
+                <small
+                  style={{ display: "block", fontSize: "0.7rem", color: "#999", marginTop: 4 }}
+                >
+                  À vista com 3DS
+                </small>
+              </div>
             </div>
 
             {/* Credit Card Form */}
@@ -461,6 +559,17 @@ function Checkout() {
               <div className="mt-4" style={{ borderTop: "1px solid #f0f0f0", paddingTop: "1rem" }}>
                 <CreditCardForm
                   onPaymentSubmit={handleCreditCardPayment}
+                  isProcessing={isProcessing}
+                  totalAmount={total}
+                />
+              </div>
+            )}
+
+            {/* Debit Card Form */}
+            {paymentMethod === "debit_card" && (
+              <div className="mt-4" style={{ borderTop: "1px solid #f0f0f0", paddingTop: "1rem" }}>
+                <DebitCardForm
+                  onPaymentSubmit={handleDebitCardPayment}
                   isProcessing={isProcessing}
                   totalAmount={total}
                 />

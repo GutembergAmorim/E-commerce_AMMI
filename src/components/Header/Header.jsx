@@ -1,7 +1,7 @@
 import React from "react";
 import Logo_Header from "../../assets/Logo_Header.png";
 import CartIcon from "../Icons/CartIcon";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Dropdown from "react-bootstrap/Dropdown";
 import "./Header.css";
@@ -62,7 +62,10 @@ function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Detectar scroll para mudar o estilo do header
   useEffect(() => {
@@ -85,6 +88,16 @@ function Header() {
 
   const handleMenuClose = () => setShowMenu(false);
   const handleMenuShow = () => setShowMenu(true);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    setShowSearch(false);
+    setShowMenu(false);
+    setSearchQuery("");
+    navigate(`/collections?search=${encodeURIComponent(q)}`);
+  };
 
   return (
     <>
@@ -135,6 +148,14 @@ function Header() {
 
             {/* Direita: Ações */}
             <div className="d-flex align-items-center gap-3">
+              {/* Search Toggle */}
+              <button
+                className="btn-icon text-dark d-none d-lg-flex"
+                onClick={() => setShowSearch(!showSearch)}
+                aria-label="Buscar produtos"
+              >
+                <i className={`fa-solid fa-magnifying-glass fs-4`}></i>
+              </button>
               {/* Login / Perfil — usando React-Bootstrap Dropdown */}
               {isAuthenticated ? (
                 <Dropdown align="end">
@@ -184,6 +205,37 @@ function Header() {
         </div>
       </header>
 
+      {/* Desktop Search Bar */}
+      {showSearch && (
+        <div className="search-dropdown">
+          <div className="container">
+            <form onSubmit={handleSearch} className="search-dropdown__form">
+              <i className="fa-solid fa-magnifying-glass search-dropdown__icon"></i>
+              <input
+                type="text"
+                className="search-dropdown__input"
+                placeholder="O que você procura?"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="search-dropdown__clear"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              )}
+              <button type="submit" className="search-dropdown__submit">
+                Buscar
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Menu Offcanvas para Mobile */}
       <Offcanvas show={showMenu} onHide={handleMenuClose} placement="end" aria-label="Menu de navegação">
         <Offcanvas.Header closeButton>
@@ -206,6 +258,21 @@ function Header() {
               handleMenuClose={handleMenuClose}
               location={location}
             />
+
+            {/* Mobile Search */}
+            <form onSubmit={handleSearch} className="d-flex gap-2 mt-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Buscar produtos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ borderRadius: 50, border: '1px solid #e0e0e0', padding: '8px 16px', fontSize: '0.85rem' }}
+              />
+              <button type="submit" className="btn btn-dark rounded-pill px-3">
+                <i className="fas fa-search"></i>
+              </button>
+            </form>
 
             <hr className="my-3" />
 

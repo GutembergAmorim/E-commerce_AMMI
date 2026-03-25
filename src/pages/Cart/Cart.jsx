@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
+import api from "../../services/api";
 import "./Cart.css";
 
 const Cart = () => {
@@ -10,6 +11,12 @@ const Cart = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [couponData, setCouponData] = useState(null); // { code, discount, discountType, discountValue, description }
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -19,17 +26,55 @@ const Cart = () => {
       navigate("/login", { state: { from: location } });
       return;
     }
-    navigate("/checkout");
+    // Pass coupon info to checkout via state
+    navigate("/checkout", {
+      state: couponData ? { coupon: couponData } : undefined,
+    });
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const discount = cartItems.reduce((acc, item) => {
+  const productDiscount = cartItems.reduce((acc, item) => {
     if (item.originalPrice) {
       return acc + (item.originalPrice - item.price) * item.quantity;
     }
     return acc;
   }, 0);
-  const total = subtotal - discount + frete;
+
+  // Calculate coupon discount
+  const couponDiscount = couponData ? couponData.discount : 0;
+  const total = subtotal - productDiscount - couponDiscount + frete;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+
+    setCouponLoading(true);
+    setCouponError("");
+    setCouponData(null);
+
+    try {
+      const res = await api.post("/coupons/validate", {
+        code: couponCode.trim(),
+        orderTotal: subtotal - productDiscount,
+      });
+
+      if (res.data.success) {
+        setCouponData(res.data.data);
+        setCouponError("");
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || "Erro ao validar cupom";
+      setCouponError(msg);
+      setCouponData(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponData(null);
+    setCouponCode("");
+    setCouponError("");
+  };
 
   const paymentMethods = [
     { icon: "fa-brands fa-pix", label: "Pix" },
@@ -136,10 +181,26 @@ const Cart = () => {
               <span className="fw-medium">{formatCurrency(subtotal)}</span>
             </div>
 
-            {discount > 0 && (
+            {productDiscount > 0 && (
               <div className="cart-summary__row">
                 <span className="text-muted">Descontos</span>
-                <span className="text-success fw-medium">- {formatCurrency(discount)}</span>
+                <span className="text-success fw-medium">- {formatCurrency(productDiscount)}</span>
+              </div>
+            )}
+
+            {couponData && (
+              <div className="cart-summary__row">
+                <span className="text-muted d-flex align-items-center gap-1">
+                  Cupom ({couponData.code})
+                  <button
+                    onClick={handleRemoveCoupon}
+                    style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626', padding: 0 }}
+                    title="Remover cupom"
+                  >
+                    <X size={14} />
+                  </button>
+                </span>
+                <span className="text-success fw-medium">- {formatCurrency(couponDiscount)}</span>
               </div>
             )}
 
@@ -156,13 +217,48 @@ const Cart = () => {
 
             {/* Coupon */}
             <div className="cart-coupon">
-              <input
-                type="text"
-                placeholder="Cupom de desconto"
-                className="cart-coupon__input"
-              />
-              <button className="cart-coupon__btn">Aplicar</button>
+              {couponData ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 12px', background: '#f0fdf4', borderRadius: 10,
+                  border: '1px solid #bbf7d0', width: '100%',
+                }}>
+                  <i className="fas fa-check-circle" style={{ color: '#16a34a' }}></i>
+                  <span style={{ fontSize: '0.82rem', color: '#16a34a', fontWeight: 600 }}>
+                    Cupom {couponData.code} aplicado!
+                    {couponData.discountType === 'percentage'
+                      ? ` (${couponData.discountValue}% off)`
+                      : ` (R$ ${couponData.discountValue.toFixed(2)} off)`}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Cupom de desconto"
+                    className="cart-coupon__input"
+                    value={couponCode}
+                    onChange={(e) => {
+                      setCouponCode(e.target.value.toUpperCase());
+                      setCouponError("");
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyCoupon())}
+                  />
+                  <button
+                    className="cart-coupon__btn"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponCode.trim()}
+                  >
+                    {couponLoading ? "..." : "Aplicar"}
+                  </button>
+                </>
+              )}
             </div>
+            {couponError && (
+              <p style={{ fontSize: '0.78rem', color: '#dc2626', margin: '4px 0 0', fontWeight: 500 }}>
+                {couponError}
+              </p>
+            )}
 
             {/* Checkout Button */}
             <button
