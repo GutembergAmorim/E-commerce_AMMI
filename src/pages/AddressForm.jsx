@@ -12,6 +12,9 @@ const AddressForm = ({
         <i className="fas fa-map-marker-alt"></i>
         Endereço de Entrega
       </h2>
+      <small style={{ display: 'block', marginBottom: '0.8rem', fontSize: '0.75rem', color: '#999' }}>
+        Campos marcados com <span style={{ color: '#e53935' }}>*</span> são obrigatórios
+      </small>
 
       <div className="row g-3">
         <div className="col-12">
@@ -66,7 +69,7 @@ const AddressForm = ({
           <>
             <div className="col-12">
               <label htmlFor="logradouro" className="checkout-label">
-                Rua
+                Rua <span style={{ color: '#e53935' }}>*</span>
               </label>
               <input
                 type="text"
@@ -95,7 +98,7 @@ const AddressForm = ({
             </div>
             <div className="col-md-8">
               <label htmlFor="complemento" className="checkout-label">
-                Complemento
+                Complemento <span style={{ color: '#999', fontWeight: 400, fontSize: '0.75rem' }}>(Opcional)</span>
               </label>
               <input
                 type="text"
@@ -109,7 +112,7 @@ const AddressForm = ({
             </div>
             <div className="col-md-5">
               <label htmlFor="bairro" className="checkout-label">
-                Bairro
+                Bairro <span style={{ color: '#e53935' }}>*</span>
               </label>
               <input
                 type="text"
@@ -123,7 +126,7 @@ const AddressForm = ({
             </div>
             <div className="col-md-5">
               <label htmlFor="cidade" className="checkout-label">
-                Cidade
+                Cidade <span style={{ color: '#e53935' }}>*</span>
               </label>
               <input
                 type="text"
@@ -137,7 +140,7 @@ const AddressForm = ({
             </div>
             <div className="col-md-2">
               <label htmlFor="estado" className="checkout-label">
-                UF
+                UF <span style={{ color: '#e53935' }}>*</span>
               </label>
               <input
                 type="text"

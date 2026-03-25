@@ -190,7 +190,7 @@ const createPix = async (req, res) => {
         address: {
           street: shippingAddress?.logradouro || "Não informado",
           number: shippingAddress?.numero || "S/N",
-          complement: shippingAddress?.complemento || "",
+          complement: shippingAddress?.complemento || "N/A",
           locality: shippingAddress?.bairro || "Centro",
           city: shippingAddress?.localidade || "São Paulo",
           region_code: shippingAddress?.uf || "SP",
@@ -368,7 +368,7 @@ const createCreditCardPayment = async (req, res) => {
       shippingAddress: {
         address: shippingAddress?.logradouro || '',
         number: shippingAddress?.numero || '',
-        complement: shippingAddress?.complemento || '',
+        complement: shippingAddress?.complemento || 'N/A',
         neighborhood: shippingAddress?.bairro || '',
         city: shippingAddress?.localidade || '',
         state: shippingAddress?.uf || '',
@@ -416,7 +416,7 @@ const createCreditCardPayment = async (req, res) => {
         address: {
           street: shippingAddress?.logradouro || "Não informado",
           number: shippingAddress?.numero || "S/N",
-          complement: shippingAddress?.complemento || "",
+          complement: shippingAddress?.complemento || "N/A",
           locality: shippingAddress?.bairro || "Centro",
           city: shippingAddress?.localidade || "São Paulo",
           region_code: shippingAddress?.uf || "SP",
@@ -919,7 +919,7 @@ const createDebitCardPayment = async (req, res) => {
       shippingAddress: {
         address: shippingAddress?.logradouro || '',
         number: shippingAddress?.numero || '',
-        complement: shippingAddress?.complemento || '',
+        complement: shippingAddress?.complemento || 'N/A',
         neighborhood: shippingAddress?.bairro || '',
         city: shippingAddress?.localidade || '',
         state: shippingAddress?.uf || '',
@@ -967,7 +967,7 @@ const createDebitCardPayment = async (req, res) => {
         address: {
           street: shippingAddress?.logradouro || "Não informado",
           number: shippingAddress?.numero || "S/N",
-          complement: shippingAddress?.complemento || "",
+          complement: shippingAddress?.complemento || "N/A",
           locality: shippingAddress?.bairro || "Centro",
           city: shippingAddress?.localidade || "São Paulo",
           region_code: shippingAddress?.uf || "SP",
