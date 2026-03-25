@@ -52,6 +52,8 @@ app.use(
       const allowedOrigins = [
         "http://localhost:5173",
         "http://localhost:5174",
+        "https://ammifitwear.com.br",
+        "https://www.ammifitwear.com.br",
       ];
 
       // Add env origin without trailing slash if it exists
