@@ -29,7 +29,7 @@ const AboutUs = () => {
         <p style={{ fontSize: '0.9rem', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
           A AMMI nasceu com uma missão clara: empoderar mulheres através de roupas fitness que fazem você se sentir
           poderosa em cada movimento. Acreditamos que o conforto e o estilo não precisam ser sacrificados pela
-          performance — por isso, cada peça é desenhada com carinho, pensando em você.
+          performance, por isso, cada peça é desenhada com carinho, pensando em você.
         </p>
       </div>
 
@@ -71,7 +71,7 @@ const AboutUs = () => {
             @ammi.fitwear
           </a>
           {' '}ou envie um e-mail para{' '}
-          <strong>contato@ammi.com.br</strong>. Teremos prazer em atender você!
+          <strong>ammifitwear@gmail.com</strong>. Teremos prazer em atender você!
         </p>
       </div>
     </div>
