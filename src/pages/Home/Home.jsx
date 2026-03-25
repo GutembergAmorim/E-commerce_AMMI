@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import "./style.css";
 import { useProducts, useBestSellers } from "../../hooks/useProducts";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,12 +16,26 @@ import claudiaImg from "../../assets/Claudia.png";
 import ivinaImg from "../../assets/IvinaGasp.png";
 import nayaraImg from "../../assets/Nayara.png";
 
+// Importação das imagens de categorias
+import categoryLeggingImg from "../../assets/category_legging.png";
+import categoryShortImg from "../../assets/category_short.png";
+import categoryTopImg from "../../assets/category_top.png";
+import categoryMacaquinhoImg from "../../assets/category_macaquinho.png";
+
 const REVIEWS = [
   { id: 1, name: "Naylane", handle: "@naylanea", text: "Esse look 🤌.", image: naylaneImg },
   { id: 2, name: "Bruna Almeida", handle: "@bruna_almeida", text: "@ammi.fitwear", image: brunaImg },
   { id: 3, name: "Claudia", handle: "@claudiaflaviio", text: "@ammi.fitwear", image: claudiaImg },
   { id: 4, name: "Ivina", handle: "@ivinagasp", text: "Pré treino hoje sendo meu look novo @ammi.fitwear 💚", image: ivinaImg },
   { id: 5, name: "Nayara", handle: "@nayaramakedesign", text: "Melhor pré treino para toda mulher é um lookinho novo! 😍", image: nayaraImg },
+];
+
+// Categorias fixas com imagens dedicadas
+const CATEGORIES = [
+  { _id: "Legging", name: "Legging", image: categoryLeggingImg },
+  { _id: "Short", name: "Short", image: categoryShortImg },
+  { _id: "Top", name: "Top", image: categoryTopImg },
+  { _id: "Macaquinho", name: "Macaquinho", image: categoryMacaquinhoImg },
 ];
 
 function Home() {
@@ -53,23 +67,6 @@ function Home() {
     }
   };
 
-  // Unique categories for the grid
-  const categories = useMemo(() => {
-    if (!products.length) return [];
-    const seen = new Set();
-    return products.reduce((acc, product) => {
-      const name = product.category;
-      if (name && !seen.has(name)) {
-        seen.add(name);
-        acc.push({
-          _id: name,
-          name,
-          image: product.images?.[0] || null,
-        });
-      }
-      return acc;
-    }, []);
-  }, [products]);
 
   // Skeleton loader
   const SkeletonGrid = () => (
@@ -102,7 +99,7 @@ function Home() {
 
       {/* Category Grid */}
       <CategoryGrid
-        categories={categories}
+        categories={CATEGORIES}
         onSelectCategory={(categoryId) => {
           if (categoryId) {
             navigate(`/collections?category=${categoryId}`);

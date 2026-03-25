@@ -1,6 +1,6 @@
 .category-grid-section {
-  padding: 3rem 0;
-  background-color: #f8f9fa; /* Light gray background like reference */
+  padding: 3.5rem 0;
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
 }
 
 .category-grid-title {
@@ -13,42 +13,98 @@
 }
 
 .category-card {
-  background-color: #fff;
+  background-color: #111;
   border-radius: 20px;
   overflow: hidden;
   position: relative;
   cursor: pointer;
-  height: 250px; /* Fixed height for consistency */
-  border: 1px solid transparent;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  height: 280px;
+  border: none;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .category-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  border-color: #dee2e6;
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.category-card:hover .category-card-image {
+  transform: scale(1.08);
+  filter: brightness(0.65);
+}
+
+.category-card:hover .category-card-title {
+  letter-spacing: 3px;
+}
+
+.category-card:hover .category-card-cta {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .category-card.active {
-  box-shadow: 0 0 0 2px #000; /* Highlight active category replacing 'ring' */
+  box-shadow: 0 0 0 3px #000, 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .category-card-content {
   display: flex;
   height: 100%;
+  position: relative;
 }
 
-/* Title Styling - Top Left */
+/* Dark gradient overlay for text readability */
+.category-card-content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Title Styling - Bottom centered, modern */
 .category-card-title {
   position: absolute;
-  top: 0.5rem;
-  left: 1rem;
-  font-size: 1.5rem;
+  bottom: 1.2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: #252424;
-  z-index: 2; /* On top of image */
-  text-transform: capitalize;
+  color: #ffffff;
+  z-index: 2;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: letter-spacing 0.4s ease;
+}
+
+/* Explore CTA */
+.category-card-cta {
+  position: absolute;
+  bottom: 3.2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 2;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.4s ease;
 }
 
 /* Image Container */
@@ -58,26 +114,39 @@
   width: 100%;
   overflow: hidden;
   display: flex;
-  justify-content: flex-end; /* Align image to right/bottom typically */
-  align-items: flex-end;
+  justify-content: center;
+  align-items: center;
 }
 
 .category-card-image {
   height: 100%;
   width: 100%;
   object-fit: cover;
-  object-position: center top; 
-  /* To mimic the reference where subjects are often visible */
+  object-position: center top;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  filter: brightness(0.8);
 }
 
 @media (max-width: 768px) {
-  .category-card {
-    height: 180px;
+  .category-grid-section {
+    padding: 2.5rem 0;
   }
-  
+
+  .category-card {
+    height: 200px;
+  }
+
   .category-card-title {
-    font-size: 1.2rem;
-    top: 1rem;
-    left: 1rem;
+    font-size: 1rem;
+    bottom: 0.8rem;
+    letter-spacing: 1.5px;
+  }
+
+  .category-card-cta {
+    display: none;
+  }
+
+  .category-card:hover .category-card-image {
+    transform: scale(1.03);
   }
 }

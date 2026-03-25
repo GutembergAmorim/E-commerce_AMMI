@@ -26,7 +26,6 @@ const CategoryGrid = ({ categories, selectedCategory, onSelectCategory }) => {
                 onClick={() => onSelectCategory(category._id === selectedCategory ? null : category._id)}
               >
                 <div className="category-card-content">
-                    <h3 className="category-card-title">{category.name}</h3>
                     <div className="category-card-image-wrapper">
                         <img 
                             src={category.image || "https://via.placeholder.com/300x200?text=Category"} 
@@ -34,6 +33,8 @@ const CategoryGrid = ({ categories, selectedCategory, onSelectCategory }) => {
                             className="category-card-image"
                         />
                     </div>
+                    <span className="category-card-cta">Explorar</span>
+                    <h3 className="category-card-title">{category.name}</h3>
                 </div>
               </div>
             </div>
