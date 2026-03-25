@@ -8,7 +8,9 @@ import "./Login.css";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,6 +20,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     const result = await login(email, password);
     if (result.success) {
@@ -25,6 +28,7 @@ const Login = () => {
     } else {
       setError(result.message || "Email ou senha inválidos. Tente novamente.");
     }
+    setLoading(false);
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -46,85 +50,132 @@ const Login = () => {
   };
 
   return (
-    <>
-      <header className="bg-light text-white text-center py-3 mb-4 border-bottom">
-        <img style={{ maxWidth: "100px" }} src={logo} alt="Logo" />
-      </header>
-      <main className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-md-6 col-lg-5">
-            <div className="p-4">
-              <h2 className="text-center h4 fw-bold mb-4">Acesse sua conta</h2>
-              <form onSubmit={handleSubmit}>
-                {error && <div className="alert alert-danger">{error}</div>}
-                <div className="form-floating mb-3">
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="emailInput"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="E-mail"
-                  />
-                  <label htmlFor="emailInput">E-mail</label>
-                </div>
-                <div className="form-floating mb-3">
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="passwordInput"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Senha"
-                  />
-                  <label htmlFor="passwordInput">Senha</label>
-                </div>                
-                <div className="text-center form-check mb-3">
-                  <Link to="/forgot-password" className="text-muted fw-bold" style={{ textDecoration: 'none' }}>
-                    Esqueceu seus dados de acesso?
-                  </Link>
-                </div>
+    <div className="login-page">
+      <div className="login-container">
+        {/* Logo */}
+        <Link to="/" className="login-logo-link">
+          <img src={logo} alt="AMMI Fitwear" className="login-logo" />
+        </Link>
 
-                <div className="d-grid">
-                  <button
-                    type="submit"
-                    className="btn btn-primary fw-bold btn-login-custom rounded-pill w-100"
-                  >
-                    Entrar
-                  </button>
-                </div>
-              </form>
+        {/* Card */}
+        <div className="login-card">
+          <h1 className="login-title">Acesse sua conta</h1>
+          <p className="login-subtitle">
+            Bem-vinda de volta! Entre para continuar.
+          </p>
 
-              <div className="d-flex align-items-center my-4">
-                <hr className="flex-grow-1" style={{ borderColor: "gray" }} />
-                <span className="mx-3 text-muted">ou</span>
-                <hr className="flex-grow-1" style={{ borderColor: "gray" }} />
-              </div>
-              <div className="d-flex justify-content-center mb-4">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  theme="outline"
-                  size="large"
-                  width="100%"
-                  text="continue_with"
-                  shape="pill"
-                  locale="pt-BR"
+          {/* Alert */}
+          {error && (
+            <div className="login-alert login-alert--error">
+              <i className="fas fa-exclamation-circle"></i>
+              {error}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="login-field">
+              <label htmlFor="emailInput" className="login-label">
+                E-mail
+              </label>
+              <div className="login-input-wrapper">
+                <i className="fas fa-envelope login-input-icon"></i>
+                <input
+                  type="email"
+                  className="login-input"
+                  id="emailInput"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="seu@email.com"
                 />
               </div>
-              <Link to="/register" className="text-decoration-none">
+            </div>
+
+            <div className="login-field">
+              <label htmlFor="passwordInput" className="login-label">
+                Senha
+              </label>
+              <div className="login-input-wrapper">
+                <i className="fas fa-lock login-input-icon"></i>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="login-input"
+                  id="passwordInput"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Sua senha"
+                />
                 <button
                   type="button"
-                  className="btn btn-primary fw-bold btn-login-custom rounded-pill w-100"
-                >Criar Conta</button>
+                  className="login-password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                </button>
+              </div>
+            </div>
+
+            <div className="login-forgot">
+              <Link to="/forgot-password" className="login-forgot-link">
+                Esqueceu sua senha?
               </Link>
             </div>
+
+            <button
+              type="submit"
+              className="login-btn"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm" role="status"></span>
+                  Entrando...
+                </>
+              ) : (
+                "Entrar"
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="login-divider">
+            <span>ou</span>
           </div>
+
+          {/* Google */}
+          <div className="login-google">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="outline"
+              size="large"
+              width="100%"
+              text="continue_with"
+              shape="pill"
+              locale="pt-BR"
+            />
+          </div>
+
+          {/* Register link */}
+          <p className="login-footer">
+            Não tem uma conta?{" "}
+            <Link to="/register" className="login-footer-link">
+              Criar conta
+            </Link>
+          </p>
         </div>
-      </main>
-    </>
+
+        {/* Trust */}
+        <div className="login-trust">
+          <span><i className="fas fa-lock"></i> Dados protegidos</span>
+          <span><i className="fas fa-shield-alt"></i> Conexão segura</span>
+        </div>
+      </div>
+    </div>
   );
 };
+
 export default Login;
