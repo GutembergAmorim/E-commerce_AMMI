@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Package, AlertTriangle, TrendingUp,
   Plus, Minus, History, Search, X, BarChart3, ShoppingCart,
-  DollarSign, Grid3X3, Tag, Save, Pencil, ArrowLeft
+  DollarSign, Grid3X3, Tag, Save, Pencil, ArrowLeft, Trash2
 } from 'lucide-react';
 import api from '../../services/api';
 import { productService } from '../../services/productService';
@@ -215,6 +215,19 @@ const StockManagement = () => {
       showNotification(error.response?.data?.message || error.message || 'Erro ao atualizar variações', 'error');
     } finally {
       setSavingVariations(false);
+    }
+  };
+
+  // ── Delete Product ──
+  const handleDeleteProduct = async (id, name) => {
+    if (window.confirm(`ATENÇÃO: Tem certeza que deseja excluir o produto "${name}"?\nEsta ação apagará o produto, seu histórico de vendas e estoque. Não pode ser desfeita.`)) {
+      try {
+        await productService.deleteProduct(id);
+        showNotification(`Produto "${name}" excluído com sucesso.`, 'success');
+        fetchData(); // Recarrega a lista
+      } catch (error) {
+        showNotification(error.message || 'Erro ao excluir produto', 'error');
+      }
     }
   };
 
@@ -486,6 +499,14 @@ const StockManagement = () => {
                             >
                               <History size={13} />
                             </Link>
+                            <button
+                              className="admin-link-btn"
+                              style={{ color: '#dc2626' }}
+                              onClick={() => handleDeleteProduct(product._id, product.name)}
+                              title="Excluir Produto"
+                            >
+                              <Trash2 size={13} /> Excluir
+                            </button>
                           </div>
                         </td>
                       </tr>
