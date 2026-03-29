@@ -25,6 +25,9 @@ import analyticsRoutes from './src/routes/analytics.js';
 
 const app = express();
 
+// Confiar no IP original através do Load Balancer (Render, Vercel, Heroku etc)
+app.set("trust proxy", 1);
+
 // Middleware de segurança
 app.use(
   helmet({
