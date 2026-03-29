@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Package, AlertTriangle, TrendingUp,
   Plus, Minus, History, Search, X, BarChart3, ShoppingCart,
-  DollarSign, Grid3X3, Tag, Save, Pencil
+  DollarSign, Grid3X3, Tag, Save, Pencil, ArrowLeft
 } from 'lucide-react';
 import api from '../../services/api';
 import { productService } from '../../services/productService';
@@ -270,6 +270,12 @@ const StockManagement = () => {
 
       {/* Header */}
       <div className="admin-header">
+        <Link
+            to="/admin/dashboard"
+            style={{ fontSize: '0.82rem', color: '#888', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 2, marginTop: 4 }}
+          >
+            <ArrowLeft size={14} /> Voltar ao Dashboard
+          </Link>
         <h1 className="admin-header__title">Controle de Estoque</h1>
         <p className="admin-header__subtitle">Gerencie estoque, preços e variações dos seus produtos</p>
       </div>

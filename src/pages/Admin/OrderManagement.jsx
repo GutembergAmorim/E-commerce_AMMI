@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, Eye, ChevronRight, Package,
-  ArrowUpRight, CheckCircle, X
+  ArrowUpRight, CheckCircle, X, ArrowLeft
 } from 'lucide-react';
 import api from '../../services/api';
 import './AdminDashboard.css';
@@ -106,6 +106,12 @@ const OrderManagement = () => {
       {/* Header */}
       <div className="admin-header d-flex justify-content-between align-items-start flex-wrap gap-3">
         <div>
+          <Link
+            to="/admin/dashboard"
+            style={{ fontSize: '0.82rem', color: '#888', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 2, marginTop: 4 }}
+          >
+            <ArrowLeft size={14} /> Voltar ao Dashboard
+          </Link>
           <h1 className="admin-header__title">Gerenciar Pedidos</h1>
           <p className="admin-header__subtitle">{orders.length} pedido(s) no total</p>
         </div>

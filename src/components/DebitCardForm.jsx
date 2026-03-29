@@ -114,7 +114,7 @@ const DebitCardForm = ({ onPaymentSubmit, isProcessing, totalAmount }) => {
       
       PagSeguro.setUp({
         session: session,
-        env: 'PROD'
+        env: 'SANDBOX'
       });
 
       const authResult = await PagSeguro.authenticate3DS({
