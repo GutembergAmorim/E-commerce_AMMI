@@ -38,14 +38,7 @@ app.use(
   })
 );
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000, // 15 minutos
-  max: process.env.RATE_LIMIT_MAX || 100, // limite por IP
-});
-app.use(limiter);
-
-// CORS
+// CORS (DEVE VIR ANTES DO RATE LIMIT)
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -56,15 +49,12 @@ app.use(
         "https://www.ammifitwear.com.br",
       ];
 
-      // Add env origin without trailing slash if it exists
       if (process.env.CORS_ORIGIN) {
         allowedOrigins.push(process.env.CORS_ORIGIN.replace(/\/$/, ""));
       }
 
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      // Check if origin is in allowed list OR is a Vercel preview/deployment
       if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
         callback(null, true);
       } else {
@@ -75,6 +65,13 @@ app.use(
     credentials: true,
   })
 );
+
+// Rate limiting (Tolerância aumentada para evitar falsos erros de CORS)
+const limiter = rateLimit({
+  windowMs: process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000, // 15 minutos
+  max: process.env.RATE_LIMIT_MAX || 1000, // Aumentado de 100 para 1000
+});
+app.use(limiter);
 
 // Logging
 if (process.env.NODE_ENV === "development") {
