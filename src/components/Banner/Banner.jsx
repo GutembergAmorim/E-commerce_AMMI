@@ -1,11 +1,36 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { Link } from "react-router-dom";
 import "./Banner.css";
 import Foto_1 from "../../assets/Banner/Foto 1.png";
 import Foto_2 from "../../assets/Banner/Foto 2.png";
 
 const images = [
-  { id: 1, img: Foto_1 },
-  { id: 2, img: Foto_2 },
+  { 
+    id: 1, 
+    img: Foto_1, 
+    link: "/collections", 
+    buttonText: "Ver Coleção",
+    buttonColors: {
+      bg: "#947972ff",
+      text: "#ffffff",
+      border: "#947972ff",
+      hoverBg: "transparent",
+      hoverText: "#947972ff"
+    }
+  },
+  { 
+    id: 2, 
+    img: Foto_2, 
+    link: "/collections", 
+    buttonText: "Comprar Agora",
+    buttonColors: {
+      bg: "#a5839fff", // Estilo dark padrão
+      text: "#ffffff",
+      border: "#a5839fff",
+      hoverBg: "transparent",
+      hoverText: "#a5839fff"
+    }
+  },
 ];
 
 const AUTO_PLAY_MS = 5000;
@@ -64,7 +89,22 @@ export default function Banner() {
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {images.map((img, i) => (
-          <img key={img.id} src={img.img} alt={`Banner ${i + 1}`} />
+          <div key={img.id} className="banner-slide">
+            <img src={img.img} alt={`Banner ${i + 1}`} />
+            <Link 
+              to={img.link} 
+              className="banner-button"
+              style={{
+                "--btn-bg": img.buttonColors.bg,
+                "--btn-text": img.buttonColors.text,
+                "--btn-border": img.buttonColors.border,
+                "--btn-hover-bg": img.buttonColors.hoverBg,
+                "--btn-hover-text": img.buttonColors.hoverText,
+              }}
+            >
+              {img.buttonText}
+            </Link>
+          </div>
         ))}
       </div>
 

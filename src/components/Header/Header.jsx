@@ -135,14 +135,15 @@ function Header() {
             </div>
 
             {/* Centro: Logo */}
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center">
               <Link
                 to="/"
                 onClick={handleMenuClose}
                 className="d-flex align-items-center text-decoration-none"
                 aria-label="Ir para a página inicial"
               >
-                <img src={Logo_Header} alt="Logo AMMI Fitwear" className="header-logo" />
+                {/* <img src={Logo_Header} alt="Logo AMMI Fitwear" className="header-logo" /> */}
+                <span className="logo-text font-brand text-dark fw-bolder fs-1 letter-spacing-4 text-shadow-sm">AMMI</span>
               </Link>
             </div>
 
