@@ -122,9 +122,10 @@
 /* ---- Mobile ---- */
 @media (max-width: 768px) {
   .banner-button {
-    font-size: 0.85rem;
-    padding: 10px 24px;
-    bottom: 12%;
+    font-size: 0.75rem;
+    padding: 8px 20px;
+    letter-spacing: 1px;
+    bottom: 10%;
   }
 
   .banner-track img {
