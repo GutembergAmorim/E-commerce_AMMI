@@ -87,7 +87,7 @@ function Home() {
   return (
     <>
       {/* WhatsApp Floating Button */}
-      <Link to="https://wa.me/5585987703918">
+      <Link to="https://wa.me/5585991903125">
         <i className="fa-brands fa-whatsapp zap-icon"></i>
       </Link>
 
