@@ -80,13 +80,18 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["PIX", "CREDIT_CARD", "DEBIT_CARD", "Cartão de Débito", "Boleto", "PagSeguro"],
+      enum: [
+        "PIX", "CREDIT_CARD", "DEBIT_CARD",
+        "Cartão de Crédito", "Cartão de Débito",
+        "INFINITEPAY", "Boleto", "Não definido"
+      ],
     },
-    pgOrderId: String,
-    pgChargeId: String,
-    pixQrCodeText: String,
-    pixQrCodeLink: String,
-    pixExpiration: Date,
+    infinitePayCheckoutUrl: String,
+    infinitePayTransactionNsu: String,
+    installments: {
+      type: Number,
+      default: 1,
+    },
     itemsPrice: {
       type: Number,
       required: true,
@@ -128,6 +133,10 @@ const orderSchema = new mongoose.Schema(
       required: true,
       enum: ["Pendente", "Processando", "Pago", "Preparando", "Enviado", "Entregue", "Cancelado"],
       default: "Pendente",
+    },
+    stockUpdated: {
+      type: Boolean,
+      default: false,
     },
   },
   {

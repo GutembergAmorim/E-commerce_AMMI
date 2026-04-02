@@ -1,22 +1,19 @@
 import express from "express";
-import { createPix, createCreditCardPayment, createDebitCardPayment, create3dsSession, handleWebhook, getPaymentStatus, getPixQrCode } from "../controllers/paymentController.js";
+import { createCheckout, handleWebhook, verifyPayment, getPaymentStatus } from "../controllers/paymentController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Criar cobrança PIX no PagSeguro
-router.post("/create-pix", protect, createPix);
-// Criar pagamento com cartao de crédito no PagSeguro
-router.post("/create-credit-card", protect, createCreditCardPayment);
-// Criar sessão 3DS para autenticação de débito
-router.post("/create-3ds-session", protect, create3dsSession);
-// Criar pagamento com cartão de débito (3DS)
-router.post("/create-debit-card", protect, createDebitCardPayment);
-// Webhook do PagSeguro
+// Criar checkout InfinitePay (gera link de pagamento)
+router.post("/create-checkout", protect, createCheckout);
+
+// Verificar pagamento manualmente
+router.post("/verify", protect, verifyPayment);
+
+// Webhook da InfinitePay (recebe confirmação de pagamento)
 router.post("/webhook", handleWebhook);
-// Rota para consultar o status do pagamento
+
+// Consultar status do pagamento
 router.get("/status/:orderId", protect, getPaymentStatus);
-// Rota para obter QR Code PIX
-router.get("/pix/:chargeId", protect, getPixQrCode);
 
 export default router;

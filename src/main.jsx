@@ -35,7 +35,7 @@ import ResetPassword from './pages/Login/ResetPassword.jsx'
 import AboutUs from './pages/Institutional/AboutUs.jsx'
 import ExchangePolicy from './pages/Institutional/ExchangePolicy.jsx'
 import TermsAndPrivacy from './pages/Institutional/TermsAndPrivacy.jsx'
-import PixQrCode from './pages/Payment/PixQrCode.jsx'
+// PixQrCode removed — InfinitePay handles PIX display on their checkout page
 import { FavoritesProvider } from "./Context/FavoritesContext";
 import Favorites from "./pages/Favorites/Favorites";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -122,14 +122,7 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: "payment/pix/:chargeId",
-        element: (
-          <ProtectedRoute>
-            <PixQrCode />
-          </ProtectedRoute>
-        ),
-      },
+
       {
         path: "admin/dashboard",
         element: (

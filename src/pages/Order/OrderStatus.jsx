@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Clock, CheckCircle, XCircle, Truck, Package, QrCode, Copy, CreditCard, MapPin, ShoppingBag } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Truck, Package, CreditCard, MapPin, ShoppingBag } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../Context/AuthContext';
 import './OrderStatus.css';
@@ -10,27 +10,16 @@ const OrderStatus = () => {
   const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pixData, setPixData] = useState(null);
-  const [copied, setCopied] = useState(false);
+
   const intervalRef = React.useRef(null);
 
-  const fetchOrderAndPix = async () => {
+  const fetchOrder = async () => {
     try {
       const response = await api.get(`/orders/${orderId}`);
       const orderData = response.data.data;
       setOrder(orderData);
 
-      // Buscar PIX somente se necessário
-      if (orderData?.paymentMethod === 'PIX' && orderData?.status === 'Pendente' && orderData?.pgChargeId) {
-        try {
-          const pixResponse = await api.get(`/payment/pix/${orderData.pgChargeId}`);
-          setPixData(pixResponse.data);
-        } catch (pixError) {
-          console.error('Erro ao buscar QR Code PIX:', pixError);
-        }
-      }
-
-      // Parar polling se o pedido não está mais pendente
+      // Stop polling if the order is no longer pending
       if (orderData?.status !== 'Pendente' && orderData?.status !== 'Processando') {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
@@ -45,8 +34,8 @@ const OrderStatus = () => {
   };
 
   useEffect(() => {
-    fetchOrderAndPix();
-    intervalRef.current = setInterval(fetchOrderAndPix, 30000);
+    fetchOrder();
+    intervalRef.current = setInterval(fetchOrder, 30000);
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -205,69 +194,16 @@ const OrderStatus = () => {
             ))}
           </div>
 
-          {/* ---- PIX Payment Section (kept as-is) ---- */}
-          {order.paymentMethod === 'PIX' && order.status === 'Pendente' && pixData && (
-            <div className="card shadow-sm mb-4 border-primary">
-              <div className="card-header bg-primary text-white">
-                <h5 className="mb-0 d-flex align-items-center">
-                  <QrCode className="me-2" size={20} />
-                  Pagamento via PIX
-                </h5>
-              </div>
-              <div className="card-body">
-                <div className="row align-items-center">
-                  <div className="col-md-5 text-center mb-3 mb-md-0">
-                    {pixData.qrCodeLink ? (
-                      <img
-                        src={pixData.qrCodeLink}
-                        alt="QR Code PIX"
-                        className="img-fluid rounded border"
-                        style={{ maxWidth: '200px' }}
-                      />
-                    ) : (
-                      <div className="alert alert-warning">
-                        QR Code indisponível
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-md-7">
-                    <h6 className="mb-3">Como pagar:</h6>
-                    <ol className="small text-muted mb-4">
-                      <li>Abra o app do seu banco</li>
-                      <li>Escolha a opção PIX &gt; Ler QR Code</li>
-                      <li>Escaneie o código ao lado ou copie o código abaixo</li>
-                    </ol>
-
-                    {pixData.qrCodeText && (
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold">Código PIX Copia e Cola:</label>
-                        <div className="input-group">
-                          <input
-                            type="text"
-                            className="form-control form-control-sm"
-                            value={pixData.qrCodeText}
-                            readOnly
-                          />
-                          <button
-                            className="btn btn-outline-primary btn-sm"
-                            type="button"
-                            onClick={() => copyToClipboard(pixData.qrCodeText)}
-                          >
-                            {copied ? <CheckCircle size={16} /> : <Copy size={16} />}
-                          </button>
-                        </div>
-                        {copied && <small className="text-success">Copiado!</small>}
-                      </div>
-                    )}
-
-                    <div className="alert alert-info py-2 mb-0">
-                      <small>
-                        <Clock size={14} className="me-1" />
-                        O pagamento será confirmado automaticamente.
-                      </small>
-                    </div>
-                  </div>
-                </div>
+          {/* ---- Awaiting Payment Section ---- */}
+          {order.status === 'Pendente' && (
+            <div className="card shadow-sm mb-4" style={{ borderLeft: '4px solid #f59e0b' }}>
+              <div className="card-body text-center py-4">
+                <Clock size={32} className="text-warning mb-2" />
+                <h5 className="mb-2">Aguardando pagamento</h5>
+                <p className="text-muted small mb-0">
+                  O pagamento do seu pedido ainda não foi confirmado. 
+                  Caso já tenha pago, aguarde alguns instantes para a confirmação automática.
+                </p>
               </div>
             </div>
           )}
@@ -355,7 +291,7 @@ const OrderStatus = () => {
                   </ul>
                   <div className="text-center mt-3 pt-2 border-top">
                     <span className="badge bg-light text-dark border" style={{ fontSize: '0.78rem' }}>
-                      {order.paymentMethod === 'CREDIT_CARD' ? 'Cartão de Crédito' : order.paymentMethod}
+                      {{'CREDIT_CARD': 'Cartão de Crédito', 'DEBIT_CARD': 'Cartão de Débito', 'PIX': 'PIX', 'INFINITEPAY': 'InfinitePay', 'Cartão de Crédito': 'Cartão de Crédito', 'Cartão de Débito': 'Cartão de Débito'}[order.paymentMethod] || order.paymentMethod}
                     </span>
                   </div>
                 </div>

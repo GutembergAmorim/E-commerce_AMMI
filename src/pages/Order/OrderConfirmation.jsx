@@ -81,7 +81,18 @@ const OrderConfirmation = () => {
     );
   }
 
-  const paymentLabel = order.paymentMethod === 'CREDIT_CARD' ? 'Cartão de Crédito' : order.paymentMethod;
+  const getPaymentLabel = (method) => {
+    const labels = {
+      'CREDIT_CARD': 'Cartão de Crédito',
+      'DEBIT_CARD': 'Cartão de Débito',
+      'PIX': 'PIX',
+      'Cartão de Crédito': 'Cartão de Crédito',
+      'Cartão de Débito': 'Cartão de Débito',
+      'INFINITEPAY': 'InfinitePay',
+    };
+    return labels[method] || method;
+  };
+  const paymentLabel = getPaymentLabel(order.paymentMethod);
 
   return (
     <div className="container py-5">

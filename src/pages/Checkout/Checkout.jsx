@@ -9,8 +9,6 @@ import CustomerInfo from "../CustomerInfo";
 import AddressForm from "../AddressForm";
 import OrderSummary from "../OrderSummary";
 import Notification from "../Notification";
-import CreditCardForm from "../../components/CreditCardForm";
-import DebitCardForm from "../../components/DebitCardForm";
 import "./Checkout.css";
 
 // Função de debounce
@@ -43,8 +41,6 @@ function Checkout() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSearchingCep, setIsSearchingCep] = useState(false);
-  const [pix, setPix] = useState({ text: null, link: null, expiresAt: null });
-  const [paymentMethod, setPaymentMethod] = useState("pix");
   const [notification, setNotification] = useState({
     show: false,
     message: "",
@@ -134,16 +130,10 @@ function Checkout() {
     setAddress((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Pagamento com cartão
-  const handleCreditCardPayment = async (cardData) => {
+  // ── Finalizar Compra → Redirect to InfinitePay ──────────────────────
+  const handleCheckout = async (event) => {
+    if (event) event.preventDefault();
     setIsProcessing(true);
-
-    // Check for encryption errors from CreditCardForm
-    if (cardData.encryptionError) {
-      showNotification(cardData.encryptionError, "error");
-      setIsProcessing(false);
-      return;
-    }
 
     if (!user) {
       showNotification("Você precisa estar logado para finalizar a compra.", "error");
@@ -175,196 +165,36 @@ function Checkout() {
         cep: address.cep,
       };
 
-      const response = await api.post("/payment/create-credit-card", {
-        cartItems,
-        shippingAddress,
-        encryptedCard: cardData.encrypted,
-        holderName: cardData.holder,
-        installments: cardData.installments || 1,
-        shippingPrice: frete,
-      });
-
-      const { orderId, status, isPaid } = response.data;
-
-      if (isPaid) {
-        showNotification("🎉 Pagamento aprovado com sucesso!", "success");
-        setOrderPlaced(true);
-        clearCart();
-        navigate(`/order-confirmation/${orderId}`);
-      } else {
-        showNotification(
-          `Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`,
-          "info"
-        );
-        setOrderPlaced(true);
-        clearCart();
-        navigate(`/order-status/${orderId}`);
-      }
-    } catch (error) {
-      let errorMessage = "Erro ao processar pagamento com cartão";
-      if (error.response?.data) {
-        const errorData = error.response.data;
-        if (errorData.error_messages && Array.isArray(errorData.error_messages)) {
-          errorMessage = errorData.error_messages
-            .map((msg) => `${msg.description} (${msg.code})`)
-            .join(", ");
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        }
-      }
-      showNotification(errorMessage, "error");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Pagamento com cartão de débito (3DS)
-  const handleDebitCardPayment = async (cardData) => {
-    setIsProcessing(true);
-
-    if (cardData.encryptionError) {
-      showNotification(cardData.encryptionError, "error");
-      setIsProcessing(false);
-      return;
-    }
-
-    if (!user) {
-      showNotification("Você precisa estar logado para finalizar a compra.", "error");
-      setIsProcessing(false);
-      return;
-    }
-
-    if (!isFormValid) {
-      showNotification("Por favor, preencha todos os campos obrigatórios do endereço.", "error");
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      const shippingAddress = {
-        logradouro: address.logradouro,
-        numero: address.numero,
-        complemento: address.complemento || "",
-        bairro: address.bairro,
-        localidade: address.localidade,
-        uf: address.uf,
-        cep: address.cep,
-      };
-
-      const response = await api.post("/payment/create-debit-card", {
-        cartItems,
-        shippingAddress,
-        encryptedCard: cardData.encrypted,
-        holderName: cardData.holder,
-        authenticationId: cardData.authenticationId,
-        shippingPrice: frete,
-      });
-
-      const { orderId, status, isPaid } = response.data;
-
-      if (isPaid) {
-        showNotification("🎉 Pagamento aprovado com sucesso!", "success");
-        setOrderPlaced(true);
-        clearCart();
-        navigate(`/order-confirmation/${orderId}`);
-      } else {
-        showNotification(
-          `Pagamento ${status.toLowerCase()}. Aguarde a confirmação.`,
-          "info"
-        );
-        setOrderPlaced(true);
-        clearCart();
-        navigate(`/order-status/${orderId}`);
-      }
-    } catch (error) {
-      let errorMessage = "Erro ao processar pagamento com débito";
-      if (error.response?.data) {
-        const errorData = error.response.data;
-        if (errorData.error_messages && Array.isArray(errorData.error_messages)) {
-          errorMessage = errorData.error_messages
-            .map((msg) => `${msg.description} (${msg.code})`)
-            .join(", ");
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        }
-      }
-      showNotification(errorMessage, "error");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Pagamento com PIX
-  const handleCreatePreference = async (event) => {
-    if (event) event.preventDefault();
-    setIsProcessing(true);
-
-    if (!user) {
-      showNotification("Você precisa estar logado para finalizar a compra.", "error");
-      setIsProcessing(false);
-      return;
-    }
-
-    if (!isFormValid) {
-      showNotification("Por favor, preencha todos os campos obrigatórios do endereço.", "error");
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      const shippingAddress = {
-        logradouro: address.logradouro,
-        numero: address.numero,
-        complemento: address.complemento || "",
-        bairro: address.bairro,
-        localidade: address.localidade,
-        uf: address.uf,
-        cep: address.cep,
-      };
-
-      const response = await api.post("/payment/create-pix", {
+      const response = await api.post("/payment/create-checkout", {
         cartItems,
         shippingAddress,
         shippingPrice: frete,
-        pixDiscount: pixDiscount,
       });
 
       if (!response.data.success) {
-        throw new Error(response.data.message || "Erro ao criar pagamento PIX");
+        throw new Error(response.data.message || "Erro ao criar checkout");
       }
 
-      const { qrCodeText, qrCodeLink, orderId, expiresAt, isPaid } =
-        response.data;
+      const { checkoutUrl, orderId } = response.data;
 
-      setPix({
-        text: qrCodeText,
-        link: qrCodeLink,
-        expiresAt: expiresAt,
-        orderId: orderId,
-      });
+      // Clear cart before redirect
+      setOrderPlaced(true);
+      clearCart();
 
-      if (isPaid) {
-        showNotification("🎉 Pagamento aprovado com sucesso!", "success");
-        setOrderPlaced(true);
-        clearCart();
-        navigate(`/order-confirmation/${orderId}`);
-      } else {
-        showNotification("PIX gerado! Escaneie o QR Code para pagar.", "info");
-        setOrderPlaced(true);
-        clearCart();
-        navigate(`/order-status/${orderId}`);
-      }
+      showNotification("Redirecionando para o pagamento seguro...", "info");
+
+      // Redirect to InfinitePay checkout
+      setTimeout(() => {
+        window.location.href = checkoutUrl;
+      }, 800);
+
     } catch (error) {
       let errorMessage =
         "Não foi possível iniciar o processo de pagamento. Tente novamente.";
 
       if (error.response?.data) {
         const errorData = error.response.data;
-        if (errorData.error_messages && Array.isArray(errorData.error_messages)) {
-          errorMessage = errorData.error_messages
-            .map((msg) => `${msg.description} (${msg.code})`)
-            .join(", ");
-        } else if (errorData.message) {
+        if (errorData.message) {
           errorMessage = errorData.message;
         } else if (Array.isArray(errorData.errors)) {
           errorMessage = errorData.errors[0].msg;
@@ -424,9 +254,7 @@ function Checkout() {
 
   // Calcular total do carrinho
   const total = cartTotal;
-  const pixDiscountRate = 0.1;
-  const pixDiscount = paymentMethod === "pix" ? total * pixDiscountRate : 0;
-  const finalTotal = total - pixDiscount;
+  const finalTotal = total;
 
   return (
     <main className="container py-4">
@@ -485,96 +313,105 @@ function Checkout() {
             isSearchingCep={isSearchingCep}
           />
 
-          {/* Payment Method Selector */}
+          {/* Payment Method Info */}
           <div className="checkout-card">
             <h2 className="checkout-card__title">
               <i className="fas fa-credit-card"></i>
-              Método de Pagamento
+              Pagamento
             </h2>
 
-            <div className="checkout-payment-selector">
-              <div
-                className={`checkout-payment-option ${
-                  paymentMethod === "pix"
-                    ? "checkout-payment-option--selected"
-                    : ""
-                }`}
-                onClick={() => setPaymentMethod("pix")}
-              >
-                <span className="checkout-payment-option__check">
-                  <i className="fas fa-check"></i>
-                </span>
-                <span className="checkout-payment-option__icon">
-                  <i className="fa-brands fa-pix"></i>
-                </span>
-                <span className="checkout-payment-option__label">PIX</span>
-                <span className="checkout-payment-option__badge">
-                  10% OFF
-                </span>
+            <div style={{
+              background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+              borderRadius: "12px",
+              padding: "1.25rem",
+              marginBottom: "1rem"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "0.75rem" }}>
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "10px",
+                  background: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
+                }}>
+                  <i className="fas fa-shield-alt" style={{ color: "#16a34a", fontSize: "1.1rem" }}></i>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: "0.95rem", color: "#1a1a1a" }}>
+                    Pagamento 100% Seguro
+                  </p>
+                  <p style={{ margin: 0, fontSize: "0.78rem", color: "#666" }}>
+                    Processado pela InfinitePay
+                  </p>
+                </div>
               </div>
 
-              <div
-                className={`checkout-payment-option ${
-                  paymentMethod === "credit_card"
-                    ? "checkout-payment-option--selected"
-                    : ""
-                }`}
-                onClick={() => setPaymentMethod("credit_card")}
-              >
-                <span className="checkout-payment-option__check">
-                  <i className="fas fa-check"></i>
-                </span>
-                <span className="checkout-payment-option__icon">💳</span>
-                <span className="checkout-payment-option__label">Cartão</span>
-                <small
-                  style={{ display: "block", fontSize: "0.7rem", color: "#999", marginTop: 4 }}
-                >
-                  Até 12× no crédito
-                </small>
-              </div>
+              <p style={{ fontSize: "0.82rem", color: "#555", margin: "0 0 1rem 0", lineHeight: 1.6 }}>
+                Ao clicar em <strong>"Finalizar Compra"</strong>, você será direcionado para a página segura da InfinitePay, onde poderá escolher a forma de pagamento:
+              </p>
 
-              <div
-                className={`checkout-payment-option ${
-                  paymentMethod === "debit_card"
-                    ? "checkout-payment-option--selected"
-                    : ""
-                }`}
-                onClick={() => setPaymentMethod("debit_card")}
-              >
-                <span className="checkout-payment-option__check">
-                  <i className="fas fa-check"></i>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                <span style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#fff",
+                  padding: "6px 14px",
+                  borderRadius: "20px",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  color: "#333",
+                  border: "1px solid #e0e0e0"
+                }}>
+                  <i className="fa-brands fa-pix" style={{ color: "#32BCAD" }}></i>
+                  PIX
+                  <span style={{
+                    background: "#dcfce7",
+                    color: "#16a34a",
+                    padding: "1px 8px",
+                    borderRadius: "10px",
+                    fontSize: "0.68rem",
+                    fontWeight: 700
+                  }}>
+                    Taxa 0%
+                  </span>
                 </span>
-                <span className="checkout-payment-option__icon">🏦</span>
-                <span className="checkout-payment-option__label">Débito</span>
-                <small
-                  style={{ display: "block", fontSize: "0.7rem", color: "#999", marginTop: 4 }}
-                >
-                  À vista com 3DS
-                </small>
+
+                <span style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#fff",
+                  padding: "6px 14px",
+                  borderRadius: "20px",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  color: "#333",
+                  border: "1px solid #e0e0e0"
+                }}>
+                  💳 Crédito
+                  <span style={{ fontSize: "0.68rem", color: "#888", fontWeight: 400 }}>até 12×</span>
+                </span>
+
+                <span style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#fff",
+                  padding: "6px 14px",
+                  borderRadius: "20px",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  color: "#333",
+                  border: "1px solid #e0e0e0"
+                }}>
+                  🏦 Débito
+                </span>
               </div>
             </div>
-
-            {/* Credit Card Form */}
-            {paymentMethod === "credit_card" && (
-              <div className="mt-4" style={{ borderTop: "1px solid #f0f0f0", paddingTop: "1rem" }}>
-                <CreditCardForm
-                  onPaymentSubmit={handleCreditCardPayment}
-                  isProcessing={isProcessing}
-                  totalAmount={total}
-                />
-              </div>
-            )}
-
-            {/* Debit Card Form */}
-            {paymentMethod === "debit_card" && (
-              <div className="mt-4" style={{ borderTop: "1px solid #f0f0f0", paddingTop: "1rem" }}>
-                <DebitCardForm
-                  onPaymentSubmit={handleDebitCardPayment}
-                  isProcessing={isProcessing}
-                  totalAmount={total}
-                />
-              </div>
-            )}
           </div>
         </div>
 
@@ -582,80 +419,43 @@ function Checkout() {
         <div className="col-12 col-lg-5">
           <div className="checkout-summary">
             <OrderSummary
-              paymentDiscount={pixDiscount}
-              paymentMethodLabel="Desconto PIX (10%)"
+              paymentDiscount={0}
+              paymentMethodLabel=""
               finalTotal={finalTotal}
             />
 
-            {/* PIX Action */}
-            {paymentMethod === "pix" && (
-              <>
-                {pix.text ? (
-                  <div className="checkout-pix-area">
-                    <p
-                      className="text-center fw-bold mb-3"
-                      style={{ fontSize: "0.9rem" }}
-                    >
-                      Pague via PIX
-                    </p>
-                    <textarea
-                      className="form-control checkout-input"
-                      readOnly
-                      rows={3}
-                      value={pix.text || ""}
-                    />
-                    {pix.link && (
-                      <a
-                        href={pix.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="checkout-btn checkout-btn--success mt-3"
-                        style={{ textDecoration: "none" }}
-                      >
-                        <i className="fas fa-qrcode"></i>
-                        Abrir QR Code
-                      </a>
-                    )}
-                    <small
-                      className="d-block mt-2 text-center"
-                      style={{ fontSize: "0.73rem", color: "#999" }}
-                    >
-                      Após o pagamento, aguarde a confirmação automática.
-                    </small>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleCreatePreference}
-                    className="checkout-btn checkout-btn--primary mt-3"
-                    disabled={isProcessing || !isFormValid}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <span
-                          className="spinner-border spinner-border-sm"
-                          role="status"
-                        ></span>
-                        Processando...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fa-brands fa-pix"></i>
-                        Gerar QR Code PIX
-                      </>
-                    )}
-                  </button>
-                )}
-              </>
-            )}
+            {/* Checkout Button */}
+            <button
+              type="button"
+              onClick={handleCheckout}
+              className="checkout-btn checkout-btn--primary mt-3"
+              disabled={isProcessing || !isFormValid}
+              style={{ fontSize: "0.95rem" }}
+            >
+              {isProcessing ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                  ></span>
+                  Redirecionando...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-lock" style={{ marginRight: "8px" }}></i>
+                  Finalizar Compra
+                </>
+              )}
+            </button>
 
-            {/* Card Hint */}
-            {paymentMethod === "credit_card" && !isProcessing && (
-              <div className="checkout-card-hint">
-                <i className="fas fa-info-circle"></i>
-                Preencha os dados do cartão ao lado para finalizar.
-              </div>
-            )}
+            <p style={{
+              textAlign: "center",
+              fontSize: "0.72rem",
+              color: "#999",
+              marginTop: "8px"
+            }}>
+              Você será redirecionado para o pagamento seguro
+            </p>
 
             {/* Trust Badges */}
             <div className="checkout-trust">
