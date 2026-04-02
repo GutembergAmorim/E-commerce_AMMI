@@ -20,14 +20,14 @@
 }
 
 .info-banner-4x {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 500;
   line-height: 1;
   color: #adb5bd; /* Lighter gray for the big 4x */
 }
 
 .info-banner-text {
-  font-size: 1.2rem;
+  font-size: 1rem;
   line-height: 1.2;
   text-align: left;
 }
@@ -60,7 +60,7 @@
     padding-left: 0;
     text-align: center;
     flex-direction: column;
-    max-height: 100px;
+    max-height: 80px;
   }
 
   .info-banner-icon {

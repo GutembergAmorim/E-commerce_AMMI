@@ -28,7 +28,8 @@
 
 .banner-button {
   position: absolute;
-  bottom: 15%;
+  bottom: 12%;
+  right: 65%;
   padding: 14px 40px;
   background-color: var(--btn-bg, #b4b0b0);
   color: var(--btn-text, #fff);
@@ -122,7 +123,7 @@
 /* ---- Mobile ---- */
 @media (max-width: 768px) {
   .banner-button {
-    font-size: 0.75rem;
+    font-size: 0.40rem;
     padding: 8px 20px;
     letter-spacing: 1px;
     bottom: 10%;
