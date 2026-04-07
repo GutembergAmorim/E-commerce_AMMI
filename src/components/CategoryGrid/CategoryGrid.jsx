@@ -7,7 +7,7 @@ const CategoryGrid = ({ categories, selectedCategory, onSelectCategory }) => {
   return (
     <section className="category-grid-section">
       <div className="container">
-        <h2 className="category-grid-title story-script-regular section-title-separator">CATEGORIAS</h2>
+        <h2 className="category-grid-title story-script-regular section-title-separator">Categorias</h2>
         
         <div className="row g-4">
           <div className="col-12 text-center">

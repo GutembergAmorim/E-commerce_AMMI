@@ -27,9 +27,7 @@ const AboutUs = () => {
         <Sparkles size={28} style={{ marginBottom: 12, opacity: 0.8 }} />
         <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 12 }}>Nossa Missão</h2>
         <p style={{ fontSize: '0.9rem', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
-          A AMMI nasceu com uma missão clara: empoderar mulheres através de roupas fitness que fazem você se sentir
-          poderosa em cada movimento. Acreditamos que o conforto e o estilo não precisam ser sacrificados pela
-          performance, por isso, cada peça é desenhada com carinho, pensando em você.
+          A <strong>Ammi</strong> nasceu com o propósito de valorizar o corpo da mulher em movimento, criando peças que unem tecnologia, conforto e estilo. Acreditamos que performance e estética caminham juntas, por isso, desenvolvemos roupas que proporcionam liberdade, confiança e bem-estar em cada momento do seu dia.
         </p>
       </div>
 
@@ -37,7 +35,7 @@ const AboutUs = () => {
       <div className="row g-3 mb-4">
         {[
           { icon: <Heart size={20} />, title: 'Feito com Amor', desc: 'Cada peça é selecionada pensando no conforto e bem-estar de cada cliente.' },
-          { icon: <Award size={20} />, title: 'Qualidade Premium', desc: 'Tecidos de alta performance que acompanham seu ritmo de treino.' },
+          { icon: <Award size={20} />, title: 'Qualidade Premium', desc: 'Tecidos com alta compressão, elasticidade e alta performance para acompanhar seu ritmo.' },
           { icon: <Truck size={20} />, title: 'Entrega Cuidadosa', desc: 'Embalamos cada pedido com carinho para que chegue perfeito até você.' },
           { icon: <Users size={20} />, title: 'Comunidade', desc: 'Mais do que uma marca, somos uma comunidade de mulheres que se apoiam.' },
         ].map((item, i) => (

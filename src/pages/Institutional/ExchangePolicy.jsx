@@ -19,9 +19,9 @@ const ExchangePolicy = () => {
       {/* Highlights */}
       <div className="row g-3 mb-4">
         {[
-          { icon: <Clock size={18} />, label: '7 dias', desc: 'Para solicitar troca ou devolução' },
-          { icon: <RefreshCw size={18} />, label: 'Troca grátis', desc: 'Na primeira troca de tamanho' },
-          { icon: <CheckCircle2 size={18} />, label: 'Fácil e rápido', desc: 'Processo simples pelo WhatsApp' },
+          { icon: <Clock size={18} />, label: '7 dias', desc: 'Para solicitar troca ou devolução após o recebimento' },
+          { icon: <RefreshCw size={18} />, label: 'Troca fácil', desc: 'Solicitação rápida através do WhatsApp' },
+          { icon: <CheckCircle2 size={18} />, label: 'Fácil e prático', desc: 'Após o recebimento do produto' },
         ].map((item, i) => (
           <div className="col-md-4" key={i}>
             <div style={{
@@ -51,7 +51,7 @@ const ExchangePolicy = () => {
         },
         {
           title: '2. Condições para Troca',
-          content: 'O produto deve estar em perfeitas condições, sem uso, com etiquetas originais e na embalagem original. Produtos com sinais de uso, manchas, odores ou sem etiquetas não serão aceitos para troca.',
+          content: 'O produto deve estar em perfeitas condições, sem sinais de uso, com etiquetas originais e na embalagem original. Produtos com indícios de uso, manchas, odores ou sem etiqueta não serão aceitos.',
         },
         {
           title: '3. Como Solicitar',
@@ -59,12 +59,12 @@ const ExchangePolicy = () => {
             'Entre em contato pelo nosso Instagram @ammi.fitwear ou WhatsApp informando o número do pedido',
             'Informe o motivo da troca ou devolução',
             'Aguarde nossas instruções para envio do produto',
-            'Após recebermos e verificarmos o produto, processaremos a troca ou reembolso',
+            'Após o recebimento e análise, daremos andamento ao processo',
           ],
         },
         {
           title: '4. Troca de Tamanho',
-          content: 'A primeira troca de tamanho é por nossa conta! Enviaremos a peça no novo tamanho sem custos adicionais de frete, desde que o tamanho solicitado esteja disponível em estoque.',
+          content: 'A troca de tamanho está sujeita à disponibilidade em estoque. Os custos de envio são de responsabilidade do cliente',
         },
         {
           title: '5. Devolução e Reembolso',
@@ -72,7 +72,7 @@ const ExchangePolicy = () => {
         },
         {
           title: '6. Produtos com Defeito',
-          content: 'Se o produto apresentar defeito de fabricação, entre em contato imediatamente. Realizaremos a troca sem custos para você, independentemente do prazo de 7 dias.',
+          content: 'Caso o produto apresente defeito de fabricação, entre em contato imediatamente. A troca será realizada sem custos adicionais para você',
         },
       ].map((section, i) => (
         <div key={i} style={{

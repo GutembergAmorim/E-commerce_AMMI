@@ -142,8 +142,8 @@ function Header() {
                 className="d-flex align-items-center text-decoration-none"
                 aria-label="Ir para a página inicial"
               >
-                {/* <img src={Logo_Header} alt="Logo AMMI Fitwear" className="header-logo" /> */}
-                <span className="logo-text font-brand text-dark fw-bolder fs-1 letter-spacing-4 text-shadow-sm">AMMI</span>
+                <img src={Logo_Header} alt="Logo AMMI Fitwear" className="header-logo" />
+                {/* <span className="logo-text font-brand text-dark fw-bolder fs-1 letter-spacing-4 text-shadow-sm">AMMI</span> */}
               </Link>
             </div>
 

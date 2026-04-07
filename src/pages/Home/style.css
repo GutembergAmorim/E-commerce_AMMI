@@ -2,7 +2,7 @@
 
 /* ---- Shared Section Utilities ---- */
 .story-script-regular {
-  font-family: "Story Script", sans-serif;
+  font-family: "Quicksand", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
@@ -126,6 +126,7 @@
 
 .products-section-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;

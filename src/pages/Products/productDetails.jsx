@@ -6,7 +6,7 @@ import { useProduct } from "../../hooks/useProducts";
 import StarRating from "../../components/StarRating/StarRating";
 import ProductReviews from "../../components/ProductReviews/ProductReviews";
 import RelatedProducts from "../../components/RelatedProducts/RelatedProducts";
-import tabela_de_medidas from "../../assets/tabela_de_medidas.png";
+import tabela_de_medidas from "../../assets/tabela_de_medidas .png";
 import CartToast from "../../components/CartToast/CartToast";
 import "./ProductDetails.css";
 

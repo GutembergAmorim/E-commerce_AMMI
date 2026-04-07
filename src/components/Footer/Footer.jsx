@@ -38,7 +38,7 @@ function Footer() {
             
             {/* Coluna AMII */}
             <div className="col-lg-4 col-md-6"> {/* Ajustado para melhor distribuição, pode ser col-lg-3 */}
-              <h3 className="h5 fw-bold mb-3">AMMI</h3> {/* text-xl -> h5 (Bootstrap heading scale) */}
+              <h3 className="h5 fw-bold mb-3">Ammi</h3> {/* text-xl -> h5 (Bootstrap heading scale) */}
               <p className="text-white-50 small">
                 Moda fitness feminina que combina performance, conforto e estilo para você se sentir poderosa em cada movimento.
               </p>
