@@ -240,7 +240,7 @@ function Header() {
       {/* Menu Offcanvas para Mobile */}
       <Offcanvas show={showMenu} onHide={handleMenuClose} placement="end" aria-label="Menu de navegação">
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title className="font-brand text-custom-primary">AMMI Fitwear</Offcanvas.Title>
+          <Offcanvas.Title className=" ">AMMI</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <div className="d-flex flex-column h-100">
