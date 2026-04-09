@@ -138,6 +138,14 @@ const orderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    pixDiscount: {
+      type: Number,
+      default: 0,
+    },
+    pixDiscountApplied: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

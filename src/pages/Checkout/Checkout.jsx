@@ -47,6 +47,7 @@ function Checkout() {
     type: "",
   });
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("pix"); // "pix" or "credit_card"
 
   // Validar se o formulário está completo
   const isFormValid = address.cep && address.numero;
@@ -169,6 +170,7 @@ function Checkout() {
         cartItems,
         shippingAddress,
         shippingPrice: frete,
+        paymentMethod,
       });
 
       if (!response.data.success) {
@@ -254,7 +256,8 @@ function Checkout() {
 
   // Calcular total do carrinho
   const total = cartTotal;
-  const finalTotal = total;
+  const pixDiscount = paymentMethod === "pix" ? total * 0.10 : 0;
+  const finalTotal = total - pixDiscount;
 
   return (
     <main className="container py-4">
@@ -313,104 +316,102 @@ function Checkout() {
             isSearchingCep={isSearchingCep}
           />
 
-          {/* Payment Method Info */}
+          {/* Payment Method Selection */}
           <div className="checkout-card">
             <h2 className="checkout-card__title">
               <i className="fas fa-credit-card"></i>
-              Pagamento
+              Forma de Pagamento
             </h2>
 
-            <div style={{
-              background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-              borderRadius: "12px",
-              padding: "1.25rem",
-              marginBottom: "1rem"
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "0.75rem" }}>
-                <div style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "10px",
-                  background: "#fff",
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {/* PIX Option */}
+              <label
+                onClick={() => setPaymentMethod("pix")}
+                style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
-                }}>
-                  <i className="fas fa-shield-alt" style={{ color: "#16a34a", fontSize: "1.1rem" }}></i>
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 700, fontSize: "0.95rem", color: "#1a1a1a" }}>
-                    Pagamento 100% Seguro
+                  gap: "14px",
+                  padding: "16px 18px",
+                  borderRadius: "12px",
+                  border: paymentMethod === "pix" ? "2px solid #16a34a" : "2px solid #e5e7eb",
+                  background: paymentMethod === "pix" ? "linear-gradient(135deg, #f0fdf4, #dcfce7)" : "#fff",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{
+                  width: 20, height: 20, borderRadius: "50%",
+                  border: paymentMethod === "pix" ? "6px solid #16a34a" : "2px solid #ccc",
+                  flexShrink: 0,
+                  transition: "all 0.2s ease",
+                }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <i className="fa-brands fa-pix" style={{ color: "#32BCAD", fontSize: "1.1rem" }}></i>
+                    <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1a1a1a" }}>PIX</span>
+                    <span style={{
+                      background: "#dcfce7", color: "#16a34a",
+                      padding: "2px 10px", borderRadius: "10px",
+                      fontSize: "0.7rem", fontWeight: 700,
+                    }}>10% OFF</span>
+                  </div>
+                  <p style={{ margin: "4px 0 0", fontSize: "0.78rem", color: "#666" }}>
+                    Pagamento instantâneo com desconto
                   </p>
-                  <p style={{ margin: 0, fontSize: "0.78rem", color: "#666" }}>
-                    Processado pela InfinitePay
-                  </p>
                 </div>
-              </div>
-
-              <p style={{ fontSize: "0.82rem", color: "#555", margin: "0 0 1rem 0", lineHeight: 1.6 }}>
-                Ao clicar em <strong>"Finalizar Compra"</strong>, você será direcionado para a página segura da InfinitePay, onde poderá escolher a forma de pagamento:
-              </p>
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                <span style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "#fff",
-                  padding: "6px 14px",
-                  borderRadius: "20px",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  color: "#333",
-                  border: "1px solid #e0e0e0"
-                }}>
-                  <i className="fa-brands fa-pix" style={{ color: "#32BCAD" }}></i>
-                  PIX
-                  <span style={{
-                    background: "#dcfce7",
-                    color: "#16a34a",
-                    padding: "1px 8px",
-                    borderRadius: "10px",
-                    fontSize: "0.68rem",
-                    fontWeight: 700
-                  }}>
-                    Taxa 0%
+                {paymentMethod === "pix" && (
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#16a34a", whiteSpace: "nowrap" }}>
+                    {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total - total * 0.10)}
                   </span>
-                </span>
+                )}
+              </label>
 
-                <span style={{
-                  display: "inline-flex",
+              {/* Credit Card Option */}
+              <label
+                onClick={() => setPaymentMethod("credit_card")}
+                style={{
+                  display: "flex",
                   alignItems: "center",
-                  gap: "6px",
-                  background: "#fff",
-                  padding: "6px 14px",
-                  borderRadius: "20px",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  color: "#333",
-                  border: "1px solid #e0e0e0"
-                }}>
-                  💳 Crédito
-                  <span style={{ fontSize: "0.68rem", color: "#888", fontWeight: 400 }}>até 12×</span>
-                </span>
+                  gap: "14px",
+                  padding: "16px 18px",
+                  borderRadius: "12px",
+                  border: paymentMethod === "credit_card" ? "2px solid #1a1a1a" : "2px solid #e5e7eb",
+                  background: paymentMethod === "credit_card" ? "#fafafa" : "#fff",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{
+                  width: 20, height: 20, borderRadius: "50%",
+                  border: paymentMethod === "credit_card" ? "6px solid #1a1a1a" : "2px solid #ccc",
+                  flexShrink: 0,
+                  transition: "all 0.2s ease",
+                }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "1.1rem" }}>💳</span>
+                    <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1a1a1a" }}>Cartão de Crédito</span>
+                  </div>
+                  <p style={{ margin: "4px 0 0", fontSize: "0.78rem", color: "#666" }}>
+                    Até 3× sem juros
+                  </p>
+                </div>
+                {paymentMethod === "credit_card" && (
+                  <span style={{ fontSize: "0.78rem", color: "#555", whiteSpace: "nowrap" }}>
+                    3× {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total / 3)}
+                  </span>
+                )}
+              </label>
+            </div>
 
-                <span style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "#fff",
-                  padding: "6px 14px",
-                  borderRadius: "20px",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  color: "#333",
-                  border: "1px solid #e0e0e0"
-                }}>
-                  🏦 Débito
-                </span>
-              </div>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "8px",
+              marginTop: "14px", padding: "10px 14px",
+              background: "#f9fafb", borderRadius: "8px",
+              fontSize: "0.78rem", color: "#666"
+            }}>
+              <i className="fas fa-shield-alt" style={{ color: "#16a34a" }}></i>
+              Pagamento 100% seguro processado pela InfinitePay
             </div>
           </div>
         </div>
@@ -419,8 +420,8 @@ function Checkout() {
         <div className="col-12 col-lg-5">
           <div className="checkout-summary">
             <OrderSummary
-              paymentDiscount={0}
-              paymentMethodLabel=""
+              paymentDiscount={pixDiscount}
+              paymentMethodLabel={paymentMethod === "pix" ? "Desconto PIX (10%)" : ""}
               finalTotal={finalTotal}
             />
 

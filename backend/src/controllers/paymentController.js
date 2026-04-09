@@ -69,7 +69,7 @@ const mapCaptureMethod = (method) => {
 // ── Create Checkout (redirect to InfinitePay) ─────────────────────────
 const createCheckout = async (req, res) => {
   try {
-    const { cartItems, shippingAddress, shippingPrice } = req.body;
+    const { cartItems, shippingAddress, shippingPrice, paymentMethod } = req.body;
 
     if (!cartItems || !cartItems.length) {
       return res.status(400).json({ success: false, message: "Carrinho vazio" });
@@ -82,7 +82,12 @@ const createCheckout = async (req, res) => {
     // Calculate prices
     const itemsPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const finalShippingPrice = Number(shippingPrice) || 0;
-    const total = itemsPrice + finalShippingPrice;
+    const subtotal = itemsPrice + finalShippingPrice;
+
+    // Apply PIX discount (10%) if payment method is PIX
+    const isPix = paymentMethod === "pix";
+    const pixDiscountAmount = isPix ? Number((subtotal * 0.10).toFixed(2)) : 0;
+    const total = Number((subtotal - pixDiscountAmount).toFixed(2));
 
     // Create order in MongoDB
     const order = await Order.create({
@@ -106,30 +111,35 @@ const createCheckout = async (req, res) => {
         postalCode: shippingAddress.cep,
         country: "Brasil",
       },
-      paymentMethod: "INFINITEPAY",
+      paymentMethod: isPix ? "PIX" : "CREDIT_CARD",
       itemsPrice,
       taxPrice: 0,
       shippingPrice: finalShippingPrice,
       total,
+      pixDiscount: pixDiscountAmount,
+      pixDiscountApplied: isPix,
       status: "Pendente",
       isPaid: false,
     });
 
-    console.log("✅ Pedido criado:", order._id);
+    console.log("✅ Pedido criado:", order._id, isPix ? "(PIX -10%)" : "(Crédito)");
 
     // Build InfinitePay checkout payload
+    // When PIX: apply 10% discount to each item price
+    const discountMultiplier = isPix ? 0.90 : 1.0;
+
     const items = cartItems.map((item) => ({
       description: item.name,
       quantity: Number(item.quantity) || 1,
-      price: Math.round(item.price * 100), // InfinitePay uses cents
+      price: Math.round(item.price * discountMultiplier * 100), // InfinitePay uses cents
     }));
 
-    // Add shipping as an item if there's a shipping cost
+    // Add shipping as an item (also with discount if PIX)
     if (finalShippingPrice > 0) {
       items.push({
         description: "Frete",
         quantity: 1,
-        price: Math.round(finalShippingPrice * 100),
+        price: Math.round(finalShippingPrice * discountMultiplier * 100),
       });
     }
 
@@ -232,6 +242,8 @@ const handleWebhook = async (req, res) => {
     if (installments) {
       order.installments = installments;
     }
+
+    // Note: PIX discount is already applied at checkout creation time
 
     // Update stock
     if (!order.stockUpdated) {
