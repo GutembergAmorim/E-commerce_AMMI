@@ -3,7 +3,7 @@ import axios from "axios";
 import api from "../../services/api";
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import CustomerInfo from "../CustomerInfo";
 import AddressForm from "../AddressForm";
@@ -28,6 +28,11 @@ function Checkout() {
   const { cartItems, clearCart, total: cartTotal, frete } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Coupon from Cart page
+  const couponData = location.state?.coupon || null;
+  const couponDiscount = couponData?.discount || 0;
 
   const [address, setAddress] = useState({
     logradouro: "",
@@ -171,6 +176,8 @@ function Checkout() {
         shippingAddress,
         shippingPrice: frete,
         paymentMethod,
+        couponCode: couponData?.code || null,
+        couponDiscount: couponDiscount,
       });
 
       if (!response.data.success) {
@@ -254,8 +261,8 @@ function Checkout() {
     );
   }
 
-  // Calcular total do carrinho
-  const total = cartTotal;
+  // Calcular total do carrinho (cartTotal já inclui frete, mas NÃO o cupom)
+  const total = cartTotal - couponDiscount;
   const pixDiscount = paymentMethod === "pix" ? total * 0.10 : 0;
   const finalTotal = total - pixDiscount;
 
@@ -422,6 +429,8 @@ function Checkout() {
             <OrderSummary
               paymentDiscount={pixDiscount}
               paymentMethodLabel={paymentMethod === "pix" ? "Desconto PIX (10%)" : ""}
+              couponDiscount={couponDiscount}
+              couponCode={couponData?.code}
               finalTotal={finalTotal}
             />
 

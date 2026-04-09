@@ -4,6 +4,8 @@ import { useCart } from "../Context/CartContext";
 const OrderSummary = ({
   paymentDiscount = 0,
   paymentMethodLabel = "",
+  couponDiscount = 0,
+  couponCode = "",
   finalTotal,
 }) => {
   const { cartItems, subtotal, discount, total, frete } = useCart();
@@ -58,10 +60,28 @@ const OrderSummary = ({
           </div>
         )}
 
-        {frete > 0 && (
+        <div className="checkout-summary__row">
+          {frete === 0 ? (
+            <>
+              <span className="text-success">Frete Grátis</span>
+              <span className="fw-medium text-success">{formatCurrency(0)}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-muted">Frete</span>
+              <span className="fw-medium">{formatCurrency(frete)}</span>
+            </>
+          )}
+        </div>
+
+        {couponDiscount > 0 && (
           <div className="checkout-summary__row">
-            <span className="text-muted">Frete</span>
-            <span className="fw-medium">{formatCurrency(frete || 0)}</span>
+            <span className="text-muted">
+              Cupom ({couponCode})
+            </span>
+            <span className="text-success fw-medium">
+              - {formatCurrency(couponDiscount)}
+            </span>
           </div>
         )}
 

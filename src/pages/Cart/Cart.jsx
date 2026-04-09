@@ -205,8 +205,17 @@ const Cart = () => {
             )}
 
             <div className="cart-summary__row">
-              <span className="text-muted">Frete</span>
-              <span className="fw-medium text-success">{formatCurrency(frete)}</span>
+              {frete === 0 ? (
+                <>
+                  <span className="text-success">Frete Grátis</span>
+                  <span className="fw-medium text-success">{formatCurrency(0)}</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-muted">Frete</span>
+                  <span className="fw-medium text-success">{formatCurrency(frete)}</span>
+                </>
+              )}
             </div>
 
             {/* Total highlight */}
@@ -277,7 +286,7 @@ const Cart = () => {
                 </div>
               ))}
             </div>
-            <p className="small text-muted mt-1 mb-0">Até 10x sem juros no cartão</p>
+            <p className="small text-muted mt-1 mb-0">Até 3x sem juros no cartão</p>
 
             {/* Trust Badges */}
             <div className="cart-trust">

@@ -189,6 +189,12 @@ const OrderConfirmation = () => {
                     <span>{formatPrice(order.taxPrice)}</span>
                   </div>
                 )}
+                {order.couponDiscount > 0 && (
+                  <div className="confirm-financial-row">
+                    <span className="text-muted">Cupom ({order.couponCode})</span>
+                    <span className="text-success fw-semibold">- {formatPrice(order.couponDiscount)}</span>
+                  </div>
+                )}
                 {order.pixDiscount > 0 && (
                   <div className="confirm-financial-row">
                     <span className="text-muted">Desconto PIX (10%)</span>

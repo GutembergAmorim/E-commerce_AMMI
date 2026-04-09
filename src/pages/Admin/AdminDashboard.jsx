@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Package, Users, DollarSign, TrendingUp,
   ShoppingCart, AlertCircle, Clock, ChevronRight,
-  ArrowUpRight, BarChart3
+  ArrowUpRight, BarChart3, Tag
 } from 'lucide-react';
 import api from '../../services/api';
 import './AdminDashboard.css';
@@ -153,6 +153,12 @@ const AdminDashboard = () => {
       to: '/admin/stock',
       icon: <BarChart3 size={18} />,
       colorClass: 'admin-stat__icon--green',
+    },
+    {
+      label: 'Gerenciar Cupons',
+      to: '/admin/coupons',
+      icon: <Tag size={18} />,
+      colorClass: 'admin-stat__icon--purple',
     },
   ];
 

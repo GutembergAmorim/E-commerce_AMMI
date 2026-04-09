@@ -69,7 +69,7 @@ const mapCaptureMethod = (method) => {
 // ── Create Checkout (redirect to InfinitePay) ─────────────────────────
 const createCheckout = async (req, res) => {
   try {
-    const { cartItems, shippingAddress, shippingPrice, paymentMethod } = req.body;
+    const { cartItems, shippingAddress, shippingPrice, paymentMethod, couponCode, couponDiscount: clientCouponDiscount } = req.body;
 
     if (!cartItems || !cartItems.length) {
       return res.status(400).json({ success: false, message: "Carrinho vazio" });
@@ -81,8 +81,27 @@ const createCheckout = async (req, res) => {
 
     // Calculate prices
     const itemsPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const finalShippingPrice = Number(shippingPrice) || 0;
-    const subtotal = itemsPrice + finalShippingPrice;
+    let finalShippingPrice = Number(shippingPrice) || 0;
+    if (itemsPrice > 299) {
+      finalShippingPrice = 0;
+    }
+
+    // Validate coupon on backend (server-side verification)
+    let validatedCouponDiscount = 0;
+    let couponId = null;
+    if (couponCode) {
+      const Coupon = (await import("../models/Coupon.js")).default;
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
+      if (coupon) {
+        const validation = coupon.isValid(itemsPrice);
+        if (validation.valid) {
+          validatedCouponDiscount = Number(coupon.calculateDiscount(itemsPrice).toFixed(2));
+          couponId = coupon._id;
+        }
+      }
+    }
+
+    const subtotal = itemsPrice + finalShippingPrice - validatedCouponDiscount;
 
     // Apply PIX discount (10%) if payment method is PIX
     const isPix = paymentMethod === "pix";
@@ -116,31 +135,60 @@ const createCheckout = async (req, res) => {
       taxPrice: 0,
       shippingPrice: finalShippingPrice,
       total,
+      couponCode: couponCode || null,
+      couponDiscount: validatedCouponDiscount,
       pixDiscount: pixDiscountAmount,
       pixDiscountApplied: isPix,
       status: "Pendente",
       isPaid: false,
     });
 
-    console.log("✅ Pedido criado:", order._id, isPix ? "(PIX -10%)" : "(Crédito)");
+    // Increment coupon usage
+    if (couponId) {
+      const Coupon = (await import("../models/Coupon.js")).default;
+      await Coupon.findByIdAndUpdate(couponId, { $inc: { usedCount: 1 } });
+      console.log(`🎟️ Cupom ${couponCode} usado (pedido ${order._id})`);
+    }
+
+    console.log("✅ Pedido criado:", order._id, isPix ? "(PIX -10%)" : "(Crédito)", validatedCouponDiscount > 0 ? `(Cupom -R$${validatedCouponDiscount})` : "");
 
     // Build InfinitePay checkout payload
-    // When PIX: apply 10% discount to each item price
-    const discountMultiplier = isPix ? 0.90 : 1.0;
-
+    // Total after all discounts = total (already has coupon + PIX applied)
+    // We need items to sum to the final total in cents
+    const totalInCents = Math.round(total * 100);
+    
+    // Build item list with original prices
     const items = cartItems.map((item) => ({
       description: item.name,
       quantity: Number(item.quantity) || 1,
-      price: Math.round(item.price * discountMultiplier * 100), // InfinitePay uses cents
+      price: Math.round(item.price * 100),
     }));
 
-    // Add shipping as an item (also with discount if PIX)
+    // Add shipping as an item
     if (finalShippingPrice > 0) {
       items.push({
         description: "Frete",
         quantity: 1,
-        price: Math.round(finalShippingPrice * discountMultiplier * 100),
+        price: Math.round(finalShippingPrice * 100),
       });
+    }
+
+    // Calculate items total before discounts
+    const itemsTotalCents = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const totalDiscountCents = itemsTotalCents - totalInCents;
+
+    // Apply discount proportionally across items
+    if (totalDiscountCents > 0 && itemsTotalCents > 0) {
+      let remainingDiscount = totalDiscountCents;
+      for (let i = 0; i < items.length; i++) {
+        const itemTotal = items[i].price * items[i].quantity;
+        const itemShare = i === items.length - 1
+          ? remainingDiscount // last item gets remainder to avoid rounding issues
+          : Math.round((itemTotal / itemsTotalCents) * totalDiscountCents);
+        const discountPerUnit = Math.floor(itemShare / items[i].quantity);
+        items[i].price = items[i].price - discountPerUnit;
+        remainingDiscount -= discountPerUnit * items[i].quantity;
+      }
     }
 
     const body = {

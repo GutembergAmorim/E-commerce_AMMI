@@ -111,7 +111,11 @@ export const CartProvider = ({ children }) => {
   }, 0);
 
   // Calcula o frete
-  const frete = 15.00;
+  let frete = 15.00;
+
+  if (subtotal > 299) {
+    frete = 0;
+  }
 
   // Calcula o total (subtotal - desconto)
   const total = subtotal - discount + frete;
