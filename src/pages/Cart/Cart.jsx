@@ -8,7 +8,7 @@ import "./Cart.css";
 
 const Cart = () => {
   const { cartItems, handleQuantityChange, handleRemoveItem, frete } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,6 +55,7 @@ const Cart = () => {
       const res = await api.post("/coupons/validate", {
         code: couponCode.trim(),
         orderTotal: subtotal - productDiscount,
+        userId: user?._id || user?.id || null,
       });
 
       if (res.data.success) {

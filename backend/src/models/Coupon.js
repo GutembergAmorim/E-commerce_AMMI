@@ -44,6 +44,23 @@ const couponSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // ── Conditional coupon fields ──
+    condition: {
+      type: String,
+      enum: ["none", "first_purchase", "max_uses_per_user"],
+      default: "none",
+    },
+    maxUsesPerUser: {
+      type: Number,
+      default: 1, // Usado quando condition === "max_uses_per_user"
+    },
+    usedBy: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        count: { type: Number, default: 1 },
+        lastUsedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

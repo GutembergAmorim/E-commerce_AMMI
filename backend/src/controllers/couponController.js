@@ -1,11 +1,12 @@
 import Coupon from "../models/Coupon.js";
+import Order from "../models/Order.js";
 
 // @desc    Validar e aplicar cupom
 // @route   POST /coupons/validate
 // @access  Public
 export const validateCoupon = async (req, res) => {
   try {
-    const { code, orderTotal } = req.body;
+    const { code, orderTotal, userId } = req.body;
 
     if (!code) {
       return res.status(400).json({ success: false, message: "Código do cupom é obrigatório" });
@@ -17,9 +18,49 @@ export const validateCoupon = async (req, res) => {
       return res.status(404).json({ success: false, message: "Cupom não encontrado" });
     }
 
+    // Validações básicas (ativo, expirado, esgotado, pedido mínimo)
     const validation = coupon.isValid(orderTotal || 0);
     if (!validation.valid) {
       return res.status(400).json({ success: false, message: validation.message });
+    }
+
+    // ── Validações condicionais ──
+    if (coupon.condition && coupon.condition !== "none") {
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "Você precisa estar logado para usar este cupom",
+        });
+      }
+
+      if (coupon.condition === "first_purchase") {
+        // Verificar se o usuário já fez alguma compra (exceto canceladas)
+        const orderCount = await Order.countDocuments({
+          user: userId,
+          status: { $nin: ["Cancelado"] },
+        });
+
+        if (orderCount > 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Este cupom é válido apenas para a primeira compra",
+          });
+        }
+      }
+
+      if (coupon.condition === "max_uses_per_user") {
+        // Verificar quantas vezes este usuário já usou o cupom
+        const userUsage = coupon.usedBy.find(
+          (entry) => entry.user.toString() === userId.toString()
+        );
+
+        if (userUsage && userUsage.count >= coupon.maxUsesPerUser) {
+          return res.status(400).json({
+            success: false,
+            message: `Você já utilizou este cupom ${coupon.maxUsesPerUser === 1 ? "" : coupon.maxUsesPerUser + " vezes"}`.trim(),
+          });
+        }
+      }
     }
 
     const discount = coupon.calculateDiscount(orderTotal || 0);
@@ -32,6 +73,7 @@ export const validateCoupon = async (req, res) => {
         discountValue: coupon.discountValue,
         discount,
         description: coupon.description,
+        condition: coupon.condition,
       },
     });
   } catch (error) {
@@ -45,9 +87,30 @@ export const validateCoupon = async (req, res) => {
 export const useCoupon = async (req, res) => {
   try {
     const { code } = req.body;
+    const userId = req.user?._id; // vem do middleware protect
+
     const coupon = await Coupon.findOne({ code: code.toUpperCase().trim() });
     if (coupon) {
       coupon.usedCount += 1;
+
+      // Rastrear uso por usuário
+      if (userId) {
+        const existingEntry = coupon.usedBy.find(
+          (entry) => entry.user.toString() === userId.toString()
+        );
+
+        if (existingEntry) {
+          existingEntry.count += 1;
+          existingEntry.lastUsedAt = new Date();
+        } else {
+          coupon.usedBy.push({
+            user: userId,
+            count: 1,
+            lastUsedAt: new Date(),
+          });
+        }
+      }
+
       await coupon.save();
     }
     res.json({ success: true });

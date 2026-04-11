@@ -23,6 +23,8 @@ const CouponManagement = () => {
     expiresAt: '',
     isActive: true,
     description: '',
+    condition: 'none',
+    maxUsesPerUser: '1',
   };
   const [form, setForm] = useState(defaultForm);
 
@@ -61,6 +63,8 @@ const CouponManagement = () => {
       expiresAt: coupon.expiresAt ? coupon.expiresAt.split('T')[0] : '',
       isActive: coupon.isActive,
       description: coupon.description || '',
+      condition: coupon.condition || 'none',
+      maxUsesPerUser: coupon.maxUsesPerUser?.toString() || '1',
     });
     setShowModal(true);
   };
@@ -78,6 +82,8 @@ const CouponManagement = () => {
         expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
         isActive: form.isActive,
         description: form.description,
+        condition: form.condition,
+        maxUsesPerUser: form.condition === 'max_uses_per_user' ? Number(form.maxUsesPerUser) : 1,
       };
 
       if (editingCoupon) {
@@ -179,6 +185,7 @@ const CouponManagement = () => {
                   <tr>
                     <th>Código</th>
                     <th>Desconto</th>
+                    <th>Condição</th>
                     <th>Pedido Mín.</th>
                     <th>Uso</th>
                     <th>Expira em</th>
@@ -207,6 +214,15 @@ const CouponManagement = () => {
                               ? `${coupon.discountValue}%`
                               : `R$ ${coupon.discountValue.toFixed(2)}`}
                           </span>
+                        </td>
+                        <td style={{ fontSize: '0.82rem' }}>
+                          {coupon.condition === 'first_purchase' ? (
+                            <span className="admin-badge" style={{ background: '#fef3c7', color: '#92400e', fontWeight: 600 }}>🎉 1ª Compra</span>
+                          ) : coupon.condition === 'max_uses_per_user' ? (
+                            <span className="admin-badge" style={{ background: '#e0e7ff', color: '#3730a3', fontWeight: 600 }}>👤 {coupon.maxUsesPerUser}×/cliente</span>
+                          ) : (
+                            <span style={{ color: '#999' }}>—</span>
+                          )}
                         </td>
                         <td style={{ fontSize: '0.82rem' }}>
                           {coupon.minOrderValue > 0 ? `R$ ${coupon.minOrderValue.toFixed(2)}` : '—'}
@@ -359,6 +375,44 @@ const CouponManagement = () => {
                       placeholder="Ex: Cupom de boas-vindas"
                     />
                   </div>
+
+                  {/* ── Condição do Cupom ── */}
+                  <div className="col-md-6">
+                    <label className="checkout-label">Condição</label>
+                    <select
+                      className="form-select checkout-input"
+                      value={form.condition}
+                      onChange={(e) => setForm(p => ({ ...p, condition: e.target.value }))}
+                    >
+                      <option value="none">Nenhuma</option>
+                      <option value="first_purchase">Primeira Compra</option>
+                      <option value="max_uses_per_user">Máx. usos por cliente</option>
+                    </select>
+                  </div>
+                  {form.condition === 'max_uses_per_user' && (
+                    <div className="col-md-6">
+                      <label className="checkout-label">Máx. usos por cliente</label>
+                      <input
+                        type="number"
+                        min="1"
+                        className="form-control checkout-input"
+                        value={form.maxUsesPerUser}
+                        onChange={(e) => setForm(p => ({ ...p, maxUsesPerUser: e.target.value }))}
+                        placeholder="1"
+                      />
+                    </div>
+                  )}
+                  {form.condition === 'first_purchase' && (
+                    <div className="col-md-6 d-flex align-items-end">
+                      <div style={{
+                        padding: '8px 14px', background: '#fef3c7', borderRadius: 10,
+                        fontSize: '0.78rem', color: '#92400e', fontWeight: 500,
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        🎉 Válido apenas para clientes sem compras anteriores
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div style={{ padding: '0 20px 20px', display: 'flex', gap: 10 }}>

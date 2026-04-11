@@ -105,7 +105,7 @@ const createCheckout = async (req, res) => {
 
     // Apply PIX discount (10%) if payment method is PIX
     const isPix = paymentMethod === "pix";
-    const pixDiscountAmount = isPix ? Number((subtotal * 0.10).toFixed(2)) : 0;
+    const pixDiscountAmount = isPix ? Number((subtotal * 0.05).toFixed(2)) : 0;
     const total = Number((subtotal - pixDiscountAmount).toFixed(2));
 
     // Create order in MongoDB

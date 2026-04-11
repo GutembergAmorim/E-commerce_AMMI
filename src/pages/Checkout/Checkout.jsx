@@ -263,7 +263,7 @@ function Checkout() {
 
   // Calcular total do carrinho (cartTotal já inclui frete, mas NÃO o cupom)
   const total = cartTotal - couponDiscount;
-  const pixDiscount = paymentMethod === "pix" ? total * 0.10 : 0;
+  const pixDiscount = paymentMethod === "pix" ? total * 0.05 : 0;
   const finalTotal = total - pixDiscount;
 
   return (
@@ -360,7 +360,7 @@ function Checkout() {
                       background: "#dcfce7", color: "#16a34a",
                       padding: "2px 10px", borderRadius: "10px",
                       fontSize: "0.7rem", fontWeight: 700,
-                    }}>10% OFF</span>
+                    }}>5% OFF</span>
                   </div>
                   <p style={{ margin: "4px 0 0", fontSize: "0.78rem", color: "#666" }}>
                     Pagamento instantâneo com desconto
@@ -368,7 +368,7 @@ function Checkout() {
                 </div>
                 {paymentMethod === "pix" && (
                   <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#16a34a", whiteSpace: "nowrap" }}>
-                    {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total - total * 0.10)}
+                    {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total - total * 0.05)}
                   </span>
                 )}
               </label>
@@ -428,7 +428,7 @@ function Checkout() {
           <div className="checkout-summary">
             <OrderSummary
               paymentDiscount={pixDiscount}
-              paymentMethodLabel={paymentMethod === "pix" ? "Desconto PIX (10%)" : ""}
+              paymentMethodLabel={paymentMethod === "pix" ? "Desconto PIX (5%)" : ""}
               couponDiscount={couponDiscount}
               couponCode={couponData?.code}
               finalTotal={finalTotal}
