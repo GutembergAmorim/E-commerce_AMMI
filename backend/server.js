@@ -129,6 +129,20 @@ const startServer = async () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
       console.log(`📱 Ambiente: ${process.env.NODE_ENV}`);
       console.log(`🔗 URL: http://localhost:${PORT}`);
+
+      // ── Keep-alive: pinga a si mesmo a cada 14min para evitar cold start no Render ──
+      if (process.env.NODE_ENV === 'production' && process.env.KEEP_ALIVE_URL) {
+        const keepAliveInterval = 14 * 60 * 1000; // 14 minutos
+        setInterval(async () => {
+          try {
+            const res = await fetch(process.env.KEEP_ALIVE_URL);
+            console.log(`🏓 Keep-alive ping: ${res.status}`);
+          } catch (e) {
+            console.log(`⚠️ Keep-alive ping failed: ${e.message}`);
+          }
+        }, keepAliveInterval);
+        console.log(`🏓 Keep-alive ativado: ping a cada 14min → ${process.env.KEEP_ALIVE_URL}`);
+      }
     });
   } catch (error) {
     console.error("❌ Falha ao iniciar o servidor:", error.message);

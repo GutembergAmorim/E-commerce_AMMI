@@ -122,7 +122,30 @@ function Home() {
           {bestSellersLoading ? (
             <SkeletonGrid />
           ) : bestSellersError ? (
-            <div className="alert alert-warning" role="alert">{bestSellersError}</div>
+            <div style={{
+              textAlign: 'center', padding: '3rem 1rem',
+              background: '#fafafa', borderRadius: '16px',
+            }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: '50%',
+                background: '#f5f5f5', display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center',
+                marginBottom: '1rem', color: '#bbb', fontSize: '1.3rem',
+              }}>
+                <i className="fas fa-sync-alt"></i>
+              </div>
+              <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.75rem' }}>
+                Não foi possível carregar os produtos.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="btn btn-dark rounded-pill px-4 py-2 fw-semibold"
+                style={{ fontSize: '0.85rem' }}
+              >
+                <i className="fas fa-redo me-2" style={{ fontSize: '0.75rem' }}></i>
+                Tentar novamente
+              </button>
+            </div>
           ) : (
             <>
               <div className="row row-cols-2 row-cols-lg-4 g-4">
