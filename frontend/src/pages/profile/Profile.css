@@ -1,0 +1,195 @@
+/* ============================
+   Profile Pages
+   ============================ */
+
+/* ---- Profile Card ---- */
+.profile-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.profile-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-card__header-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.profile-card__body {
+  padding: 20px;
+}
+
+/* ---- Setting Row ---- */
+.profile-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.profile-setting:last-child {
+  border-bottom: none;
+}
+
+.profile-setting__info {
+  flex: 1;
+}
+
+.profile-setting__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.profile-setting__desc {
+  font-size: 0.73rem;
+  color: #999;
+  margin: 2px 0 0;
+}
+
+/* ---- Order Card (mobile-friendly) ---- */
+.profile-order {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  transition: box-shadow 0.2s;
+  margin-bottom: 12px;
+}
+
+.profile-order:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.profile-order__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.profile-order__id {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.profile-order__date {
+  font-size: 0.72rem;
+  color: #999;
+}
+
+.profile-order__items {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.profile-order__thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #f0f0f0;
+}
+
+.profile-order__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.profile-order__total {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* ---- Address Card ---- */
+.profile-address {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  transition: box-shadow 0.2s;
+  position: relative;
+}
+
+.profile-address:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.profile-address--default {
+  border-color: #1a1a1a;
+}
+
+.profile-address__name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+}
+
+.profile-address__text {
+  font-size: 0.82rem;
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.profile-address__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- Page Title ---- */
+.profile-page-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+
+.profile-page-subtitle {
+  font-size: 0.82rem;
+  color: #999;
+  margin: 0 0 1.5rem;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 575px) {
+  .profile-card__body {
+    padding: 16px;
+  }
+
+  .profile-order {
+    padding: 12px;
+  }
+}
