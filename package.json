@@ -1,0 +1,15 @@
+{
+  "name": "ammi-fitwear-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo para o projeto AMMI Fitwear (Frontend + Backend)",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && npm install --prefix frontend && npm install --prefix backend",
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "start:backend": "npm start --prefix backend",
+    "start:frontend": "npm run dev --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

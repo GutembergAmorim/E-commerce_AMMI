@@ -24,3 +24,10 @@ dist-ssr
 *.sw?
 .vercel
 .env*.local
+.env
+.env.*
+!env.example
+
+# Outros arquivos indesejados
+*-error.txt
+*.log
