@@ -1,9 +1,15 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
+import Order from "../models/Order.js";
 import connectDB from "../config/database.js";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const products = [
   {
@@ -89,12 +95,16 @@ const seedData = async () => {
     await connectDB();
 
     // Limpar produtos existentes
-    await Product.deleteMany();
-    console.log("🗑️ Produtos existentes removidos");
+    // await Product.deleteMany();
+    // console.log("🗑️ Produtos existentes removidos");
 
     // Inserir novos produtos
-    await Product.insertMany(products);
-    console.log("✅ Produtos inseridos com sucesso");
+    // await Product.insertMany(products);
+    // console.log("✅ Produtos inseridos com sucesso");
+
+    // Limpar todos os pedidos
+    await Order.deleteMany();
+    console.log("🗑️ Pedidos existentes removidos");
 
     // Criar usuário admin padrão
     // const adminExists = await User.findOne({ email: 'admin@amii.com' });
@@ -107,11 +117,8 @@ const seedData = async () => {
     //   });
     //   console.log('👤 Usuário admin criado: admin@amii.com / admin123');
     // }
-
-    console.log("🎉 Dados populados com sucesso!");
-    process.exit(0);
   } catch (error) {
-    console.error("❌ Erro ao popular dados:", error);
+    console.error("❌ Erro ao remover pedidos:", error);
     process.exit(1);
   }
 };

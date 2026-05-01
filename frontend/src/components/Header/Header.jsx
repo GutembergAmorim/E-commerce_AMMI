@@ -1,4 +1,5 @@
 import React from "react";
+import { Search, X } from "lucide-react";
 import Logo_Header from "../../assets/Logo_Header.png";
 import CartIcon from "../Icons/CartIcon";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -155,7 +156,7 @@ function Header() {
                 onClick={() => setShowSearch(!showSearch)}
                 aria-label="Buscar produtos"
               >
-                <i className={`fa-solid fa-magnifying-glass fs-4`}></i>
+                {showSearch ? <X size={22} strokeWidth={2} /> : <Search size={22} strokeWidth={2} />}
               </button>
               {/* Login / Perfil — usando React-Bootstrap Dropdown */}
               {isAuthenticated ? (
