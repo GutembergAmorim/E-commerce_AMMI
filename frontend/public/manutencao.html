@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMMI Fitwear — Em Manutenção</title>
+  <meta name="description" content="Estamos em manutenção para melhorar sua experiência. Voltamos em breve!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fafafa;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Subtle animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(26, 26, 26, 0.02) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(26, 26, 26, 0.015) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(26, 26, 26, 0.01) 0%, transparent 50%);
+      animation: bgShift 20s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+
+    @keyframes bgShift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-3%, -2%); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      max-width: 480px;
+      width: 100%;
+    }
+
+    /* Logo */
+    .logo {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #1a1a1a;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .logo::after {
+      content: '';
+      display: block;
+      width: 30px;
+      height: 2px;
+      background: #1a1a1a;
+      margin: 12px auto 0;
+    }
+
+    /* Animated icon */
+    .icon-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(26,26,26,0.05); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(26,26,26,0); }
+    }
+
+    .icon-wrap svg {
+      width: 32px;
+      height: 32px;
+      color: #1a1a1a;
+      animation: spin 8s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Text */
+    .title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #888;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Divider */
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: #ddd;
+      margin: 0 auto 2rem;
+    }
+
+    /* Instagram link */
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border: 1px solid #e0e0e0;
+      border-radius: 50px;
+      text-decoration: none;
+      color: #1a1a1a;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+
+    .social-link:hover {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .social-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.25rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: #ccc;
+      letter-spacing: 0.3px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .logo {
+        font-size: 1.8rem;
+        margin-bottom: 2.5rem;
+      }
+
+      .icon-wrap {
+        width: 64px;
+        height: 64px;
+      }
+
+      .icon-wrap svg {
+        width: 26px;
+        height: 26px;
+      }
+
+      .title {
+        font-size: 1.15rem;
+      }
+
+      .subtitle {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">AMMI</div>
+
+    <div class="icon-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.108 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.204-.107-.397.165-.71.505-.78.929l-.15.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.109l-.738.527a1.125 1.125 0 0 1-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+    </div>
+
+    <h1 class="title">Estamos em manutenção</h1>
+    <p class="subtitle">
+      Estamos trabalhando para melhorar sua experiência.<br />
+      Voltamos em breve com novidades!
+    </p>
+
+    <div class="divider"></div>
+
+    <a href="https://www.instagram.com/ammi.fitwear/" target="_blank" rel="noopener noreferrer" class="social-link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+      </svg>
+      @ammi.fitwear
+    </a>
+  </div>
+
+  <div class="footer">© 2026 AMMI Fitwear. Todos os direitos reservados.</div>
+</body>
+</html>
