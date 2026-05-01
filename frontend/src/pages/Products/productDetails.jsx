@@ -6,7 +6,7 @@ import { useProduct } from "../../hooks/useProducts";
 import StarRating from "../../components/StarRating/StarRating";
 import ProductReviews from "../../components/ProductReviews/ProductReviews";
 import RelatedProducts from "../../components/RelatedProducts/RelatedProducts";
-import tabela_de_medidas from "../../assets/tabela_de_medidas .png";
+
 import CartToast from "../../components/CartToast/CartToast";
 import "./ProductDetails.css";
 
@@ -435,7 +435,49 @@ const ProductDetails = () => {
               <p>{product.description || "Descrição detalhada do produto."}</p>
             )}
             {activeTab === "specs" && (
-              <img src={tabela_de_medidas} alt="Tabela de Medidas" />
+              <div className="pdp-size-chart">
+                <div className="pdp-size-chart__header">
+                  <i className="fas fa-ruler-combined"></i>
+                  <div>
+                    <h3>Encontre seu tamanho ideal</h3>
+                    <p>A AMMI utiliza uma tabela de medidas padronizada para que você escolha o tamanho perfeito. Meça-se com uma fita métrica e compare com os valores abaixo.</p>
+                  </div>
+                </div>
+                <table className="pdp-size-chart__table">
+                  <thead>
+                    <tr>
+                      <th>Medida</th>
+                      <th>P</th>
+                      <th>M</th>
+                      <th>G</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Busto (cm)</td>
+                      <td>82 – 86</td>
+                      <td>87 – 92</td>
+                      <td>93 – 98</td>
+                    </tr>
+                    <tr>
+                      <td>Cintura (cm)</td>
+                      <td>64 – 68</td>
+                      <td>69 – 74</td>
+                      <td>75 – 80</td>
+                    </tr>
+                    <tr>
+                      <td>Quadril (cm)</td>
+                      <td>90 – 94</td>
+                      <td>95 – 100</td>
+                      <td>101 – 106</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p className="pdp-size-chart__tip">
+                  <i className="fas fa-lightbulb"></i>
+                  Dica: se suas medidas estiverem entre dois tamanhos, recomendamos escolher o tamanho maior para maior conforto.
+                </p>
+              </div>
             )}
           </div>
         </div>

@@ -464,9 +464,112 @@
   line-height: 1.7;
 }
 
-.pdp-tab-content img {
-  max-width: 100%;
-  height: auto;
+/* ---- Size Chart ---- */
+.pdp-size-chart {
+  text-align: left;
+}
+
+.pdp-size-chart__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #fafafa, #f3f3f3);
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.pdp-size-chart__header > i {
+  font-size: 1.4rem;
+  color: #1a1a1a;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.pdp-size-chart__header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+}
+
+.pdp-size-chart__header p {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.pdp-size-chart__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+  margin-bottom: 1.25rem;
+}
+
+.pdp-size-chart__table thead tr {
+  background: #1a1a1a;
+}
+
+.pdp-size-chart__table th {
+  padding: 12px 16px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-align: center;
+}
+
+.pdp-size-chart__table th:first-child {
+  text-align: left;
+}
+
+.pdp-size-chart__table td {
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: #444;
+  text-align: center;
+  border-top: 1px solid #f0f0f0;
+}
+
+.pdp-size-chart__table td:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.pdp-size-chart__table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.pdp-size-chart__table tbody tr:hover {
+  background: #f5f5f5;
+  transition: background 0.2s;
+}
+
+.pdp-size-chart__tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #777;
+  line-height: 1.5;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.pdp-size-chart__tip i {
+  color: #d97706;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 /* ---- Responsive ---- */

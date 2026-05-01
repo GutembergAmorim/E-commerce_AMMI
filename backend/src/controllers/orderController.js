@@ -121,6 +121,18 @@ const updateOrderStatus = async (req, res) => {
 
     order.status = status;
     
+    // Atualizar isPaid automaticamente baseado no status
+    const paidStatuses = ['Pago', 'Preparando', 'Enviado', 'Entregue'];
+    if (paidStatuses.includes(status)) {
+      order.isPaid = true;
+      if (!order.paidAt) {
+        order.paidAt = new Date();
+      }
+    } else if (status === 'Pendente' || status === 'Cancelado') {
+      order.isPaid = false;
+      order.paidAt = undefined;
+    }
+
     // Se o status for "Enviado", pode adicionar data de envio
     if (status === 'Enviado') {
       order.shippedAt = new Date();

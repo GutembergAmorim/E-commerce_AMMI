@@ -20,7 +20,7 @@
 }
 
 .header-transparent .nav-link-custom {
-  color: rgba(31, 30, 30, 0.9);
+  color: rgba(36, 32, 32, 0.9);
   font-weight: 600;
   font-size: 16px;
   text-transform: uppercase;
@@ -48,16 +48,17 @@
 }
 
 .header-scrolled .nav-link-custom:hover {
-  color: #1a1a1a;
+  color: #0e0d0d;
 }
 
 /* ===== Links de Navegação ===== */
 .nav-link-custom {
-  text-decoration: none;
+  text-decoration: none ;
   position: relative;
   padding: 0.5rem 0;
   transition: color 0.3s ease;
   letter-spacing: 0.5px;
+  color: black
 }
 
 /* Sublinhado animado no hover */
