@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { SlidersHorizontal, Package, X, Flame, Tag } from "lucide-react";
@@ -152,6 +152,45 @@ function Collections() {
     });
   };
 
+  // Custom slider drag logic
+  const sliderRef = useRef(null);
+  const draggingRef = useRef(null); // 'min' | 'max' | null
+
+  const getValueFromPosition = useCallback((clientX) => {
+    const slider = sliderRef.current;
+    if (!slider) return 0;
+    const rect = slider.getBoundingClientRect();
+    const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return Math.round(percent * maxPrice);
+  }, [maxPrice]);
+
+  const handlePointerMove = useCallback((e) => {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const val = getValueFromPosition(clientX);
+    if (draggingRef.current === 'min') {
+      setPriceRange((prev) => [Math.min(val, prev[1] - 1), prev[1]]);
+    } else if (draggingRef.current === 'max') {
+      setPriceRange((prev) => [prev[0], Math.max(val, prev[0] + 1)]);
+    }
+  }, [getValueFromPosition]);
+
+  const handlePointerUp = useCallback(() => {
+    draggingRef.current = null;
+    document.removeEventListener('mousemove', handlePointerMove);
+    document.removeEventListener('mouseup', handlePointerUp);
+    document.removeEventListener('touchmove', handlePointerMove);
+    document.removeEventListener('touchend', handlePointerUp);
+  }, [handlePointerMove]);
+
+  const startDrag = useCallback((which, e) => {
+    e.preventDefault();
+    draggingRef.current = which;
+    document.addEventListener('mousemove', handlePointerMove);
+    document.addEventListener('mouseup', handlePointerUp);
+    document.addEventListener('touchmove', handlePointerMove, { passive: false });
+    document.addEventListener('touchend', handlePointerUp);
+  }, [handlePointerMove, handlePointerUp]);
+
   const clearAllFilters = () => {
     setActiveCategory("Todos");
     setPriceRange([0, maxPrice]);
@@ -194,41 +233,39 @@ function Collections() {
           <span>R$ {priceRange[0]}</span>
           <span>R$ {priceRange[1]}</span>
         </div>
-        <div className="price-slider-container">
-          <div className="position-relative" style={{ height: "30px", display: "flex", alignItems: "center" }}>
-            <div className="slider-track"></div>
-            <div
-              className="slider-track-active"
-              style={{
-                left: `${(priceRange[0] / maxPrice) * 100}%`,
-                right: `${100 - (priceRange[1] / maxPrice) * 100}%`,
-              }}
-            ></div>
-            <input
-              type="range"
-              min="0"
-              max={maxPrice}
-              value={priceRange[0]}
-              onChange={(e) => {
-                const val = Math.min(Number(e.target.value), priceRange[1] - 1);
-                handlePriceChange({ target: { value: val } }, 0);
-              }}
-              className="form-range position-absolute w-100 m-0 p-0"
-              style={{ zIndex: priceRange[0] > maxPrice / 2 ? 2 : 1, height: "4px" }}
-            />
-            <input
-              type="range"
-              min="0"
-              max={maxPrice}
-              value={priceRange[1]}
-              onChange={(e) => {
-                const val = Math.max(Number(e.target.value), priceRange[0] + 1);
-                handlePriceChange({ target: { value: val } }, 1);
-              }}
-              className="form-range position-absolute w-100 m-0 p-0"
-              style={{ zIndex: 1, height: "4px" }}
-            />
-          </div>
+        <div className="price-slider-container" ref={sliderRef}>
+          <div className="slider-track"></div>
+          <div
+            className="slider-track-active"
+            style={{
+              left: `${(priceRange[0] / maxPrice) * 100}%`,
+              right: `${100 - (priceRange[1] / maxPrice) * 100}%`,
+            }}
+          ></div>
+          <div
+            className="slider-thumb"
+            style={{ left: `${(priceRange[0] / maxPrice) * 100}%` }}
+            onMouseDown={(e) => startDrag('min', e)}
+            onTouchStart={(e) => startDrag('min', e)}
+            role="slider"
+            aria-label="Preço mínimo"
+            aria-valuemin={0}
+            aria-valuemax={maxPrice}
+            aria-valuenow={priceRange[0]}
+            tabIndex={0}
+          />
+          <div
+            className="slider-thumb"
+            style={{ left: `${(priceRange[1] / maxPrice) * 100}%` }}
+            onMouseDown={(e) => startDrag('max', e)}
+            onTouchStart={(e) => startDrag('max', e)}
+            role="slider"
+            aria-label="Preço máximo"
+            aria-valuemin={0}
+            aria-valuemax={maxPrice}
+            aria-valuenow={priceRange[1]}
+            tabIndex={0}
+          />
         </div>
       </div>
 
