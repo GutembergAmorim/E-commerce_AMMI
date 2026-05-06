@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 import "./Banner.css";
 import Foto_1 from "../../assets/Banner/Foto 1.png";
 import Foto_2 from "../../assets/Banner/Foto 2.png";
+import Foto_3 from "../../assets/Banner/Foto 3.png";
 
 const images = [
   { 
     id: 1, 
-    img: Foto_1, 
+    img: Foto_3, 
     link: "/collections", 
     buttonText: "Ver Coleção",
     buttonColors: {
@@ -20,8 +21,21 @@ const images = [
   },
   { 
     id: 2, 
-    img: Foto_2, 
+    img: Foto_1, 
     link: "/collections", 
+    buttonText: "Comprar Agora",
+    buttonColors: {
+      bg: "#a5839fff", // Estilo dark padrão
+      text: "#ffffff",
+      border: "#a5839fff",
+      hoverBg: "transparent",
+      hoverText: "#a5839fff"
+    }
+  },
+  {
+    id: 3,
+    img: Foto_2,
+    link: "/collections",
     buttonText: "Comprar Agora",
     buttonColors: {
       bg: "#a5839fff", // Estilo dark padrão
@@ -90,8 +104,10 @@ export default function Banner() {
       >
         {images.map((img, i) => (
           <div key={img.id} className="banner-slide">
-            <img src={img.img} alt={`Banner ${i + 1}`} />
-            <Link 
+            <Link to={img.link}>
+              <img src={img.img} alt={`Banner ${i + 1}`} />
+            </Link>
+            {/* <Link 
               to={img.link} 
               className="banner-button"
               style={{
@@ -103,7 +119,7 @@ export default function Banner() {
               }}
             >
               {img.buttonText}
-            </Link>
+            </Link> */}
           </div>
         ))}
       </div>

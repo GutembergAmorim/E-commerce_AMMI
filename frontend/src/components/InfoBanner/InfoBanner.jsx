@@ -11,7 +11,7 @@ const InfoBanner = () => {
           <div className="col-lg-4 info-banner-divider">
             <div className="info-banner-item">
               <div className="info-banner-icon">
-                <Package size={32} strokeWidth={1.5} />
+                <Package size={32} strokeWidth={1.5} className="info-banner-icon-package" />
               </div>
               <div className="info-banner-text">
                 <p>10% OFF na primeira compra</p>
@@ -35,12 +35,14 @@ const InfoBanner = () => {
           {/* Item 3: Troca Grátis */}
           <div className="col-lg-4">
             <div className="info-banner-item">
-              <div className="info-banner-icon">
-                <Truck size={32} strokeWidth={1.5} />
-              </div>
-              <div className="info-banner-text">
-                <p>FRETE GRÁTIS</p>
-                <p className="small text-muted">A partir de R$ 299,00</p>
+              <div className="d-flex flex-column info-banner-text">
+                <div className="info-banner-icon gap-1">
+                  <Truck size={32} strokeWidth={1.5} className="info-banner-icon-package" />
+                  <p>FRETE GRÁTIS</p>
+                </div>
+                <div className="info-banner-text">
+                  <p className="small text-muted">A partir de R$ 299,00</p>
+                </div>
               </div>
             </div>
           </div>
