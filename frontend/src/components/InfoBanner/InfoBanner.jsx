@@ -9,7 +9,7 @@ const InfoBanner = () => {
         <div className="row g-0">
           {/* Item 1: 10% OFF */}
           <div className="col-lg-4 info-banner-divider">
-            <div className="info-banner-item">
+            <div className="d-flex flex-column info-banner-item">
               <div className="info-banner-icon">
                 <Package size={32} strokeWidth={1.5} className="info-banner-icon-package" />
               </div>
@@ -22,7 +22,7 @@ const InfoBanner = () => {
 
           {/* Item 2: Parcelamento */}
           <div className="col-lg-4 info-banner-divider">
-            <div className="info-banner-item">
+            <div className="d-flex flex-column info-banner-item">
               <div className="info-banner-icon">
                 <span className="info-banner-4x">4x</span>
               </div>
