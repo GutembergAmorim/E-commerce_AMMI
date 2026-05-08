@@ -24,10 +24,10 @@ const InfoBanner = () => {
           <div className="col-lg-4 info-banner-divider">
             <div className="info-banner-item">
               <div className="info-banner-icon">
-                <span className="info-banner-4x">3x</span>
+                <span className="info-banner-4x">4x</span>
               </div>
               <div className="info-banner-text">
-                <p>Parcele em até 3x sem juros</p>
+                <p>Parcele em até 4x sem juros</p>
               </div>
             </div>
           </div>
