@@ -400,12 +400,12 @@ function Checkout() {
                     <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1a1a1a" }}>Cartão de Crédito</span>
                   </div>
                   <p style={{ margin: "4px 0 0", fontSize: "0.78rem", color: "#666" }}>
-                    Até 3× sem juros
+                    Até 4× sem juros
                   </p>
                 </div>
                 {paymentMethod === "credit_card" && (
                   <span style={{ fontSize: "0.78rem", color: "#555", whiteSpace: "nowrap" }}>
-                    3× {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total / 3)}
+                    4× {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total / 4)}
                   </span>
                 )}
               </label>
