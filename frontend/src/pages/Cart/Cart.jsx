@@ -287,7 +287,7 @@ const Cart = () => {
                 </div>
               ))}
             </div>
-            <p className="small text-muted mt-1 mb-0">Até 3x sem juros no cartão</p>
+            <p className="small text-muted mt-1 mb-0">Até 4x sem juros no cartão</p>
 
             {/* Trust Badges */}
             <div className="cart-trust">
