@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useCart } from "../../Context/CartContext";
 import { useFavorites } from "../../Context/FavoritesContext";
 import { useProduct } from "../../hooks/useProducts";
+import { calculateShipping } from "../../services/shippingService";
 import StarRating from "../../components/StarRating/StarRating";
 import ProductReviews from "../../components/ProductReviews/ProductReviews";
 import RelatedProducts from "../../components/RelatedProducts/RelatedProducts";
@@ -75,6 +76,12 @@ const ProductDetails = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastProduct, setToastProduct] = useState(null);
   const buttonTimerRef = useRef(null);
+
+  // Shipping calculator state
+  const [shippingCep, setShippingCep] = useState("");
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const [isCalcShipping, setIsCalcShipping] = useState(false);
+  const [shippingCalcError, setShippingCalcError] = useState("");
 
   const { addItemToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -165,6 +172,31 @@ const ProductDetails = () => {
   const handleToggleFavorite = () => {
     if (product) {
       toggleFavorite(product);
+    }
+  };
+
+  const handleCalcShipping = async () => {
+    const cep = shippingCep.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+
+    setIsCalcShipping(true);
+    setShippingCalcError('');
+    setShippingOptions([]);
+
+    try {
+      const result = await calculateShipping(cep, [
+        { id: product?._id || 'default', quantity: 1, weight: 0.3 },
+      ]);
+      if (result.success && result.options?.length > 0) {
+        setShippingOptions(result.options);
+      } else {
+        setShippingCalcError('Não foi possível calcular o frete para este CEP.');
+      }
+    } catch (err) {
+      console.error('Erro ao calcular frete:', err);
+      setShippingCalcError('Erro ao calcular frete. Tente novamente.');
+    } finally {
+      setIsCalcShipping(false);
     }
   };
 
@@ -367,17 +399,97 @@ const ProductDetails = () => {
                 </div>
               )}
 
-              {/* Shipping */}
+              {/* Shipping Calculator */}
               <div className="pdp-shipping">
-                <div className="pdp-shipping__row">
+                <div className="pdp-shipping__row" style={{ marginBottom: 10 }}>
                   <div className="pdp-shipping__icon pdp-shipping__icon--truck">
                     <i className="fas fa-truck"></i>
                   </div>
-                  <span>
-                    Frete fixo para Fortaleza: <strong className="text-success">R$ 15,00</strong>
-                  </span>
+                  <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>Calcule o frete</span>
                 </div>
-                <div className="pdp-shipping__row">
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="00000-000"
+                    value={shippingCep}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '').slice(0, 8);
+                      setShippingCep(v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCalcShipping();
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '8px 14px',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 8,
+                      fontSize: '0.85rem',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={handleCalcShipping}
+                    disabled={isCalcShipping || shippingCep.replace(/\D/g, '').length < 8}
+                    style={{
+                      padding: '8px 18px',
+                      background: '#1a1a1a',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      opacity: isCalcShipping || shippingCep.replace(/\D/g, '').length < 8 ? 0.5 : 1,
+                    }}
+                  >
+                    {isCalcShipping ? '...' : 'Calcular'}
+                  </button>
+                </div>
+
+                {shippingCalcError && (
+                  <p style={{ fontSize: '0.78rem', color: '#dc2626', margin: '4px 0' }}>
+                    {shippingCalcError}
+                  </p>
+                )}
+
+                {shippingOptions.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                    {shippingOptions.map((opt) => (
+                      <div
+                        key={opt.id}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '8px 12px',
+                          background: '#f8f8f8',
+                          borderRadius: 8,
+                          fontSize: '0.82rem',
+                        }}
+                      >
+                        <span style={{ fontWeight: 600 }}>
+                          {opt.name} <span style={{ color: '#888', fontWeight: 400 }}>— {opt.company}</span>
+                        </span>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontWeight: 700, color: '#1a1a1a' }}>
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(opt.price)}
+                          </span>
+                          <span style={{ display: 'block', fontSize: '0.72rem', color: '#888' }}>
+                            {opt.deliveryRange
+                              ? `${opt.deliveryRange.min}-${opt.deliveryRange.max} dias`
+                              : `${opt.deliveryDays} dias`}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="pdp-shipping__row" style={{ marginTop: 10 }}>
                   <div className="pdp-shipping__icon pdp-shipping__icon--return">
                     <i className="fas fa-undo"></i>
                   </div>

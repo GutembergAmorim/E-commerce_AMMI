@@ -81,9 +81,40 @@ const createCheckout = async (req, res) => {
 
     // Calculate prices
     const itemsPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    let finalShippingPrice = Number(shippingPrice) || 0;
+
+    // Validar frete server-side
+    let finalShippingPrice = 0;
     if (itemsPrice > 299) {
-      finalShippingPrice = 0;
+      finalShippingPrice = 0; // frete grátis
+    } else {
+      // Re-calcular frete no backend para evitar manipulação
+      try {
+        const { calculateShipping } = await import('../services/shippingService.js');
+        const cep = shippingAddress?.cep?.replace(/\D/g, '');
+        if (cep && cep.length === 8) {
+          const shippingResult = await calculateShipping(cep, cartItems);
+          if (shippingResult.success && shippingResult.options?.length > 0) {
+            // Verificar se o preço enviado pelo frontend bate com alguma opção válida
+            const validOption = shippingResult.options.find(
+              opt => Math.abs(opt.price - Number(shippingPrice)) < 1 // tolerância de R$ 1
+            );
+            if (validOption) {
+              finalShippingPrice = validOption.price;
+            } else {
+              // Usar o preço mais barato disponível
+              finalShippingPrice = shippingResult.options[0].price;
+              console.log(`⚠️ Frete enviado (${shippingPrice}) não bate, usando menor: ${finalShippingPrice}`);
+            }
+          } else {
+            finalShippingPrice = Number(shippingPrice) || 0;
+          }
+        } else {
+          finalShippingPrice = Number(shippingPrice) || 0;
+        }
+      } catch (shippingErr) {
+        console.error('⚠️ Erro ao validar frete server-side:', shippingErr.message);
+        finalShippingPrice = Number(shippingPrice) || 0;
+      }
     }
 
     // Validate coupon on backend (server-side verification)

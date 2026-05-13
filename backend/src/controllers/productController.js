@@ -44,10 +44,12 @@ const getProducts = async (req, res) => {
     }
 
     const products = await query;
+    const total = await Product.countDocuments(filter);
 
     res.json({
       success: true,
       count: products.length,
+      total,
       data: products,
     });
   } catch (error) {

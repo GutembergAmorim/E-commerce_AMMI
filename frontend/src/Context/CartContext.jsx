@@ -110,17 +110,29 @@ export const CartProvider = ({ children }) => {
     return acc;
   }, 0);
 
-  // Calcula o frete
-  let frete = 15.00;
+  // Frete dinâmico (calculado no checkout via Melhor Envio)
+  const [shippingPrice, setShippingPrice] = useState(null);
+  const [shippingOption, setShippingOption] = useState(null);
 
-  if (subtotal > 299) {
-    frete = 0;
-  }
+  // Frete grátis acima de R$ 299 para todo o Brasil
+  const isFreeShipping = subtotal > 299;
+  const effectiveShipping = isFreeShipping ? 0 : (shippingPrice ?? 0);
 
-  // Calcula o total (subtotal - desconto)
-  const total = subtotal - discount + frete;
+  // Calcula o total (subtotal - desconto + frete)
+  const total = subtotal - discount + effectiveShipping;
 
-  
+  // Alias para compatibilidade (componentes que usam `frete`)
+  const frete = effectiveShipping;
+
+  const setShippingData = (price, option) => {
+    setShippingPrice(price);
+    setShippingOption(option);
+  };
+
+  const resetShipping = () => {
+    setShippingPrice(null);
+    setShippingOption(null);
+  };
 
   return (
     <CartContext.Provider
@@ -134,6 +146,11 @@ export const CartProvider = ({ children }) => {
         discount,
         total,
         frete,
+        isFreeShipping,
+        shippingPrice,
+        shippingOption,
+        setShippingData,
+        resetShipping,
         animateCart, // Expõe o estado da animação
       }}
     >

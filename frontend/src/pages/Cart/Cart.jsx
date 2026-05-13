@@ -7,7 +7,7 @@ import api from "../../services/api";
 import "./Cart.css";
 
 const Cart = () => {
-  const { cartItems, handleQuantityChange, handleRemoveItem, frete } = useCart();
+  const { cartItems, handleQuantityChange, handleRemoveItem, frete, isFreeShipping } = useCart();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -206,7 +206,7 @@ const Cart = () => {
             )}
 
             <div className="cart-summary__row">
-              {frete === 0 ? (
+              {isFreeShipping ? (
                 <>
                   <span className="text-success">Frete Grátis</span>
                   <span className="fw-medium text-success">{formatCurrency(0)}</span>
@@ -214,7 +214,9 @@ const Cart = () => {
               ) : (
                 <>
                   <span className="text-muted">Frete</span>
-                  <span className="fw-medium text-success">{formatCurrency(frete)}</span>
+                  <span className="fw-medium" style={{ fontSize: '0.82rem', color: '#999' }}>
+                    Calculado no checkout
+                  </span>
                 </>
               )}
             </div>

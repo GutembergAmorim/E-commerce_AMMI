@@ -17,6 +17,13 @@ const routeNameMap = {
   orders: 'Pedidos'
 };
 
+// Mapa de redirecionamento: segmentos de URL que não possuem rota própria
+// são redirecionados para a rota correta correspondente.
+const routeRedirectMap = {
+  products: '/collections',
+  admin: '/admin/dashboard'
+};
+
 // Detecta se um segmento parece um MongoDB ObjectId (24 caracteres hex)
 const isObjectId = (value) => /^[a-f\d]{24}$/i.test(value);
 
@@ -53,7 +60,21 @@ const Breadcrumbs = () => {
     if (isObjectId(value) && index > 0 && pathnames[index - 1] === 'products') {
       return productName || 'Carregando...';
     }
+    // Se o segmento tem redirecionamento, mostrar o nome da rota destino
+    if (routeRedirectMap[value]) {
+      const redirectTarget = routeRedirectMap[value].replace('/', '');
+      return routeNameMap[redirectTarget] || routeNameMap[value] || value.charAt(0).toUpperCase() + value.slice(1);
+    }
     return routeNameMap[value] || value.charAt(0).toUpperCase() + value.slice(1);
+  };
+
+  // Determina a URL correta do link do breadcrumb,
+  // aplicando redirecionamento quando o segmento não possui rota própria
+  const getBreadcrumbLink = (value, index) => {
+    if (routeRedirectMap[value]) {
+      return routeRedirectMap[value];
+    }
+    return `/${pathnames.slice(0, index + 1).join('/')}`;
   };
 
   return (
@@ -64,7 +85,7 @@ const Breadcrumbs = () => {
             <Link to="/" className="text-decoration-none text-muted">Home</Link>
           </li>
           {pathnames.map((value, index) => {
-            const to = `/${pathnames.slice(0, index + 1).join('/')}`;
+            const to = getBreadcrumbLink(value, index);
             const isLast = index === pathnames.length - 1;
             const name = getDisplayName(value, index);
 
@@ -85,3 +106,4 @@ const Breadcrumbs = () => {
 };
 
 export default Breadcrumbs;
+

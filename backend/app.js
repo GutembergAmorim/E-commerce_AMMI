@@ -18,6 +18,7 @@ import newsletterRoutes from './src/routes/newsletter.js';
 import couponRoutes from './src/routes/coupons.js';
 import reviewRoutes from './src/routes/reviews.js';
 import analyticsRoutes from './src/routes/analytics.js';
+import shippingRoutes from './src/routes/shipping.js';
 
 const app = express();
 
@@ -87,6 +88,7 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/shipping', shippingRoutes);
 
 app.get("/", (req, res) => {
   res.json({

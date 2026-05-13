@@ -86,6 +86,17 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Peso e dimensões para cálculo de frete
+    weight: {
+      type: Number,
+      default: 0.3, // peso em kg (300g padrão para roupas)
+      min: 0.01,
+    },
+    dimensions: {
+      width: { type: Number, default: 20 },  // cm
+      height: { type: Number, default: 5 },  // cm
+      length: { type: Number, default: 30 }, // cm
+    },
     averageRating: {
       type: Number,
       default: 0,

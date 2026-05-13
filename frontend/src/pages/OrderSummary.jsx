@@ -8,7 +8,7 @@ const OrderSummary = ({
   couponCode = "",
   finalTotal,
 }) => {
-  const { cartItems, subtotal, discount, total, frete } = useCart();
+  const { cartItems, subtotal, discount, total, frete, isFreeShipping, shippingOption } = useCart();
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -61,15 +61,24 @@ const OrderSummary = ({
         )}
 
         <div className="checkout-summary__row">
-          {frete === 0 ? (
+          {isFreeShipping ? (
             <>
               <span className="text-success">Frete Grátis</span>
               <span className="fw-medium text-success">{formatCurrency(0)}</span>
             </>
+          ) : frete > 0 ? (
+            <>
+              <span className="text-muted">
+                Frete{shippingOption ? ` — ${shippingOption}` : ''}
+              </span>
+              <span className="fw-medium">{formatCurrency(frete)}</span>
+            </>
           ) : (
             <>
               <span className="text-muted">Frete</span>
-              <span className="fw-medium">{formatCurrency(frete)}</span>
+              <span className="fw-medium" style={{ fontSize: '0.8rem', color: '#999' }}>
+                Selecione o envio
+              </span>
             </>
           )}
         </div>

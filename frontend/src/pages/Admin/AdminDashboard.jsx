@@ -25,34 +25,41 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [ordersResponse, productsResponse, usersResponse] = await Promise.all([
-        api.get('/orders?limit=5'),
-        api.get('/products?limit=1'),
-        api.get('/users?limit=1')
+      const [analyticsResponse, recentOrdersResponse, productsResponse] = await Promise.all([
+        api.get('/analytics/dashboard'),
+        api.get('/orders/admin/all?limit=5'),
+        api.get('/products?limit=1')
       ]);
 
-      const orders = ordersResponse.data.data || [];
-      const pendingOrders = orders.filter(order => order.status === 'Processando').length;
+      const analytics = analyticsResponse.data.data;
+      const overview = analytics.overview;
 
-      const totalRevenue = orders
-        .filter(order => order.isPaid)
-        .reduce((sum, order) => sum + order.total, 0);
+      // Contar pedidos pendentes a partir do ordersByStatus
+      const pendingStatuses = ['Pendente', 'Processando'];
+      const pendingCount = (analytics.ordersByStatus || [])
+        .filter(s => pendingStatuses.includes(s._id))
+        .reduce((sum, s) => sum + s.count, 0);
 
       setStats({
-        totalOrders: orders.length,
-        totalRevenue,
+        totalOrders: overview.totalOrders,
+        totalRevenue: overview.totalRevenue,
         totalProducts: productsResponse.data.total || 0,
-        totalUsers: usersResponse.data.total || 0,
-        pendingOrders
+        totalUsers: overview.totalUsers,
+        pendingOrders: pendingCount,
+        thisMonthRevenue: overview.thisMonthRevenue,
+        revenueGrowth: overview.revenueGrowth,
+        ticketMedio: overview.ticketMedio,
+        newUsersThisMonth: overview.newUsersThisMonth
       });
 
-      setRecentOrders(orders.slice(0, 5));
+      setRecentOrders(recentOrdersResponse.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -97,7 +104,12 @@ const AdminDashboard = () => {
       value: formatCurrency(stats.totalRevenue),
       icon: <DollarSign size={20} />,
       colorClass: 'admin-stat__icon--green',
-      badge: { text: 'Total', cls: 'admin-stat__badge--green' },
+      badge: stats.revenueGrowth != null
+        ? {
+            text: `${stats.revenueGrowth >= 0 ? '+' : ''}${stats.revenueGrowth}%`,
+            cls: stats.revenueGrowth >= 0 ? 'admin-stat__badge--green' : 'admin-stat__badge--red'
+          }
+        : { text: 'Total', cls: 'admin-stat__badge--green' },
     },
     {
       label: 'Produtos',
@@ -110,6 +122,9 @@ const AdminDashboard = () => {
       value: stats.totalUsers,
       icon: <Users size={20} />,
       colorClass: 'admin-stat__icon--amber',
+      badge: stats.newUsersThisMonth > 0
+        ? { text: `+${stats.newUsersThisMonth} este mês`, cls: 'admin-stat__badge--green' }
+        : null,
     },
     {
       label: 'Pedidos Pendentes',
@@ -121,13 +136,13 @@ const AdminDashboard = () => {
         : null,
     },
     {
-      label: 'Taxa de Conversão',
-      value: '2.5%',
+      label: 'Ticket Médio',
+      value: formatCurrency(stats.ticketMedio || 0),
       icon: <TrendingUp size={20} />,
       colorClass: 'admin-stat__icon--teal',
-      badge: { text: '+0.5%', cls: 'admin-stat__badge--green' },
     },
   ];
+
 
   const quickActions = [
     {

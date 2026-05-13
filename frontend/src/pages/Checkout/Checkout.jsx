@@ -4,6 +4,7 @@ import api from "../../services/api";
 import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { calculateShipping } from "../../services/shippingService";
 
 import CustomerInfo from "../CustomerInfo";
 import AddressForm from "../AddressForm";
@@ -25,7 +26,7 @@ const debounce = (func, wait) => {
 };
 
 function Checkout() {
-  const { cartItems, clearCart, total: cartTotal, frete } = useCart();
+  const { cartItems, clearCart, total: cartTotal, frete, isFreeShipping, setShippingData, resetShipping } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,8 +55,19 @@ function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("pix"); // "pix" or "credit_card"
 
+  // Shipping options state
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const [selectedShipping, setSelectedShipping] = useState(null);
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
+  const [shippingError, setShippingError] = useState("");
+
+  // Reset shipping quando CEP muda
+  useEffect(() => {
+    return () => resetShipping();
+  }, []);
+
   // Validar se o formulário está completo
-  const isFormValid = address.cep && address.numero;
+  const isFormValid = address.cep && address.numero && (isFreeShipping || selectedShipping !== null);
 
   // Determinar passo atual do stepper
   const currentStep = !user
@@ -93,6 +105,11 @@ function Checkout() {
       }
 
       setIsSearchingCep(true);
+      setShippingOptions([]);
+      setSelectedShipping(null);
+      setShippingError("");
+      resetShipping();
+
       try {
         const response = await axios.get(
           `https://viacep.com.br/ws/${cep}/json/`
@@ -115,6 +132,29 @@ function Checkout() {
           uf: data.uf,
           cep: data.cep,
         }));
+
+        // Calcular frete automaticamente se não for frete grátis
+        if (!isFreeShipping) {
+          setIsCalculatingShipping(true);
+          try {
+            const products = cartItems.map((item) => ({
+              id: item.id,
+              quantity: item.quantity,
+              weight: 0.3,
+            }));
+            const shippingResult = await calculateShipping(cep, products);
+            if (shippingResult.success && shippingResult.options?.length > 0) {
+              setShippingOptions(shippingResult.options);
+            } else {
+              setShippingError("Não foi possível calcular o frete para este CEP.");
+            }
+          } catch (shippingErr) {
+            console.error("Erro ao calcular frete:", shippingErr);
+            setShippingError("Erro ao calcular frete. Tente novamente.");
+          } finally {
+            setIsCalculatingShipping(false);
+          }
+        }
       } catch (error) {
         console.error("Erro ao buscar endereço:", error);
         showNotification("Erro ao buscar CEP. Tente novamente.", "error");
@@ -122,7 +162,7 @@ function Checkout() {
         setIsSearchingCep(false);
       }
     },
-    [showNotification, validateCEP]
+    [showNotification, validateCEP, isFreeShipping, cartItems, resetShipping]
   );
 
   // Debounced CEP search
@@ -174,7 +214,7 @@ function Checkout() {
       const response = await api.post("/payment/create-checkout", {
         cartItems,
         shippingAddress,
-        shippingPrice: frete,
+        shippingPrice: isFreeShipping ? 0 : (selectedShipping !== null ? shippingOptions[selectedShipping]?.price : 0),
         paymentMethod,
         couponCode: couponData?.code || null,
         couponDiscount: couponDiscount,
@@ -317,11 +357,137 @@ function Checkout() {
         <div className="col-12 col-lg-7">
           <CustomerInfo />
           <AddressForm
+            id="checkout-address-form"
             address={address}
             onInputChange={handleInputChange}
             onCepSearch={debouncedCepSearch}
             isSearchingCep={isSearchingCep}
           />
+
+          {/* Shipping Options Section */}
+          {!isFreeShipping && address.cep && (
+            <div className="checkout-card">
+              <h2 className="checkout-card__title">
+                <i className="fas fa-truck"></i>
+                Opções de Envio
+              </h2>
+
+              {isCalculatingShipping && (
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <span className="spinner-border spinner-border-sm" role="status" style={{ marginRight: 8 }}></span>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>Calculando frete...</span>
+                </div>
+              )}
+
+              {shippingError && (
+                <div style={{
+                  padding: '12px 16px',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: 10,
+                  fontSize: '0.82rem',
+                  color: '#991b1b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}>
+                  <i className="fas fa-exclamation-circle"></i>
+                  {shippingError}
+                </div>
+              )}
+
+              {!isCalculatingShipping && shippingOptions.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {shippingOptions.map((option, index) => (
+                    <label
+                      key={option.id}
+                      onClick={() => {
+                        setSelectedShipping(index);
+                        setShippingData(option.price, option.name);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        padding: '16px 18px',
+                        borderRadius: 12,
+                        border: selectedShipping === index ? '2px solid #1a1a1a' : '2px solid #e5e7eb',
+                        background: selectedShipping === index ? '#fafafa' : '#fff',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <div style={{
+                        width: 20, height: 20, borderRadius: '50%',
+                        border: selectedShipping === index ? '6px solid #1a1a1a' : '2px solid #ccc',
+                        flexShrink: 0,
+                        transition: 'all 0.2s ease',
+                      }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <i className="fas fa-box" style={{ color: '#888', fontSize: '0.9rem' }}></i>
+                          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1a1a1a' }}>
+                            {option.name}
+                          </span>
+                          <span style={{ fontSize: '0.72rem', color: '#888' }}>
+                            — {option.company}
+                          </span>
+                        </div>
+                        <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#666' }}>
+                          {option.deliveryRange
+                            ? `${option.deliveryRange.min} a ${option.deliveryRange.max} dias úteis`
+                            : `${option.deliveryDays} dias úteis`}
+                        </p>
+                      </div>
+                      <span style={{
+                        fontSize: '0.92rem',
+                        fontWeight: 700,
+                        color: '#1a1a1a',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(option.price)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {isFreeShipping && address.cep && (
+            <div className="checkout-card">
+              <h2 className="checkout-card__title">
+                <i className="fas fa-truck"></i>
+                Envio
+              </h2>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '14px 18px',
+                background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                borderRadius: 12,
+                border: '2px solid #bbf7d0',
+              }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: '#16a34a', color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.9rem', flexShrink: 0,
+                }}>
+                  <i className="fas fa-check"></i>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: '0.92rem', color: '#166534' }}>
+                    Frete Grátis!
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#16a34a' }}>
+                    Pedidos acima de R$ 299,00 têm frete grátis para todo o Brasil
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Payment Method Selection */}
           <div className="checkout-card">

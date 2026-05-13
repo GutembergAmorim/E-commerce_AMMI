@@ -15,7 +15,7 @@ export const getDashboardAnalytics = async (req, res) => {
     // ── Total Revenue (all time paid orders) ──
     const revenueAll = await Order.aggregate([
       { $match: { status: { $in: ["Pago", "Preparando", "Enviado", "Entregue"] } } },
-      { $group: { _id: null, total: { $sum: "$totalAmount" }, count: { $sum: 1 } } },
+      { $group: { _id: null, total: { $sum: "$total" }, count: { $sum: 1 } } },
     ]);
 
     // ── This Month Revenue ──
@@ -26,7 +26,7 @@ export const getDashboardAnalytics = async (req, res) => {
           createdAt: { $gte: startOfMonth },
         },
       },
-      { $group: { _id: null, total: { $sum: "$totalAmount" }, count: { $sum: 1 } } },
+      { $group: { _id: null, total: { $sum: "$total" }, count: { $sum: 1 } } },
     ]);
 
     // ── Last Month Revenue (for comparison) ──
@@ -37,7 +37,7 @@ export const getDashboardAnalytics = async (req, res) => {
           createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
         },
       },
-      { $group: { _id: null, total: { $sum: "$totalAmount" }, count: { $sum: 1 } } },
+      { $group: { _id: null, total: { $sum: "$total" }, count: { $sum: 1 } } },
     ]);
 
     // ── Daily revenue for the last 30 days ──
@@ -56,7 +56,7 @@ export const getDashboardAnalytics = async (req, res) => {
           _id: {
             $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
           },
-          revenue: { $sum: "$totalAmount" },
+          revenue: { $sum: "$total" },
           orders: { $sum: 1 },
         },
       },
