@@ -127,8 +127,8 @@ const createCheckout = async (req, res) => {
       if (cep && cep.length === 8) {
         const shippingResult = await calculateShipping(cep, cartItems);
 
-        // Frete grátis apenas para Norte/Nordeste com subtotal > 299
-        const isFreeShipping = shippingResult.freeShippingEligible && itemsPrice > 299;
+        // Frete grátis para todo o Brasil com subtotal > 299
+        const isFreeShipping = itemsPrice > 299;
 
         if (isFreeShipping) {
           finalShippingPrice = 0;

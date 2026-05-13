@@ -115,8 +115,8 @@ export const CartProvider = ({ children }) => {
   const [shippingOption, setShippingOption] = useState(null);
   const [freeShippingEligible, setFreeShippingEligible] = useState(false);
 
-  // Frete grátis acima de R$ 299 APENAS para Norte e Nordeste
-  const isFreeShipping = subtotal > 299 && freeShippingEligible;
+  // Frete grátis acima de R$ 299 para TODO O BRASIL
+  const isFreeShipping = subtotal > 299;
   const effectiveShipping = isFreeShipping ? 0 : (shippingPrice ?? 0);
 
   // Calcula o total (subtotal - desconto + frete)

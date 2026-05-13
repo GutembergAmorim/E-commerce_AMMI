@@ -133,18 +133,6 @@ function getFallbackOptions(cep) {
   };
 }
 
-// ── Verificar se CEP é Norte ou Nordeste (elegível a frete grátis) ──────
-function isNorteNordeste(cep) {
-  const uf = getUFFromCEP(cep);
-  const norteNordeste = [
-    // Nordeste
-    'AL', 'BA', 'CE', 'MA', 'PB', 'PE', 'PI', 'RN', 'SE',
-    // Norte
-    'AC', 'AM', 'AP', 'PA', 'RO', 'RR', 'TO',
-  ];
-  return norteNordeste.includes(uf);
-}
-
 // ── Calcular frete via Melhor Envio ────────────────────────────────────
 export async function calculateShipping(destinationCep, products) {
   const cep = (destinationCep || '').replace(/\D/g, '');
@@ -153,8 +141,8 @@ export async function calculateShipping(destinationCep, products) {
     return { success: false, message: 'CEP inválido. Deve conter 8 dígitos.' };
   }
 
-  // Flag de elegibilidade para frete grátis (Norte/Nordeste)
-  const freeShippingEligible = isNorteNordeste(cep);
+  // Flag de elegibilidade para frete grátis (Agora todo o Brasil é elegível)
+  const freeShippingEligible = true;
 
   // ── Frete fixo para Fortaleza (CEPs 60000-000 a 61699-999) ──
   const cepNum = parseInt(cep.substring(0, 5), 10);

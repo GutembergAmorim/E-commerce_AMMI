@@ -138,7 +138,7 @@ function Checkout() {
           cep: data.cep,
         }));
 
-        // Sempre calcular frete para determinar a região (Norte/Nordeste = frete grátis)
+        // Sempre calcular frete para pegar opções de entrega (ou aplicar frete grátis geral)
         setIsCalculatingShipping(true);
         try {
           const products = cartItems.map((item) => ({
@@ -148,13 +148,13 @@ function Checkout() {
           }));
           const shippingResult = await calculateShipping(cep, products);
 
-          // Definir elegibilidade para frete grátis com base na região
+          // Atualiza elegibilidade (mantido para compatibilidade, mas o backend sempre retorna true)
           if (shippingResult.freeShippingEligible !== undefined) {
             setFreeShippingEligible(shippingResult.freeShippingEligible);
           }
 
-          // Se é frete grátis (Norte/Nordeste + subtotal > 299), não precisa mostrar opções
-          const qualifiesFreeShipping = shippingResult.freeShippingEligible && subtotal > 299;
+          // Se é frete grátis (subtotal > 299 para todo o Brasil), não precisa mostrar opções pagas
+          const qualifiesFreeShipping = subtotal > 299;
 
           if (!qualifiesFreeShipping) {
             if (shippingResult.success && shippingResult.options?.length > 0) {
@@ -567,7 +567,7 @@ function Checkout() {
                     Frete Grátis!
                   </p>
                   <p style={{ margin: 0, fontSize: '0.78rem', color: '#16a34a' }}>
-                    Pedidos acima de R$ 299,00 têm frete grátis para as regiões Norte e Nordeste
+                    Pedidos acima de R$ 299,00 têm frete grátis para todo o Brasil
                   </p>
                 </div>
               </div>
