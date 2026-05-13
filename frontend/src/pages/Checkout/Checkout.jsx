@@ -26,7 +26,7 @@ const debounce = (func, wait) => {
 };
 
 function Checkout() {
-  const { cartItems, clearCart, total: cartTotal, frete, isFreeShipping, setShippingData, resetShipping } = useCart();
+  const { cartItems, clearCart, total: cartTotal, frete, subtotal, isFreeShipping, setShippingData, setFreeShippingEligible, resetShipping } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -133,27 +133,36 @@ function Checkout() {
           cep: data.cep,
         }));
 
-        // Calcular frete automaticamente se não for frete grátis
-        if (!isFreeShipping) {
-          setIsCalculatingShipping(true);
-          try {
-            const products = cartItems.map((item) => ({
-              id: item.id,
-              quantity: item.quantity,
-              weight: 0.3,
-            }));
-            const shippingResult = await calculateShipping(cep, products);
+        // Sempre calcular frete para determinar a região (Norte/Nordeste = frete grátis)
+        setIsCalculatingShipping(true);
+        try {
+          const products = cartItems.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+            weight: 0.3,
+          }));
+          const shippingResult = await calculateShipping(cep, products);
+
+          // Definir elegibilidade para frete grátis com base na região
+          if (shippingResult.freeShippingEligible !== undefined) {
+            setFreeShippingEligible(shippingResult.freeShippingEligible);
+          }
+
+          // Se é frete grátis (Norte/Nordeste + subtotal > 299), não precisa mostrar opções
+          const qualifiesFreeShipping = shippingResult.freeShippingEligible && subtotal > 299;
+
+          if (!qualifiesFreeShipping) {
             if (shippingResult.success && shippingResult.options?.length > 0) {
               setShippingOptions(shippingResult.options);
             } else {
               setShippingError("Não foi possível calcular o frete para este CEP.");
             }
-          } catch (shippingErr) {
-            console.error("Erro ao calcular frete:", shippingErr);
-            setShippingError("Erro ao calcular frete. Tente novamente.");
-          } finally {
-            setIsCalculatingShipping(false);
           }
+        } catch (shippingErr) {
+          console.error("Erro ao calcular frete:", shippingErr);
+          setShippingError("Erro ao calcular frete. Tente novamente.");
+        } finally {
+          setIsCalculatingShipping(false);
         }
       } catch (error) {
         console.error("Erro ao buscar endereço:", error);
@@ -162,7 +171,7 @@ function Checkout() {
         setIsSearchingCep(false);
       }
     },
-    [showNotification, validateCEP, isFreeShipping, cartItems, resetShipping]
+    [showNotification, validateCEP, cartItems, subtotal, resetShipping, setFreeShippingEligible]
   );
 
   // Debounced CEP search
@@ -482,7 +491,7 @@ function Checkout() {
                     Frete Grátis!
                   </p>
                   <p style={{ margin: 0, fontSize: '0.78rem', color: '#16a34a' }}>
-                    Pedidos acima de R$ 299,00 têm frete grátis para todo o Brasil
+                    Pedidos acima de R$ 299,00 têm frete grátis para as regiões Norte e Nordeste
                   </p>
                 </div>
               </div>

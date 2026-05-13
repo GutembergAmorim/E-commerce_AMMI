@@ -108,7 +108,7 @@ function Header() {
           <div className="container d-flex align-items-center justify-content-center gap-2">
             <i className="fa-solid fa-truck top-bar-icon"></i>
             <span className="fw-bold top-bar-text">
-              FRETE GRÁTIS PARA TODO O BRASIL EM PEDIDOS ACIMA DE R$ 299,00
+              FRETE GRÁTIS PARA NORTE E NORDESTE EM PEDIDOS ACIMA DE R$ 299,00
             </span>
           </div>
         </div>

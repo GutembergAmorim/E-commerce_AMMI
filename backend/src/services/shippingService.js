@@ -54,33 +54,54 @@ const FALLBACK_TABLE = {
   PA: 42, AM: 48, AC: 50, AP: 45, RO: 45, RR: 48, TO: 38,
 };
 
-// Mapear faixa de CEP → UF (para fallback)
+// Mapear faixa de CEP → UF (para fallback e detecção de região)
 function getUFFromCEP(cep) {
-  const prefix = parseInt(cep.substring(0, 3), 10);
-  if (prefix >= 10 && prefix <= 19) return 'SP';
+  const prefix = parseInt(cep.substring(0, 2), 10);
+  // São Paulo
+  if (prefix >= 1 && prefix <= 19) return 'SP';
+  // Rio de Janeiro
   if (prefix >= 20 && prefix <= 28) return 'RJ';
-  if (prefix >= 29 && prefix <= 29) return 'ES';
+  // Espírito Santo
+  if (prefix === 29) return 'ES';
+  // Minas Gerais
   if (prefix >= 30 && prefix <= 39) return 'MG';
+  // Bahia
   if (prefix >= 40 && prefix <= 48) return 'BA';
-  if (prefix >= 49 && prefix <= 49) return 'SE';
+  // Sergipe
+  if (prefix === 49) return 'SE';
+  // Pernambuco
   if (prefix >= 50 && prefix <= 56) return 'PE';
-  if (prefix >= 57 && prefix <= 57) return 'AL';
-  if (prefix >= 58 && prefix <= 58) return 'PB';
-  if (prefix >= 59 && prefix <= 59) return 'RN';
+  // Alagoas
+  if (prefix === 57) return 'AL';
+  // Paraíba
+  if (prefix === 58) return 'PB';
+  // Rio Grande do Norte
+  if (prefix === 59) return 'RN';
+  // Ceará
   if (prefix >= 60 && prefix <= 63) return 'CE';
-  if (prefix >= 64 && prefix <= 64) return 'PI';
-  if (prefix >= 65 && prefix <= 65) return 'MA';
+  // Piauí
+  if (prefix === 64) return 'PI';
+  // Maranhão
+  if (prefix === 65) return 'MA';
+  // Pará
   if (prefix >= 66 && prefix <= 68) return 'PA';
-  if (prefix >= 69 && prefix <= 69) return 'AM';
+  // Amazonas, Roraima, Acre
+  if (prefix === 69) return 'AM'; // inclui RR e AC em sub-faixas
+  // Distrito Federal e Goiás
   if (prefix >= 70 && prefix <= 72) return 'DF';
   if (prefix >= 73 && prefix <= 76) return 'GO';
-  if (prefix >= 77 && prefix <= 77) return 'TO';
-  if (prefix >= 78 && prefix <= 78) return 'MT';
-  if (prefix >= 79 && prefix <= 79) return 'MS';
+  // Tocantins
+  if (prefix === 77) return 'TO';
+  // Mato Grosso
+  if (prefix === 78) return 'MT';
+  // Mato Grosso do Sul
+  if (prefix === 79) return 'MS';
+  // Paraná
   if (prefix >= 80 && prefix <= 87) return 'PR';
+  // Santa Catarina
   if (prefix >= 88 && prefix <= 89) return 'SC';
+  // Rio Grande do Sul
   if (prefix >= 90 && prefix <= 99) return 'RS';
-  if (prefix >= 1 && prefix <= 9) return 'SP';
   return 'SP'; // default
 }
 
@@ -112,6 +133,18 @@ function getFallbackOptions(cep) {
   };
 }
 
+// ── Verificar se CEP é Norte ou Nordeste (elegível a frete grátis) ──────
+function isNorteNordeste(cep) {
+  const uf = getUFFromCEP(cep);
+  const norteNordeste = [
+    // Nordeste
+    'AL', 'BA', 'CE', 'MA', 'PB', 'PE', 'PI', 'RN', 'SE',
+    // Norte
+    'AC', 'AM', 'AP', 'PA', 'RO', 'RR', 'TO',
+  ];
+  return norteNordeste.includes(uf);
+}
+
 // ── Calcular frete via Melhor Envio ────────────────────────────────────
 export async function calculateShipping(destinationCep, products) {
   const cep = (destinationCep || '').replace(/\D/g, '');
@@ -119,6 +152,9 @@ export async function calculateShipping(destinationCep, products) {
   if (!cep || cep.length !== 8) {
     return { success: false, message: 'CEP inválido. Deve conter 8 dígitos.' };
   }
+
+  // Flag de elegibilidade para frete grátis (Norte/Nordeste)
+  const freeShippingEligible = isNorteNordeste(cep);
 
   // ── Frete fixo para Fortaleza (CEPs 60000-000 a 61699-999) ──
   const cepNum = parseInt(cep.substring(0, 5), 10);
@@ -129,6 +165,7 @@ export async function calculateShipping(destinationCep, products) {
     const fortalezaResult = {
       success: true,
       source: 'fixed_fortaleza',
+      freeShippingEligible,
       options: [
         {
           id: 'fortaleza',
@@ -201,7 +238,7 @@ export async function calculateShipping(destinationCep, products) {
 
     if (!Array.isArray(services) || services.length === 0) {
       console.log('⚠️ Melhor Envio retornou vazio, usando fallback');
-      const fallback = getFallbackOptions(cep);
+      const fallback = { ...getFallbackOptions(cep), freeShippingEligible };
       setCache(cacheKey, fallback);
       return fallback;
     }
@@ -213,7 +250,7 @@ export async function calculateShipping(destinationCep, products) {
 
     if (validServices.length === 0) {
       console.log('⚠️ Nenhum serviço válido, usando fallback');
-      const fallback = getFallbackOptions(cep);
+      const fallback = { ...getFallbackOptions(cep), freeShippingEligible };
       setCache(cacheKey, fallback);
       return fallback;
     }
@@ -235,7 +272,7 @@ export async function calculateShipping(destinationCep, products) {
     // Ordenar por preço (mais barato primeiro)
     options.sort((a, b) => a.price - b.price);
 
-    const result = { success: true, source: 'melhor_envio', options };
+    const result = { success: true, source: 'melhor_envio', freeShippingEligible, options };
 
     // 6. Salvar no cache
     setCache(cacheKey, result);
@@ -245,7 +282,7 @@ export async function calculateShipping(destinationCep, products) {
     console.error('❌ Erro Melhor Envio:', error.response?.data || error.message);
 
     // 7. Fallback por região
-    const fallback = getFallbackOptions(cep);
+    const fallback = { ...getFallbackOptions(cep), freeShippingEligible };
     setCache(cacheKey, fallback);
     return fallback;
   }

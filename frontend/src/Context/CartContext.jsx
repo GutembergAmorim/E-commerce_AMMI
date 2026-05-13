@@ -113,9 +113,10 @@ export const CartProvider = ({ children }) => {
   // Frete dinâmico (calculado no checkout via Melhor Envio)
   const [shippingPrice, setShippingPrice] = useState(null);
   const [shippingOption, setShippingOption] = useState(null);
+  const [freeShippingEligible, setFreeShippingEligible] = useState(false);
 
-  // Frete grátis acima de R$ 299 para todo o Brasil
-  const isFreeShipping = subtotal > 299;
+  // Frete grátis acima de R$ 299 APENAS para Norte e Nordeste
+  const isFreeShipping = subtotal > 299 && freeShippingEligible;
   const effectiveShipping = isFreeShipping ? 0 : (shippingPrice ?? 0);
 
   // Calcula o total (subtotal - desconto + frete)
@@ -132,6 +133,7 @@ export const CartProvider = ({ children }) => {
   const resetShipping = () => {
     setShippingPrice(null);
     setShippingOption(null);
+    setFreeShippingEligible(false);
   };
 
   return (
@@ -150,6 +152,7 @@ export const CartProvider = ({ children }) => {
         shippingPrice,
         shippingOption,
         setShippingData,
+        setFreeShippingEligible,
         resetShipping,
         animateCart, // Expõe o estado da animação
       }}
