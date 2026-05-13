@@ -45,6 +45,11 @@ function Checkout() {
     cep: "",
   });
 
+  const [personalInfo, setPersonalInfo] = useState({
+    cpf: user?.cpf || "",
+    phone: user?.phone || "",
+  });
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSearchingCep, setIsSearchingCep] = useState(false);
   const [notification, setNotification] = useState({
@@ -202,6 +207,18 @@ function Checkout() {
       return;
     }
 
+    if (!personalInfo.cpf || personalInfo.cpf.replace(/\D/g, "").length !== 11) {
+      showNotification("Por favor, preencha um CPF válido (11 dígitos).", "error");
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!personalInfo.phone || personalInfo.phone.replace(/\D/g, "").length < 10) {
+      showNotification("Por favor, preencha um telefone válido com DDD.", "error");
+      setIsProcessing(false);
+      return;
+    }
+
     const invalidItems = cartItems.filter((item) => !item.quantity || item.quantity < 1);
     if (invalidItems.length > 0) {
       showNotification("Alguns produtos têm quantidade inválida.", "error");
@@ -227,6 +244,8 @@ function Checkout() {
         paymentMethod,
         couponCode: couponData?.code || null,
         couponDiscount: couponDiscount,
+        cpf: personalInfo.cpf,
+        phone: personalInfo.phone,
       });
 
       if (!response.data.success) {
@@ -365,6 +384,63 @@ function Checkout() {
         {/* Left Column: Forms */}
         <div className="col-12 col-lg-7">
           <CustomerInfo />
+
+          {/* Collect missing personal info if necessary */}
+          {(!user?.cpf || !user?.phone) && (
+            <div className="checkout-card mb-4" style={{ marginTop: '-15px' }}>
+              <h2 className="checkout-card__title">
+                <i className="fas fa-exclamation-circle text-warning"></i>
+                Complete seu Cadastro
+              </h2>
+              <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '15px' }}>
+                Precisamos de algumas informações adicionais para emissão da etiqueta de envio e nota fiscal.
+              </p>
+              
+              <div className="row g-3">
+                {!user?.cpf && (
+                  <div className="col-md-6">
+                    <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>CPF</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={personalInfo.cpf}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/\D/g, '');
+                        if (val.length > 11) val = val.slice(0, 11);
+                        if (val.length > 9) val = val.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+                        else if (val.length > 6) val = val.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+                        else if (val.length > 3) val = val.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+                        setPersonalInfo(prev => ({ ...prev, cpf: val }));
+                      }}
+                      placeholder="000.000.000-00"
+                      required
+                    />
+                  </div>
+                )}
+                
+                {!user?.phone && (
+                  <div className="col-md-6">
+                    <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Telefone / WhatsApp</label>
+                    <input
+                      type="tel"
+                      className="form-control"
+                      value={personalInfo.phone}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/\D/g, '');
+                        if (val.length > 11) val = val.slice(0, 11);
+                        if (val.length > 2) val = `(${val.slice(0, 2)}) ${val.slice(2)}`;
+                        if (val.length > 9) val = `${val.slice(0, 9)}-${val.slice(9)}`;
+                        setPersonalInfo(prev => ({ ...prev, phone: val }));
+                      }}
+                      placeholder="(00) 00000-0000"
+                      required
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <AddressForm
             id="checkout-address-form"
             address={address}

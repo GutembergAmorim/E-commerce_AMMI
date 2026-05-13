@@ -69,7 +69,7 @@ const mapCaptureMethod = (method) => {
 // ── Create Checkout (redirect to InfinitePay) ─────────────────────────
 const createCheckout = async (req, res) => {
   try {
-    const { cartItems, shippingAddress, shippingPrice, paymentMethod, couponCode, couponDiscount: clientCouponDiscount } = req.body;
+    const { cartItems, shippingAddress, shippingPrice, paymentMethod, couponCode, couponDiscount: clientCouponDiscount, cpf, phone } = req.body;
 
     if (!cartItems || !cartItems.length) {
       return res.status(400).json({ success: false, message: "Carrinho vazio" });
@@ -78,6 +78,43 @@ const createCheckout = async (req, res) => {
     const user = validateUser(req.user);
     await validateStock(cartItems);
     const clientUrl = validateClientURL();
+
+    // Update User profile with CPF and Phone if provided (useful for Google Login or old accounts)
+    if (cpf || phone) {
+      const User = (await import("../models/User.js")).default;
+      const dbUser = await User.findById(user.id);
+      if (dbUser) {
+        let updated = false;
+        if (cpf && dbUser.cpf !== cpf) {
+          dbUser.cpf = cpf;
+          updated = true;
+        }
+        if (phone && dbUser.phone !== phone) {
+          dbUser.phone = phone;
+          updated = true;
+        }
+        // Save the address as well if it's new
+        if (shippingAddress && shippingAddress.cep) {
+          const addressExists = dbUser.addresses.find(a => a.zipCode === shippingAddress.cep && a.number === shippingAddress.numero);
+          if (!addressExists) {
+            dbUser.addresses.push({
+              street: shippingAddress.logradouro,
+              number: shippingAddress.numero,
+              complement: shippingAddress.complemento || "",
+              neighborhood: shippingAddress.bairro,
+              city: shippingAddress.localidade,
+              state: shippingAddress.uf,
+              zipCode: shippingAddress.cep,
+              isPrimary: dbUser.addresses.length === 0
+            });
+            updated = true;
+          }
+        }
+        if (updated) {
+          await dbUser.save();
+        }
+      }
+    }
 
     // Calculate prices
     const itemsPrice = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
