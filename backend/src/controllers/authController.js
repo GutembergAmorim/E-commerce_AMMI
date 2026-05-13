@@ -20,7 +20,14 @@ const generateToken = (id) => {
 // @access  Public
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "O número de telefone é obrigatório",
+      });
+    }
 
     if (!password || password.length < 6) {
       return res.status(400).json({
@@ -43,6 +50,7 @@ const register = async (req, res) => {
       name,
       email,
       password,
+      phone,
       authProvider: "local",
     });
 

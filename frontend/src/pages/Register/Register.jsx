@@ -8,6 +8,7 @@ import "./Register.css";
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -22,7 +23,13 @@ const Register = () => {
     setSuccess("");
     setLoading(true);
 
-    const result = await register({ name, email, password });
+    if (phone.replace(/\D/g, '').length < 10) {
+      setError("Por favor, insira um número de telefone válido com DDD");
+      setLoading(false);
+      return;
+    }
+
+    const result = await register({ name, email, phone, password });
 
     if (result.success) {
       setSuccess("Cadastro realizado! Redirecionando...");
@@ -31,6 +38,19 @@ const Register = () => {
       setError(result.message);
     }
     setLoading(false);
+  };
+
+  const handlePhoneChange = (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 11) value = value.slice(0, 11);
+
+    if (value.length > 2) {
+      value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+    }
+    if (value.length > 9) {
+      value = `${value.slice(0, 9)}-${value.slice(9)}`;
+    }
+    setPhone(value);
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -114,6 +134,24 @@ const Register = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="seu@email.com"
+                />
+              </div>
+            </div>
+
+            <div className="register-field">
+              <label htmlFor="phoneInput" className="register-label">
+                Telefone / WhatsApp
+              </label>
+              <div className="register-input-wrapper">
+                <i className="fas fa-phone register-input-icon"></i>
+                <input
+                  type="tel"
+                  className="register-input"
+                  id="phoneInput"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  required
+                  placeholder="(00) 00000-0000"
                 />
               </div>
             </div>
