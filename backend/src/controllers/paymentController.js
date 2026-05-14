@@ -6,7 +6,7 @@ import Product from "../models/Product.js";
 dotenv.config();
 
 // ── InfinitePay configuration ───────────────────────────────────────────
-const INFINITEPAY_API = process.env.INFINITEPAY_API_URL || "https://api.infinitepay.io";
+const INFINITEPAY_API = process.env.INFINITEPAY_API_URL || "https://api.checkout.infinitepay.io";
 const INFINITEPAY_HANDLE = process.env.INFINITEPAY_HANDLE;
 
 if (!INFINITEPAY_HANDLE) {
@@ -281,7 +281,7 @@ const createCheckout = async (req, res) => {
 
     // Call InfinitePay API
     const response = await axios.post(
-      `${INFINITEPAY_API}/invoices/public/checkout/links`,
+      `${INFINITEPAY_API}/links`,
       body,
       {
         headers: { "Content-Type": "application/json" },
@@ -412,7 +412,7 @@ const verifyPayment = async (req, res) => {
     // Verify with InfinitePay
     try {
       const response = await axios.post(
-        `${INFINITEPAY_API}/invoices/public/checkout/payment_check`,
+        `${INFINITEPAY_API}/payment_check`,
         {
           handle: INFINITEPAY_HANDLE,
           order_nsu: orderId,
