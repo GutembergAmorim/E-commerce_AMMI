@@ -91,7 +91,7 @@ function Footer() {
                   </div>
                 ))}
               </div>
-              <span className="small fw-light mb-2">Tudo em até 3x sem juros ou 10% de desconto no pix*</span> 
+              <span className="small fw-light mb-2">Tudo em até 4x sem juros ou 10% com o cupom PRIMEIRACOMPRA</span> 
               <h4 className="h6 fw-medium mb-2">Segurança</h4>
               <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}> {/* flex space-x-2 -> d-flex gap-1 ou style */}
                 <img 
