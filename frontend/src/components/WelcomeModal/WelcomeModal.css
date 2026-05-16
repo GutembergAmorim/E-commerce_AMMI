@@ -1,0 +1,122 @@
+.welcome-modal-content {
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.welcome-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #000;
+  z-index: 10;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.welcome-modal-close:hover {
+  opacity: 1;
+}
+
+.welcome-modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-height: 450px;
+}
+
+.welcome-modal-body {
+  padding: 3rem 4rem;
+}
+
+.welcome-modal-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.text-highlight {
+  color: #000;
+  font-size: 3rem;
+  line-height: 1.1;
+}
+
+.welcome-modal-subtitle {
+  color: #6c757d;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.welcome-modal-input {
+  width: 100%;
+  padding: 14px 15px;
+  border: 1px solid #ced4da;
+  outline: none;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  text-align: center;
+  border-radius: 0;
+}
+
+.welcome-modal-input:focus {
+  border-color: #000;
+}
+
+.welcome-modal-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  transition: background-color 0.2s;
+  border-radius: 0;
+}
+
+.welcome-modal-btn:hover {
+  background-color: #333;
+}
+
+.welcome-modal-link {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  margin-top: 15px;
+}
+
+.welcome-modal-link:hover {
+  color: #000;
+}
+
+.welcome-modal-coupon-box {
+  background-color: #f8f9fa;
+  border: 2px dashed #000;
+  padding: 15px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #000;
+  display: inline-block;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .welcome-modal-body {
+    padding: 2.5rem 1.5rem;
+  }
+  .text-highlight {
+    font-size: 2.5rem;
+  }
+  .welcome-modal-title {
+    font-size: 1.8rem;
+  }
+}

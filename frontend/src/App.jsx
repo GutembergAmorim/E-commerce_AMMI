@@ -5,6 +5,7 @@ import Footer from "./components/Footer/Footer";
 import React from "react";
 import { Outlet, useLocation, ScrollRestoration } from "react-router-dom";
 import Breadcrumbs from "./components/Breadcrumbs/Breadcrumbs";
+import WelcomeModal from "./components/WelcomeModal/WelcomeModal";
 
 function App() {
   const location = useLocation();
@@ -19,6 +20,7 @@ function App() {
         <Outlet />
       </main>
       <Footer />
+      <WelcomeModal />
     </div>
   );
 }

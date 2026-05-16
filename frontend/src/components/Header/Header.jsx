@@ -68,6 +68,19 @@ function Header() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [msgIndex, setMsgIndex] = useState(0);
+  const topBarMessages = [
+    { text: "FRETE GRÁTIS PARA TODO O BRASIL EM PEDIDOS ACIMA DE R$ 299,00", icon: "fa-truck" },
+    { text: "10% OFF NA PRIMEIRA COMPRA COM O CUPOM: PRIMEIRACOMPRA", icon: "fa-ticket text-warning" }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((prev) => (prev + 1) % topBarMessages.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Detectar scroll para mudar o estilo do header
   useEffect(() => {
     const handleScroll = () => {
@@ -103,12 +116,12 @@ function Header() {
   return (
     <>
       <header className={`site-header transition-all ${headerClass}`}>
-        {/* Barra de Frete - Topo */}
-        <div className="bg-dark text-white py-1 font-brand">
+        {/* Barra de Anúncios - Topo */}
+        <div className="bg-dark text-white py-1 font-brand" style={{ minHeight: "32px" }}>
           <div className="container d-flex align-items-center justify-content-center gap-2">
-            <i className="fa-solid fa-truck top-bar-icon"></i>
-            <span className="fw-bold top-bar-text">
-              FRETE GRÁTIS PARA TODO O BRASIL EM PEDIDOS ACIMA DE R$ 299,00
+            <i className={`fa-solid ${topBarMessages[msgIndex].icon} top-bar-icon`}></i>
+            <span className="fw-bold top-bar-text text-center">
+              {topBarMessages[msgIndex].text}
             </span>
           </div>
         </div>

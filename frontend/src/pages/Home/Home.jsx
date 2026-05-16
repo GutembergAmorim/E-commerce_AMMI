@@ -15,19 +15,25 @@ import brunaImg from "../../assets/BrunaAlmeida.png";
 import claudiaImg from "../../assets/Claudia.png";
 import ivinaImg from "../../assets/IvinaGasp.png";
 import nayaraImg from "../../assets/Nayara.png";
+import LeticiaImg from "../../assets/Leticia.png";
+import IvinaGasp2Img from "../../assets/IvinaGasp2.png";
+import LeticiaImg2 from "../../assets/Leticia2.png";
 
 // Importação das imagens de categorias
 import categoryLeggingImg from "../../assets/category_legging.png";
-import categoryShortImg from "../../assets/category_short.png";
-import categoryTopImg from "../../assets/category_top.png";
-import categoryMacaquinhoImg from "../../assets/category_macaquinho.png";
+import categoryShortImg from "../../assets/category_short.jpeg";
+import categoryTopImg from "../../assets/category_top.jpeg";
+import categoryMacaquinhoImg from "../../assets/category_macaquinho.jpeg";
 
 const REVIEWS = [
-  { id: 1, name: "Naylane", handle: "@naylanea", text: "Esse look 🤌.", image: naylaneImg },
-  { id: 2, name: "Bruna Almeida", handle: "@bruna_almeida", text: "@ammi.fitwear", image: brunaImg },
-  { id: 3, name: "Claudia", handle: "@claudiaflaviio", text: "@ammi.fitwear", image: claudiaImg },
-  { id: 4, name: "Ivina", handle: "@ivinagasp", text: "Pré treino hoje sendo meu look novo @ammi.fitwear 💚", image: ivinaImg },
-  { id: 5, name: "Nayara", handle: "@nayaramakedesign", text: "Melhor pré treino para toda mulher é um lookinho novo! 😍", image: nayaraImg },
+  { id: 1, name: "Ivina", handle: "@ivinagasp", text: "O segredo de um bom treino: look novo.😌 @ammi.fitwear 💚", image: IvinaGasp2Img },
+  { id: 2, name: "Leticia", handle: "@leticiacamurca15", text: "a quarta usamos rosa @ammi.fitwear", image: LeticiaImg },
+  { id: 3, name: "Naylane", handle: "@naylanea", text: "Esse look 🤌.", image: naylaneImg },
+  { id: 4, name: "Bruna Almeida", handle: "@bruna_almeida", text: "@ammi.fitwear", image: brunaImg },
+  { id: 5, name: "Claudia", handle: "@claudiaflaviio", text: "@ammi.fitwear", image: claudiaImg },
+  { id: 6, name: "Ivina", handle: "@ivinagasp", text: "Pré treino hoje sendo meu look novo @ammi.fitwear 💚", image: ivinaImg },
+  { id: 7, name: "Leticia", handle: "@leticiacamurca15", text: "treino de sábado 🎀 @ammi.fitwear", image: LeticiaImg2 },
+  { id: 8, name: "Nayara", handle: "@nayaramakedesign", text: "Melhor pré treino para toda mulher é um lookinho novo! 😍", image: nayaraImg },
 ];
 
 // Categorias fixas com imagens dedicadas
