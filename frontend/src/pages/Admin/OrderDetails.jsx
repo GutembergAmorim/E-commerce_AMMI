@@ -196,13 +196,23 @@ const OrderDetails = () => {
                       <tr>
                         <td><strong>Status:</strong></td>
                         <td>{getStatusBadge(order.status)}</td>
-                      </tr>
+                      </tr>                      
                       <tr>
                         <td><strong>Método de Pagamento:</strong></td>
                         <td className="text-capitalize">
                           {order.paymentMethod === 'CREDIT_CARD' ? 'Cartão de Crédito' : order.paymentMethod}
                         </td>
                       </tr>
+                      <tr>
+                        <td><strong>Cupom:</strong></td>
+                        <td>{order.couponCode || 'Nenhum cupom'}</td>
+                      </tr>
+                      {order.installments > 0 && order.paymentMethod === 'CREDIT_CARD' && (
+                        <tr>
+                          <td><strong>Parcelas:</strong></td>
+                          <td>{order.installments}x</td>
+                        </tr>
+                      )}
                       {order.pgChargeId && (
                         <tr>
                           <td><strong>ID PagSeguro:</strong></td>

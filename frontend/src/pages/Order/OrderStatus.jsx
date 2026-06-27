@@ -284,6 +284,18 @@ const OrderStatus = () => {
                       <span className="text-muted">Frete</span>
                       <span>{formatPrice(order.shippingPrice)}</span>
                     </li>
+                    {order.couponDiscount > 0 && (
+                      <li className="d-flex justify-content-between mb-2">
+                        <span className="text-muted">Cupom ({order.couponCode})</span>
+                        <span className="text-success fw-semibold">- {formatPrice(order.couponDiscount)}</span>
+                      </li>
+                    )}
+                    {order.pixDiscount > 0 && (
+                      <li className="d-flex justify-content-between mb-2">
+                        <span className="text-muted">Desconto PIX (10%)</span>
+                        <span className="text-success fw-semibold">- {formatPrice(order.pixDiscount)}</span>
+                      </li>
+                    )}
                     <li className="d-flex justify-content-between border-top pt-2 mt-2">
                       <strong>Total</strong>
                       <strong>{formatPrice(order.total)}</strong>
@@ -293,6 +305,11 @@ const OrderStatus = () => {
                     <span className="badge bg-light text-dark border" style={{ fontSize: '0.78rem' }}>
                       {{'CREDIT_CARD': 'Cartão de Crédito', 'DEBIT_CARD': 'Cartão de Débito', 'PIX': 'PIX', 'INFINITEPAY': 'InfinitePay', 'Cartão de Crédito': 'Cartão de Crédito', 'Cartão de Débito': 'Cartão de Débito'}[order.paymentMethod] || order.paymentMethod}
                     </span>
+                    {(order.paymentMethod === 'CREDIT_CARD' || order.paymentMethod === 'Cartão de Crédito') && order.installments > 1 && (
+                      <div className="mt-2" style={{ fontSize: '0.78rem', color: '#555' }}>
+                        {order.installments}x de {formatPrice(order.total / order.installments)}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
