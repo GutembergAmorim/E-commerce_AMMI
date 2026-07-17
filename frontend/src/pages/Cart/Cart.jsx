@@ -32,10 +32,13 @@ const Cart = () => {
     });
   };
 
-  // subtotal uses item.price which is already the promotional/discounted price
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  // subtotalOriginal uses originalPrice (full price) when available — for display in summary
+  const subtotalOriginal = cartItems.reduce((acc, item) => {
+    const price = item.originalPrice || item.price;
+    return acc + price * item.quantity;
+  }, 0);
 
-  // productDiscount is for DISPLAY ONLY — shows how much the customer saved from promotions
+  // productDiscount shows how much the customer saves from promotions
   const productDiscount = cartItems.reduce((acc, item) => {
     if (item.originalPrice) {
       return acc + (item.originalPrice - item.price) * item.quantity;
@@ -46,8 +49,8 @@ const Cart = () => {
   // Calculate coupon discount
   const couponDiscount = couponData ? couponData.discount : 0;
 
-  // DO NOT subtract productDiscount here — subtotal already reflects the promotional prices
-  const total = subtotal - couponDiscount + frete;
+  // Total = original prices - promotion discounts - coupon + shipping
+  const total = subtotalOriginal - productDiscount - couponDiscount + frete;
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -59,7 +62,7 @@ const Cart = () => {
     try {
       const res = await api.post("/coupons/validate", {
         code: couponCode.trim(),
-        orderTotal: subtotal - productDiscount,
+        orderTotal: subtotalOriginal - productDiscount,
         userId: user?._id || user?.id || null,
       });
 
@@ -184,7 +187,7 @@ const Cart = () => {
               <span className="text-muted">
                 Subtotal ({cartItems.length} {cartItems.length === 1 ? "item" : "itens"})
               </span>
-              <span className="fw-medium">{formatCurrency(subtotal)}</span>
+              <span className="fw-medium">{formatCurrency(subtotalOriginal)}</span>
             </div>
 
             {productDiscount > 0 && (
