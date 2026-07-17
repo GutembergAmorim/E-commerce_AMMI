@@ -119,8 +119,10 @@ export const CartProvider = ({ children }) => {
   const isFreeShipping = subtotal > 299;
   const effectiveShipping = isFreeShipping ? 0 : (shippingPrice ?? 0);
 
-  // Calcula o total (subtotal - desconto + frete)
-  const total = subtotal - discount + effectiveShipping;
+  // Calcula o total (subtotal + frete)
+  // NÃO subtrai 'discount' aqui — o subtotal já usa item.price (preço promocional)
+  // O 'discount' é apenas para exibição (quanto o cliente economizou)
+  const total = subtotal + effectiveShipping;
 
   // Alias para compatibilidade (componentes que usam `frete`)
   const frete = effectiveShipping;

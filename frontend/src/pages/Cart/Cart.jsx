@@ -32,7 +32,10 @@ const Cart = () => {
     });
   };
 
+  // subtotal uses item.price which is already the promotional/discounted price
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  // productDiscount is for DISPLAY ONLY — shows how much the customer saved from promotions
   const productDiscount = cartItems.reduce((acc, item) => {
     if (item.originalPrice) {
       return acc + (item.originalPrice - item.price) * item.quantity;
@@ -42,7 +45,9 @@ const Cart = () => {
 
   // Calculate coupon discount
   const couponDiscount = couponData ? couponData.discount : 0;
-  const total = subtotal - productDiscount - couponDiscount + frete;
+
+  // DO NOT subtract productDiscount here — subtotal already reflects the promotional prices
+  const total = subtotal - couponDiscount + frete;
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
