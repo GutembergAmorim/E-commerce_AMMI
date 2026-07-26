@@ -152,13 +152,13 @@ function Checkout() {
           }));
           const shippingResult = await calculateShipping(cep, products);
 
-          // Atualiza elegibilidade (mantido para compatibilidade, mas o backend sempre retorna true)
+          // Atualiza elegibilidade (retornada pelo backend apenas para Fortaleza, Maracanaú e Caucaia)
           if (shippingResult.freeShippingEligible !== undefined) {
             setFreeShippingEligible(shippingResult.freeShippingEligible);
           }
 
-          // Se é frete grátis (subtotal > 299 para todo o Brasil), não precisa mostrar opções pagas
-          const qualifiesFreeShipping = subtotal > 299;
+          // Se é frete grátis (subtotal > 299 E região de Fortaleza, Maracanaú ou Caucaia), não precisa mostrar opções pagas
+          const qualifiesFreeShipping = subtotal > 299 && shippingResult.freeShippingEligible;
 
           if (!qualifiesFreeShipping) {
             if (shippingResult.success && shippingResult.options?.length > 0) {
@@ -580,7 +580,7 @@ function Checkout() {
                     Frete Grátis!
                   </p>
                   <p style={{ margin: 0, fontSize: '0.78rem', color: '#16a34a' }}>
-                    Pedidos acima de R$ 299,00 têm frete grátis para todo o Brasil
+                    Pedidos acima de R$ 299,00 têm frete grátis para Fortaleza, Maracanaú e Caucaia
                   </p>
                 </div>
               </div>

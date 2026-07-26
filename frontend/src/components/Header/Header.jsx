@@ -70,7 +70,7 @@ function Header() {
 
   const [msgIndex, setMsgIndex] = useState(0);
   const topBarMessages = [
-    { text: "FRETE GRÁTIS PARA TODO O BRASIL EM PEDIDOS ACIMA DE R$ 299,00", icon: "fa-truck" },
+    { text: "FRETE GRÁTIS PARA FORTALEZA, MARACANAÚ E CAUCAIA EM PEDIDOS ACIMA DE R$ 299,00", icon: "fa-truck" },
     { text: "10% OFF NA PRIMEIRA COMPRA COM O CUPOM: PRIMEIRACOMPRA", icon: "fa-ticket text-warning" }
   ];
 

@@ -133,6 +133,15 @@ function getFallbackOptions(cep) {
   };
 }
 
+// ── Verificar se CEP pertence à Região Local (Fortaleza, Maracanaú, Caucaia) ──
+export function isLocalShippingRegion(destinationCep) {
+  const cep = (destinationCep || '').replace(/\D/g, '');
+  if (!cep || cep.length < 5) return false;
+  const cepNum = parseInt(cep.substring(0, 5), 10);
+  // Fortaleza (60000 a 61599), Caucaia (61600 a 61699), Maracanaú (61700 a 61799)
+  return cepNum >= 60000 && cepNum <= 61799;
+}
+
 // ── Calcular frete via Melhor Envio ────────────────────────────────────
 export async function calculateShipping(destinationCep, products) {
   const cep = (destinationCep || '').replace(/\D/g, '');
@@ -141,15 +150,12 @@ export async function calculateShipping(destinationCep, products) {
     return { success: false, message: 'CEP inválido. Deve conter 8 dígitos.' };
   }
 
-  // Flag de elegibilidade para frete grátis (Agora todo o Brasil é elegível)
-  const freeShippingEligible = true;
+  // Elegibilidade ao frete grátis restrita a Fortaleza, Maracanaú e Caucaia
+  const freeShippingEligible = isLocalShippingRegion(cep);
 
-  // ── Frete fixo para Fortaleza (CEPs 60000-000 a 61699-999) ──
-  const cepNum = parseInt(cep.substring(0, 5), 10);
-  const isFortaleza = cepNum >= 60000 && cepNum <= 61699;
-
-  if (isFortaleza) {
-    console.log('📦 Frete: CEP de Fortaleza detectado — frete fixo R$ 15,00');
+  // ── Entrega Local (Fortaleza, Maracanaú e Caucaia: CEPs 60000 a 61799) ──
+  if (freeShippingEligible) {
+    console.log('📦 Frete: CEP da região local detectado (Fortaleza/Caucaia/Maracanaú) — frete local R$ 15,00');
     const fortalezaResult = {
       success: true,
       source: 'fixed_fortaleza',

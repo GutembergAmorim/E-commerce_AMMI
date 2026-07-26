@@ -116,13 +116,13 @@ const createCheckout = async (req, res) => {
     // Validar frete server-side
     let finalShippingPrice = 0;
     try {
-      const { calculateShipping } = await import('../services/shippingService.js');
+      const { calculateShipping, isLocalShippingRegion } = await import('../services/shippingService.js');
       const cep = shippingAddress?.cep?.replace(/\D/g, '');
       if (cep && cep.length === 8) {
         const shippingResult = await calculateShipping(cep, cartItems);
 
-        // Frete grátis para todo o Brasil com subtotal > 299
-        const isFreeShipping = itemsPrice > 299;
+        // Frete grátis com subtotal > 299 restrito a Fortaleza, Maracanaú e Caucaia
+        const isFreeShipping = itemsPrice > 299 && isLocalShippingRegion(cep);
 
         if (isFreeShipping) {
           finalShippingPrice = 0;

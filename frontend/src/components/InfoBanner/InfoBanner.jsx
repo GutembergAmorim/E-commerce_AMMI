@@ -41,7 +41,7 @@ const InfoBanner = () => {
                   <p>FRETE GRÁTIS</p>
                 </div>
                 <div className="info-banner-text">
-                  <p className="small text-muted"> a partir de R$ 299,00</p>
+                  <p className="small text-muted"> Fortaleza, Caucaia e Maracanaú &gt; R$ 299</p>
                 </div>
               </div>
             </div>

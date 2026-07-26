@@ -145,8 +145,8 @@ export const CartProvider = ({ children }) => {
   const [shippingOption, setShippingOption] = useState(null);
   const [freeShippingEligible, setFreeShippingEligible] = useState(false);
 
-  // Frete grátis acima de R$ 299 para TODO O BRASIL
-  const isFreeShipping = subtotal > 299;
+  // Frete grátis acima de R$ 299 exclusivamente para Fortaleza, Maracanaú e Caucaia (quando o frete foi calculado/confirmado)
+  const isFreeShipping = subtotal > 299 && freeShippingEligible;
   const effectiveShipping = isFreeShipping ? 0 : (shippingPrice ?? 0);
 
   // Calcula o total (subtotal + frete)
