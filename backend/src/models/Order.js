@@ -146,13 +146,18 @@ const orderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    pixDiscount: {
+    // Desconto Atacado
+    wholesaleDiscount: {
       type: Number,
       default: 0,
     },
-    pixDiscountApplied: {
+    wholesaleApplied: {
       type: Boolean,
       default: false,
+    },
+    wholesaleRate: {
+      type: Number,
+      default: 0,
     },
   },
   {

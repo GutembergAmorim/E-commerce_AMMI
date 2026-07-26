@@ -93,8 +93,20 @@ const getProductById = async (req, res) => {
 // @access  Private/Admin
 const createProduct = async (req, res) => {
   try {
-    console.log('Body recebido na criação de produto:', req.body);
-    const product = await Product.create(req.body);
+    // Filtrar apenas campos permitidos para evitar mass assignment
+    const {
+      name, description, price, oldPrice, images, colors, sizes,
+      category, isNew, isHighlighted, stock, lowStockAlert, sku,
+      weight, dimensions, variations, trackStock, allowBackorder,
+      statusColor, statusTextColor
+    } = req.body;
+
+    const product = await Product.create({
+      name, description, price, oldPrice, images, colors, sizes,
+      category, isNew, isHighlighted, stock, lowStockAlert, sku,
+      weight, dimensions, variations, trackStock, allowBackorder,
+      statusColor, statusTextColor
+    });
 
     res.status(201).json({
       success: true,

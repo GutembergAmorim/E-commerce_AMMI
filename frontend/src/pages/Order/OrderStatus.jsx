@@ -290,10 +290,10 @@ const OrderStatus = () => {
                         <span className="text-success fw-semibold">- {formatPrice(order.couponDiscount)}</span>
                       </li>
                     )}
-                    {order.pixDiscount > 0 && (
+                    {order.wholesaleDiscount > 0 && (
                       <li className="d-flex justify-content-between mb-2">
-                        <span className="text-muted">Desconto PIX (10%)</span>
-                        <span className="text-success fw-semibold">- {formatPrice(order.pixDiscount)}</span>
+                        <span style={{ color: '#15803d', fontWeight: 500 }}>Atacado ({order.wholesaleRate}%)</span>
+                        <span className="text-success fw-semibold">- {formatPrice(order.wholesaleDiscount)}</span>
                       </li>
                     )}
                     <li className="d-flex justify-content-between border-top pt-2 mt-2">

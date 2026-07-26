@@ -1,33 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { productService } from "../services/productService";
 
-// ── Helper: retry com backoff ──
-const fetchWithRetry = async (fetchFn, maxRetries = 2) => {
-  let lastError;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetchFn();
-      return response;
-    } catch (err) {
-      lastError = err;
-
-      // Não retry se for erro 4xx (ex: 404)
-      if (err.status && err.status >= 400 && err.status < 500) {
-        throw err;
-      }
-
-      if (attempt < maxRetries) {
-        const delay = (attempt + 1) * 2000; // 2s, 4s
-        console.log(`🔄 Hook retry ${attempt + 1}/${maxRetries} em ${delay / 1000}s`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-  }
-
-  throw lastError;
-};
-
 export const useProducts = (filters = {}) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +10,7 @@ export const useProducts = (filters = {}) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetchWithRetry(() => productService.getProducts(filters));
+      const response = await productService.getProducts(filters);
       if (response.success) {
         setProducts(response.data);
       } else {
@@ -71,7 +44,7 @@ export const useProduct = (id) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetchWithRetry(() => productService.getProductById(id));
+      const response = await productService.getProductById(id);
       if (response.success) {
         setProduct(response.data);
       } else {
@@ -100,14 +73,13 @@ export const useHighlightedProducts = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetchWithRetry(() => productService.getHighlightedProducts());
+      const response = await productService.getHighlightedProducts();
       if (response.success) {
         setProducts(response.data);
       } else {
         setError(response.message || "Erro ao buscar produtos em destaque");
       }
     } catch (err) {
-      console.log("err", err);
       setError(err.message || "Erro ao buscar produtos em destaque");
     } finally {
       setLoading(false);
@@ -130,7 +102,7 @@ export const useBestSellers = (limit = 8) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetchWithRetry(() => productService.getBestSellers(limit));
+      const response = await productService.getBestSellers(limit);
       if (response.success) {
         setProducts(response.data);
       } else {
@@ -149,3 +121,4 @@ export const useBestSellers = (limit = 8) => {
 
   return { products, loading, error, refetch: fetchBestSellers };
 };
+

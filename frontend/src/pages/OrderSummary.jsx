@@ -1,4 +1,3 @@
-import React from "react";
 import { useCart } from "../Context/CartContext";
 
 const OrderSummary = ({
@@ -7,6 +6,9 @@ const OrderSummary = ({
   couponDiscount = 0,
   couponCode = "",
   finalTotal,
+  wholesaleDiscount = 0,
+  wholesaleRate = 0,
+  isWholesaleEligible = false,
 }) => {
   const { cartItems, subtotal, discount, total, frete, isFreeShipping, shippingOption } = useCart();
 
@@ -83,6 +85,18 @@ const OrderSummary = ({
           )}
         </div>
 
+        {/* Wholesale Discount */}
+        {isWholesaleEligible && wholesaleDiscount > 0 && (
+          <div className="checkout-summary__row">
+            <span style={{ color: '#15803d', fontWeight: 500 }}>
+              Atacado ({wholesaleRate}%)
+            </span>
+            <span className="text-success fw-semibold">
+              - {formatCurrency(wholesaleDiscount)}
+            </span>
+          </div>
+        )}
+
         {couponDiscount > 0 && (
           <div className="checkout-summary__row">
             <span className="text-muted">
@@ -116,4 +130,4 @@ const OrderSummary = ({
   );
 };
 
-export default OrderSummary;
+export default OrderSummary;

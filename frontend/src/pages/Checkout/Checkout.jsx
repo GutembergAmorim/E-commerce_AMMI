@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import api from "../../services/api";
 import { useCart } from "../../Context/CartContext";
@@ -26,13 +26,17 @@ const debounce = (func, wait) => {
 };
 
 function Checkout() {
-  const { cartItems, clearCart, total: cartTotal, frete, subtotal, isFreeShipping, setShippingData, setFreeShippingEligible, resetShipping } = useCart();
+  const {
+    cartItems, clearCart, total: cartTotal, frete, subtotal,
+    isFreeShipping, setShippingData, setFreeShippingEligible, resetShipping,
+    totalQuantity, wholesaleConfig, isWholesaleEligible,
+  } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Coupon from Cart page
-  const couponData = location.state?.coupon || null;
+  // Coupon from Cart page (bloqueado se atacado ativo)
+  const couponData = isWholesaleEligible ? null : (location.state?.coupon || null);
   const couponDiscount = couponData?.discount || 0;
 
   const [address, setAddress] = useState({
@@ -329,10 +333,19 @@ function Checkout() {
     );
   }
 
-  // Calcular total do carrinho (cartTotal já inclui frete, mas NÃO o cupom)
-  const total = cartTotal - couponDiscount;
-  const pixDiscount = 0 //paymentMethod === "pix" ? total * 0.05 : 0;
-  const finalTotal = total - pixDiscount;
+  // ── Calcular desconto atacado (varia com método de pagamento) ──
+  const wholesaleRate = isWholesaleEligible
+    ? (paymentMethod === "pix"
+      ? wholesaleConfig.discountRates.pix
+      : wholesaleConfig.discountRates.credit)
+    : 0;
+  const wholesaleDiscount = isWholesaleEligible
+    ? Number((subtotal * (wholesaleRate / 100)).toFixed(2))
+    : 0;
+
+  // Calcular total do carrinho (cartTotal já inclui frete, mas NÃO o cupom/atacado)
+  const total = cartTotal - couponDiscount - wholesaleDiscount;
+  const finalTotal = Math.max(total, 0);
 
   return (
     <main className="container py-4">
@@ -678,11 +691,14 @@ function Checkout() {
         <div className="col-12 col-lg-5">
           <div className="checkout-summary">
             <OrderSummary
-              paymentDiscount={pixDiscount}
-              paymentMethodLabel={paymentMethod === "pix" ? "" : ""}
+              paymentDiscount={0}
+              paymentMethodLabel=""
               couponDiscount={couponDiscount}
               couponCode={couponData?.code}
               finalTotal={finalTotal}
+              wholesaleDiscount={wholesaleDiscount}
+              wholesaleRate={wholesaleRate}
+              isWholesaleEligible={isWholesaleEligible}
             />
 
             {/* Checkout Button */}

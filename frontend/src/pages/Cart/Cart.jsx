@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { ArrowLeft, X } from "lucide-react";
 import { useCart } from "../../Context/CartContext";
@@ -7,14 +7,18 @@ import api from "../../services/api";
 import "./Cart.css";
 
 const Cart = () => {
-  const { cartItems, handleQuantityChange, handleRemoveItem, frete, isFreeShipping } = useCart();
+  const {
+    cartItems, handleQuantityChange, handleRemoveItem,
+    frete, isFreeShipping, totalQuantity,
+    wholesaleConfig, isWholesaleEligible, piecesUntilWholesale,
+  } = useCart();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
-  const [couponData, setCouponData] = useState(null); // { code, discount, discountType, discountValue, description }
+  const [couponData, setCouponData] = useState(null);
   const [couponError, setCouponError] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
 
@@ -26,9 +30,8 @@ const Cart = () => {
       navigate("/login", { state: { from: location } });
       return;
     }
-    // Pass coupon info to checkout via state
     navigate("/checkout", {
-      state: couponData ? { coupon: couponData } : undefined,
+      state: couponData && !isWholesaleEligible ? { coupon: couponData } : undefined,
     });
   };
 
@@ -46,8 +49,8 @@ const Cart = () => {
     return acc;
   }, 0);
 
-  // Calculate coupon discount
-  const couponDiscount = couponData ? couponData.discount : 0;
+  // Calculate coupon discount (bloqueado se atacado ativo)
+  const couponDiscount = couponData && !isWholesaleEligible ? couponData.discount : 0;
 
   // Total = original prices - promotion discounts - coupon + shipping
   const total = subtotalOriginal - productDiscount - couponDiscount + frete;
@@ -102,7 +105,7 @@ const Cart = () => {
 
           <div className="cart-card">
             <h2 className="cart-card__title">
-              Meu Carrinho ({cartItems.length} {cartItems.length === 1 ? "item" : "itens"})
+              Meu Carrinho ({totalQuantity} {totalQuantity === 1 ? "peça" : "peças"})
             </h2>
 
             {cartItems.length === 0 ? (
@@ -121,10 +124,8 @@ const Cart = () => {
             ) : (
               cartItems.map((item) => (
                 <div key={`${item.id}-${item.color}-${item.size}`} className="cart-item-row">
-                  {/* Image */}
                   <img src={item.image} alt={item.name} className="cart-item-image" />
 
-                  {/* Details */}
                   <div className="cart-item-details">
                     <p className="cart-item-name">{item.name}</p>
                     <p className="cart-item-meta">
@@ -132,7 +133,6 @@ const Cart = () => {
                     </p>
 
                     <div className="d-flex align-items-center justify-content-between mt-2">
-                      {/* Quantity */}
                       <div className="cart-qty">
                         <button
                           className="cart-qty__btn"
@@ -149,7 +149,6 @@ const Cart = () => {
                         </button>
                       </div>
 
-                      {/* Price */}
                       <div className="cart-item-price">
                         <p className="cart-item-price__main">
                           {formatCurrency(item.price * item.quantity)}
@@ -161,7 +160,6 @@ const Cart = () => {
                         )}
                       </div>
 
-                      {/* Remove */}
                       <button
                         onClick={() => handleRemoveItem(item.id, item.color, item.size)}
                         className="cart-remove-btn"
@@ -182,10 +180,54 @@ const Cart = () => {
           <div className="cart-summary">
             <h2 className="cart-summary__title">Resumo do Pedido</h2>
 
+            {/* Wholesale Banner */}
+            {wholesaleConfig?.isActive && cartItems.length > 0 && (
+              <div
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  marginBottom: 16,
+                  background: isWholesaleEligible
+                    ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)'
+                    : 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)',
+                  border: isWholesaleEligible
+                    ? '1px solid #86efac'
+                    : '1px solid #fde047',
+                }}
+              >
+                {isWholesaleEligible ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '1.2rem' }}>🎉</span>
+                    <div>
+                      <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>
+                        Desconto Atacado Ativado!
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.75rem', color: '#166534' }}>
+                        Você garantiu {wholesaleConfig.discountRates.pix}% de desconto na sua compra!
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '1.2rem' }}>🔥</span>
+                    <div>
+                      <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, color: '#a16207' }}>
+                        Adicione mais {piecesUntilWholesale} {piecesUntilWholesale === 1 ? 'peça' : 'peças'} para
+                        ganhar {wholesaleConfig.discountRates.pix}% de desconto!
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#92400e' }}>
+                        Atacado a partir de {wholesaleConfig.minQuantity} peças
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Lines */}
             <div className="cart-summary__row">
               <span className="text-muted">
-                Subtotal ({cartItems.length} {cartItems.length === 1 ? "item" : "itens"})
+                Subtotal ({totalQuantity} {totalQuantity === 1 ? "peça" : "peças"})
               </span>
               <span className="fw-medium">{formatCurrency(subtotalOriginal)}</span>
             </div>
@@ -197,7 +239,7 @@ const Cart = () => {
               </div>
             )}
 
-            {couponData && (
+            {couponData && !isWholesaleEligible && (
               <div className="cart-summary__row">
                 <span className="text-muted d-flex align-items-center gap-1">
                   Cupom ({couponData.code})
@@ -235,45 +277,68 @@ const Cart = () => {
               <span className="cart-summary__total-value">{formatCurrency(total)}</span>
             </div>
 
+            {/* Wholesale info on total */}
+            {isWholesaleEligible && (
+              <p style={{
+                fontSize: '0.75rem', color: '#15803d', margin: '-8px 0 12px',
+                fontWeight: 500, textAlign: 'right',
+              }}>
+                * Desconto atacado aplicado no checkout
+              </p>
+            )}
+
             {/* Coupon */}
-            <div className="cart-coupon">
-              {couponData ? (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 12px', background: '#f0fdf4', borderRadius: 10,
-                  border: '1px solid #bbf7d0', width: '100%',
-                }}>
-                  <i className="fas fa-check-circle" style={{ color: '#16a34a' }}></i>
-                  <span style={{ fontSize: '0.82rem', color: '#16a34a', fontWeight: 600 }}>
-                    Cupom {couponData.code} aplicado!
-                    {couponData.discountType === 'percentage'
-                      ? ` (${couponData.discountValue}% off)`
-                      : ` (R$ ${couponData.discountValue.toFixed(2)} off)`}
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Cupom de desconto"
-                    className="cart-coupon__input"
-                    value={couponCode}
-                    onChange={(e) => {
-                      setCouponCode(e.target.value.toUpperCase());
-                      setCouponError("");
-                    }}
-                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyCoupon())}
-                  />
-                  <button
-                    className="cart-coupon__btn"
-                    onClick={handleApplyCoupon}
-                    disabled={couponLoading || !couponCode.trim()}
-                  >
-                    {couponLoading ? "..." : "Aplicar"}
-                  </button>
-                </>
-              )}
-            </div>
+            {isWholesaleEligible ? (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 12px', background: '#f5f5f5', borderRadius: 10,
+                border: '1px solid #e5e5e5',
+              }}>
+                <i className="fas fa-info-circle" style={{ color: '#737373' }}></i>
+                <span style={{ fontSize: '0.78rem', color: '#737373' }}>
+                  Cupons não acumulam com desconto atacado
+                </span>
+              </div>
+            ) : (
+              <div className="cart-coupon">
+                {couponData ? (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 12px', background: '#f0fdf4', borderRadius: 10,
+                    border: '1px solid #bbf7d0', width: '100%',
+                  }}>
+                    <i className="fas fa-check-circle" style={{ color: '#16a34a' }}></i>
+                    <span style={{ fontSize: '0.82rem', color: '#16a34a', fontWeight: 600 }}>
+                      Cupom {couponData.code} aplicado!
+                      {couponData.discountType === 'percentage'
+                        ? ` (${couponData.discountValue}% off)`
+                        : ` (R$ ${couponData.discountValue.toFixed(2)} off)`}
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Cupom de desconto"
+                      className="cart-coupon__input"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value.toUpperCase());
+                        setCouponError("");
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyCoupon())}
+                    />
+                    <button
+                      className="cart-coupon__btn"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                    >
+                      {couponLoading ? "..." : "Aplicar"}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
             {couponError && (
               <p style={{ fontSize: '0.78rem', color: '#dc2626', margin: '4px 0 0', fontWeight: 500 }}>
                 {couponError}

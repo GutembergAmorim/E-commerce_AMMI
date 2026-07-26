@@ -12,13 +12,14 @@ import productRoutes from "./src/routes/products.js";
 import uploadRoutes from "./src/routes/upload.js";
 import userRoutes from "./src/routes/users.js";
 import paymentRoutes from "./src/routes/payment.js";
-import orderRoutes from './src/routes/orderRoutes.js';
-import stockRoutes from './src/routes/stockRoutes.js';
-import newsletterRoutes from './src/routes/newsletter.js';
-import couponRoutes from './src/routes/coupons.js';
-import reviewRoutes from './src/routes/reviews.js';
-import analyticsRoutes from './src/routes/analytics.js';
-import shippingRoutes from './src/routes/shipping.js';
+import orderRoutes from "./src/routes/orderRoutes.js";
+import stockRoutes from "./src/routes/stockRoutes.js";
+import newsletterRoutes from "./src/routes/newsletter.js";
+import couponRoutes from "./src/routes/coupons.js";
+import reviewRoutes from "./src/routes/reviews.js";
+import analyticsRoutes from "./src/routes/analytics.js";
+import shippingRoutes from "./src/routes/shipping.js";
+import wholesaleRoutes from "./src/routes/wholesale.js";
 
 const app = express();
 
@@ -82,13 +83,14 @@ app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payment", paymentRoutes);
-app.use('/api/orders', orderRoutes)
-app.use('/api/stock', stockRoutes);
-app.use('/api/newsletter', newsletterRoutes);
-app.use('/api/coupons', couponRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/shipping', shippingRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/stock", stockRoutes);
+app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/shipping", shippingRoutes);
+app.use("/api/wholesale", wholesaleRoutes);
 
 app.get("/", (req, res) => {
   res.json({

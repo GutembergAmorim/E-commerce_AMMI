@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import api from "../services/api";
 
 const CartContext = createContext();
 
@@ -24,6 +25,25 @@ export const CartProvider = ({ children }) => {
 
   // Estado para animação do carrinho
   const [animateCart, setAnimateCart] = useState(false);
+
+  // Configuração de atacado (carregada da API)
+  const [wholesaleConfig, setWholesaleConfig] = useState(null);
+
+  // Buscar configuração de atacado ao montar
+  useEffect(() => {
+    const fetchWholesaleConfig = async () => {
+      try {
+        const res = await api.get("/wholesale/config");
+        if (res.data.success) {
+          setWholesaleConfig(res.data.data);
+        }
+      } catch (err) {
+        // Fallback silencioso — atacado simplesmente não aparece
+        console.error("Erro ao carregar config atacado:", err.message);
+      }
+    };
+    fetchWholesaleConfig();
+  }, []);
 
   useEffect(() => {
     // Salva os itens do carrinho no localStorage sempre que cartItems mudar
@@ -51,9 +71,6 @@ export const CartProvider = ({ children }) => {
 
   const handleRemoveItem = (id, color, size) => {
     setCartItems((currentItems) =>
-      // A lógica de filtro original estava incorreta.
-      // Ela mantinha apenas os itens que não correspondiam a NENHUM dos critérios.
-      // A lógica correta é manter os itens que NÃO são o item a ser removido (ou seja, que não correspondem a TODOS os critérios).
       currentItems.filter(
         (item) =>
           !(item.id === id && item.color === color && item.size === size)
@@ -94,7 +111,8 @@ export const CartProvider = ({ children }) => {
   // funcao para limpar o carrinho
   const clearCart = () => {
     setCartItems([]);
-    localStorage.removeItem("cartItems");  };
+    localStorage.removeItem("cartItems");
+  };
 
   // Calcula o subtotal
   const subtotal = cartItems.reduce(
@@ -109,6 +127,18 @@ export const CartProvider = ({ children }) => {
     }
     return acc;
   }, 0);
+
+  // Quantidade total de peças (para atacado)
+  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Elegibilidade atacado
+  const isWholesaleEligible =
+    wholesaleConfig?.isActive && totalQuantity >= (wholesaleConfig?.minQuantity || 6);
+
+  // Quantas peças faltam para atingir atacado
+  const piecesUntilWholesale = wholesaleConfig?.isActive
+    ? Math.max(0, (wholesaleConfig?.minQuantity || 6) - totalQuantity)
+    : 0;
 
   // Frete dinâmico (calculado no checkout via Melhor Envio)
   const [shippingPrice, setShippingPrice] = useState(null);
@@ -145,7 +175,7 @@ export const CartProvider = ({ children }) => {
         handleQuantityChange,
         handleRemoveItem,
         addItemToCart,
-        clearCart, // Adiciona a função de limpar o carrinho
+        clearCart,
         subtotal,
         discount,
         total,
@@ -156,7 +186,12 @@ export const CartProvider = ({ children }) => {
         setShippingData,
         setFreeShippingEligible,
         resetShipping,
-        animateCart, // Expõe o estado da animação
+        animateCart,
+        // Atacado
+        totalQuantity,
+        wholesaleConfig,
+        isWholesaleEligible,
+        piecesUntilWholesale,
       }}
     >
       {children}

@@ -282,8 +282,8 @@ const forgotPassword = async (req, res) => {
     res.json({
       success: true,
       message: "Instruções de recuperação enviadas. Verifique seu e-mail.",
-      // Remove in production:
-      resetUrl,
+      // Apenas em dev — em produção, enviar por email
+      ...(process.env.NODE_ENV === 'development' && { resetUrl }),
     });
   } catch (error) {
     console.error("Erro no forgot password:", error);

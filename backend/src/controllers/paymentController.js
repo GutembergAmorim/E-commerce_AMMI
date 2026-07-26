@@ -1,9 +1,7 @@
 import axios from "axios";
-import dotenv from "dotenv";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 
-dotenv.config();
 
 // ── InfinitePay configuration ───────────────────────────────────────────
 const INFINITEPAY_API = process.env.INFINITEPAY_API_URL || "https://api.checkout.infinitepay.io";
@@ -13,10 +11,6 @@ if (!INFINITEPAY_HANDLE) {
   console.error("❌ INFINITEPAY_HANDLE não está definido nas variáveis de ambiente!");
 }
 
-console.log("💰 InfinitePay configurado:", {
-  handle: INFINITEPAY_HANDLE,
-  apiUrl: INFINITEPAY_API,
-});
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -155,10 +149,15 @@ const createCheckout = async (req, res) => {
       finalShippingPrice = Number(shippingPrice) || 0;
     }
 
+    // ── Calcular desconto atacado ──
+    const { calculateWholesaleDiscount } = await import("../services/wholesaleService.js");
+    const wholesale = await calculateWholesaleDiscount(cartItems, paymentMethod);
+
     // Validate coupon on backend (server-side verification)
+    // Se atacado está ativo e bloqueia cupom, ignora o cupom
     let validatedCouponDiscount = 0;
     let couponId = null;
-    if (couponCode) {
+    if (couponCode && !(wholesale.eligible && wholesale.blockCoupon)) {
       const Coupon = (await import("../models/Coupon.js")).default;
       const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
       if (coupon) {
@@ -170,12 +169,10 @@ const createCheckout = async (req, res) => {
       }
     }
 
-    const subtotal = itemsPrice + finalShippingPrice - validatedCouponDiscount;
-
-    // Apply PIX discount (10%) if payment method is PIX
-    const isPix = paymentMethod === "pix";
-    const pixDiscountAmount = 0 //isPix ? Number((subtotal * 0.05).toFixed(2)) : 0;
-    const total = Number((subtotal - pixDiscountAmount).toFixed(2));
+    // Fórmula: itemsPrice - atacado - cupom + frete
+    const wholesaleDiscount = wholesale.eligible ? wholesale.discountAmount : 0;
+    const subtotal = itemsPrice - wholesaleDiscount - validatedCouponDiscount + finalShippingPrice;
+    const total = Number(Math.max(subtotal, 0).toFixed(2));
 
     // Create order in MongoDB
     const order = await Order.create({
@@ -199,15 +196,16 @@ const createCheckout = async (req, res) => {
         postalCode: shippingAddress.cep,
         country: "Brasil",
       },
-      paymentMethod: isPix ? "PIX" : "CREDIT_CARD",
+      paymentMethod: paymentMethod === "pix" ? "PIX" : "CREDIT_CARD",
       itemsPrice,
       taxPrice: 0,
       shippingPrice: finalShippingPrice,
       total,
       couponCode: couponCode || null,
       couponDiscount: validatedCouponDiscount,
-      pixDiscount: pixDiscountAmount,
-      pixDiscountApplied: isPix,
+      wholesaleDiscount,
+      wholesaleApplied: wholesale.eligible,
+      wholesaleRate: wholesale.rate,
       status: "Pendente",
       isPaid: false,
     });
@@ -216,10 +214,9 @@ const createCheckout = async (req, res) => {
     if (couponId) {
       const Coupon = (await import("../models/Coupon.js")).default;
       await Coupon.findByIdAndUpdate(couponId, { $inc: { usedCount: 1 } });
-      console.log(`🎟️ Cupom ${couponCode} usado (pedido ${order._id})`);
     }
 
-    console.log("✅ Pedido criado:", order._id, isPix ? "(PIX -10%)" : "(Crédito)", validatedCouponDiscount > 0 ? `(Cupom -R$${validatedCouponDiscount})` : "");
+    console.log("✅ Pedido criado:", order._id, paymentMethod === "pix" ? "(PIX -10%)" : "(Crédito)", validatedCouponDiscount > 0 ? `(Cupom -R$${validatedCouponDiscount})` : "");
 
     // Build InfinitePay checkout payload
     // Total after all discounts = total (already has coupon + PIX applied)

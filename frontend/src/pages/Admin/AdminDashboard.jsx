@@ -175,6 +175,12 @@ const AdminDashboard = () => {
       icon: <Tag size={18} />,
       colorClass: 'admin-stat__icon--purple',
     },
+    {
+      label: 'Desconto Atacado',
+      to: '/admin/wholesale',
+      icon: <Package size={18} />,
+      colorClass: 'admin-stat__icon--teal',
+    },
   ];
 
   return (

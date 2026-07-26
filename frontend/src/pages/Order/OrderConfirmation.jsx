@@ -195,10 +195,10 @@ const OrderConfirmation = () => {
                     <span className="text-success fw-semibold">- {formatPrice(order.couponDiscount)}</span>
                   </div>
                 )}
-                {order.pixDiscount > 0 && (
+                {order.wholesaleDiscount > 0 && (
                   <div className="confirm-financial-row">
-                    <span className="text-muted">Desconto PIX (10%)</span>
-                    <span className="text-success fw-semibold">- {formatPrice(order.pixDiscount)}</span>
+                    <span style={{ color: '#15803d', fontWeight: 500 }}>Atacado ({order.wholesaleRate}%)</span>
+                    <span className="text-success fw-semibold">- {formatPrice(order.wholesaleDiscount)}</span>
                   </div>
                 )}
                 <div className="confirm-financial-row confirm-financial-row--total">

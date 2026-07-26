@@ -138,7 +138,19 @@ export const getCoupons = async (req, res) => {
 // @access  Admin
 export const createCoupon = async (req, res) => {
   try {
-    const coupon = await Coupon.create(req.body);
+    // Filtrar apenas campos permitidos para evitar mass assignment
+    const {
+      code, discountType, discountValue, minOrderValue,
+      maxUses, expiresAt, isActive, description,
+      condition, maxUsesPerUser
+    } = req.body;
+
+    const coupon = await Coupon.create({
+      code, discountType, discountValue, minOrderValue,
+      maxUses, expiresAt, isActive, description,
+      condition, maxUsesPerUser
+    });
+
     res.status(201).json({ success: true, data: coupon });
   } catch (error) {
     if (error.code === 11000) {
