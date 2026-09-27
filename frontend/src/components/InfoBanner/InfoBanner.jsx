@@ -15,7 +15,7 @@ const InfoBanner = () => {
               </div>
               <div className="info-banner-text">
                 <p>10% OFF na primeira compra</p>
-                {/* <p>o cupom PRIMEIRACOMPRA</p> */}
+                <p style={{fontWeight: 400}}>Use o cupom: <strong>PRIMEIRACOMPRA</strong></p>
               </div>
             </div>
           </div>

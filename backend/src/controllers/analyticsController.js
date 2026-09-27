@@ -66,11 +66,11 @@ export const getDashboardAnalytics = async (req, res) => {
     // ── Revenue by category (from order items) ──
     const categoryRevenue = await Order.aggregate([
       { $match: { status: { $in: ["Pago", "Preparando", "Enviado", "Entregue"] } } },
-      { $unwind: "$items" },
+      { $unwind: "$orderItems" },
       {
         $lookup: {
           from: "products",
-          localField: "items.product",
+          localField: "orderItems.product",
           foreignField: "_id",
           as: "productInfo",
         },
@@ -79,8 +79,8 @@ export const getDashboardAnalytics = async (req, res) => {
       {
         $group: {
           _id: "$productInfo.category",
-          total: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
-          quantity: { $sum: "$items.quantity" },
+          total: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } },
+          quantity: { $sum: "$orderItems.quantity" },
         },
       },
       { $sort: { total: -1 } },
@@ -89,12 +89,12 @@ export const getDashboardAnalytics = async (req, res) => {
     // ── Top Selling Products ──
     const topProducts = await Order.aggregate([
       { $match: { status: { $in: ["Pago", "Preparando", "Enviado", "Entregue"] } } },
-      { $unwind: "$items" },
+      { $unwind: "$orderItems" },
       {
         $group: {
-          _id: "$items.product",
-          totalSold: { $sum: "$items.quantity" },
-          totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+          _id: "$orderItems.product",
+          totalSold: { $sum: "$orderItems.quantity" },
+          totalRevenue: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } },
         },
       },
       { $sort: { totalSold: -1 } },

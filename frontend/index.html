@@ -2,21 +2,70 @@
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/src/assets/logo.png" />
+    <link rel="icon" type="image/png" href="/src/assets/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO base — título e descrição padrão (serão sobrescritos pelo react-helmet-async por rota) -->
+    <title>AMMI Fitwear | Moda Fitness Feminina</title>
+    <meta name="description" content="Moda fitness feminina de alta qualidade. Leggings, tops, shorts e macaquinhos com estilo e conforto para o seu treino." />
+    <meta name="theme-color" content="#1a1a1a" />
+
+    <!-- Fontes -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-    <link
-      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Pacifico&family=Story+Script&display=swap" rel="stylesheet">
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <title>Ammi Fitwear</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- ══════════════════════════════════════════════════════════════
+         GOOGLE ANALYTICS 4
+         Substitua VITE_GA4_MEASUREMENT_ID no .env pelo seu ID real.
+         Exemplo: VITE_GA4_ID=G-XXXXXXXXXX
+    ════════════════════════════════════════════════════════════════ -->
+    <script>
+      // GA4 — carrega apenas se o ID estiver configurado
+      (function () {
+        // O Vite injeta variáveis VITE_* no bundle, mas no index.html
+        // precisamos de um placeholder que será substituído em build.
+        // Para ambiente de desenvolvimento, o ID fica em branco e o GA4
+        // simplesmente não é carregado (sem erros).
+        var GA_ID = '__VITE_GA4_ID__'; // substituído pelo plugin vite-plugin-html ou manualmente
+        if (!GA_ID || GA_ID === '__VITE_GA4_ID__' || GA_ID.indexOf('G-') !== 0) return;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { window.dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', GA_ID, { send_page_view: false }); // page_view disparado pelo hook usePageTracking
+      })();
+    </script>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         META PIXEL (Facebook / Instagram Ads)
+         Substitua no .env: VITE_META_PIXEL_ID=XXXXXXXXXXXXXXX
+    ════════════════════════════════════════════════════════════════ -->
+    <script>
+      (function () {
+        var PIXEL_ID = '__VITE_META_PIXEL_ID__'; // substituído em build
+        if (!PIXEL_ID || PIXEL_ID === '__VITE_META_PIXEL_ID__' || isNaN(PIXEL_ID)) return;
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+        n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+        document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', PIXEL_ID);
+        // PageView disparado pelo hook usePageTracking — não chamamos fbq('track','PageView') aqui
+      })();
+    </script>
+    <noscript>
+      <!-- Meta Pixel noscript — só funciona com PIXEL_ID configurado -->
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

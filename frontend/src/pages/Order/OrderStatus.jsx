@@ -200,13 +200,27 @@ const OrderStatus = () => {
               <div className="card-body text-center py-4">
                 <Clock size={32} className="text-warning mb-2" />
                 <h5 className="mb-2">Aguardando pagamento</h5>
-                <p className="text-muted small mb-0">
-                  O pagamento do seu pedido ainda não foi confirmado. 
+                <p className="text-muted small mb-3">
+                  O pagamento do seu pedido ainda não foi confirmado.
                   Caso já tenha pago, aguarde alguns instantes para a confirmação automática.
+                  A página atualiza sozinha a cada 30 segundos.
                 </p>
+                {/* Botão de recuperação: reenvia o usuário ao link de pagamento gerado */}
+                {order.infinitePayCheckoutUrl && (
+                  <a
+                    href={order.infinitePayCheckoutUrl}
+                    className="btn btn-warning fw-semibold rounded-pill px-4"
+                    target="_self"
+                    rel="noopener noreferrer"
+                  >
+                    <i className="fas fa-credit-card me-2"></i>
+                    Ir para o pagamento
+                  </a>
+                )}
               </div>
             </div>
           )}
+
 
           {/* ---- Product Items ---- */}
           <div className="order-info-card mb-4">

@@ -1,9 +1,32 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+/**
+ * Plugin inline: substitui os placeholders __VITE_GA4_ID__ e
+ * __VITE_META_PIXEL_ID__ no index.html pelos valores reais das
+ * variáveis de ambiente VITE_GA4_ID e VITE_META_PIXEL_ID.
+ *
+ * Funciona tanto em `vite dev` quanto em `vite build`.
+ * Assim não precisamos de pacotes extras (vite-plugin-html etc.).
+ */
+function injectEnvIntoHtml() {
+  let env = {};
+  return {
+    name: 'inject-env-into-html',
+    configResolved(config) {
+      env = config.env || {};
+    },
+    transformIndexHtml(html) {
+      return html
+        .replace(/__VITE_GA4_ID__/g, env.VITE_GA4_ID || '')
+        .replace(/__VITE_META_PIXEL_ID__/g, env.VITE_META_PIXEL_ID || '');
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), injectEnvIntoHtml()],
   server: {
     allowedHosts: [
       "localhost",
@@ -13,7 +36,6 @@ export default defineConfig({
       ".loca.lt",
       ".ngrok.io",
       ".ngrok-free.app",
-      ".loca.lt",
       // Seu domínio personalizado se tiver
       ".seudominio.com",
     ],

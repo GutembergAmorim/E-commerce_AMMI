@@ -8,6 +8,8 @@ import Banner from "../../components/Banner/Banner";
 import InfoBanner from "../../components/InfoBanner/InfoBanner";
 import CategoryGrid from "../../components/CategoryGrid/CategoryGrid";
 import api from "../../services/api";
+import SEO from "../../components/SEO/SEO";
+import { trackLead } from "../../services/analytics";
 
 // Importação das imagens das clientes
 import naylaneImg from "../../assets/Naylane.png";
@@ -65,6 +67,8 @@ function Home() {
       const res = await api.post("/newsletter", { email: nlEmail });
       setNlStatus({ type: "success", message: res.data.message });
       setNlEmail("");
+      // Rastreamento: lead capturado (GA4 + Meta Pixel)
+      trackLead();
     } catch (err) {
       const msg = err.response?.data?.message || "Erro ao se inscrever. Tente novamente.";
       setNlStatus({ type: "error", message: msg });
@@ -92,13 +96,21 @@ function Home() {
 
   return (
     <>
+      {/* SEO — Home */}
+      <SEO
+        title="Moda Fitness Feminina"
+        description="Leggings, tops, shorts e macaquinhos de alta qualidade para mulheres que treinam com estilo. 10% OFF na primeira compra. Frete grátis para Fortaleza."
+        url="/"
+      />
+
       {/* WhatsApp Floating Button */}
-      <Link to="https://wa.me/5585991903125">
+      <a href="https://wa.me/5585991903125" target="_blank" rel="noopener noreferrer">
         <i className="fa-brands fa-whatsapp zap-icon"></i>
-      </Link>
+      </a>
 
       {/* Banner Carousel */}
       <Banner />
+
 
       {/* Info Strip */}
       <InfoBanner />
@@ -224,7 +236,7 @@ function Home() {
                 disabled={nlLoading}
               />
               <button type="submit" className="newsletter-form__btn" disabled={nlLoading}>
-                {nlLoading ? "Enviando..." : "Assinar"}
+                {nlLoading ? "Enviando..." : "Quero Receber Novidades"}
               </button>
             </form>
             {nlStatus && (

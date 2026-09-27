@@ -5,6 +5,7 @@ import { SlidersHorizontal, Package, X, Flame, Tag } from "lucide-react";
 import "./style.css";
 import { useProducts } from "../../hooks/useProducts";
 import ProductCard from "../../components/ProductCard/ProductCard";
+import SEO from "../../components/SEO/SEO";
 
 function Collections() {
   const [searchParams] = useSearchParams();
@@ -309,6 +310,13 @@ function Collections() {
 
   return (
     <div className="container py-4">
+      {/* SEO dinâmico por modo de listagem */}
+      <SEO
+        title={pageTitle}
+        description={pageSubtitle + '. Leggings, tops, shorts e macaquinhos AMMI Fitwear.'}
+        url={`/collections${window.location.search}`}
+      />
+
       {/* ---- Header ---- */}
       <div className="collections-header">
         <div className="d-flex align-items-center justify-content-center gap-2">

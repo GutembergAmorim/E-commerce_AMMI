@@ -6,10 +6,14 @@ import React from "react";
 import { Outlet, useLocation, ScrollRestoration } from "react-router-dom";
 import Breadcrumbs from "./components/Breadcrumbs/Breadcrumbs";
 import WelcomeModal from "./components/WelcomeModal/WelcomeModal";
+import { usePageTracking } from "./hooks/usePageTracking";
 
 function App() {
   const location = useLocation();
   const isHome = location.pathname === "/";
+
+  // Dispara page_view automático a cada troca de rota (GA4 + Meta Pixel)
+  usePageTracking();
 
   return (
     <div className="d-flex flex-column min-vh-100">

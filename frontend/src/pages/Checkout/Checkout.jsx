@@ -5,6 +5,7 @@ import { useCart } from "../../Context/CartContext";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { calculateShipping } from "../../services/shippingService";
+import { trackBeginCheckout, trackPurchase } from "../../services/analytics";
 
 import CustomerInfo from "../CustomerInfo";
 import AddressForm from "../AddressForm";
@@ -73,6 +74,14 @@ function Checkout() {
   // Reset shipping quando CEP muda
   useEffect(() => {
     return () => resetShipping();
+  }, []);
+
+  // Rastreamento: begin_checkout disparado uma vez quando o checkout é aberto
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      trackBeginCheckout({ items: cartItems, total: cartTotal });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Validar se o formulário está completo
@@ -257,6 +266,14 @@ function Checkout() {
       }
 
       const { checkoutUrl, orderId } = response.data;
+
+      // Rastreamento: purchase disparado após criação do pedido
+      trackPurchase({
+        orderId,
+        total: response.data.total || finalTotal,
+        items: cartItems,
+        couponCode: couponData?.code || '',
+      });
 
       // Clear cart before redirect
       setOrderPlaced(true);

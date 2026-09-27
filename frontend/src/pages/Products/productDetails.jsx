@@ -7,8 +7,9 @@ import { calculateShipping } from "../../services/shippingService";
 import StarRating from "../../components/StarRating/StarRating";
 import ProductReviews from "../../components/ProductReviews/ProductReviews";
 import RelatedProducts from "../../components/RelatedProducts/RelatedProducts";
-
 import CartToast from "../../components/CartToast/CartToast";
+import SEO from "../../components/SEO/SEO";
+import { trackViewItem, trackAddToCart } from "../../services/analytics";
 import "./ProductDetails.css";
 
 // ── Skeleton Loader ──
@@ -120,6 +121,19 @@ const ProductDetails = () => {
     }
   }, [product]);
 
+  // Dispara view_item quando produto é carregado (GA4 + Meta Pixel)
+  useEffect(() => {
+    if (product && !loading) {
+      trackViewItem({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        category: product.category,
+        brand: 'AMMI Fitwear',
+      });
+    }
+  }, [product?._id, loading]);
+
   // Reset quantity when variation changes
   useEffect(() => {
     setQuantity(1);
@@ -154,6 +168,17 @@ const ProductDetails = () => {
       size,
       image: productImage,
       originalPrice: product.oldPrice || null,
+    });
+
+    // Rastreamento: add_to_cart (GA4 + Meta Pixel)
+    trackAddToCart({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      category: product.category,
+      quantity,
+      color,
+      size,
     });
 
     if (buttonTimerRef.current) clearTimeout(buttonTimerRef.current);
@@ -238,6 +263,46 @@ const ProductDetails = () => {
 
   return (
     <>
+      {/* SEO dinâmico — cada produto tem sua própria página indexável */}
+      <SEO
+        title={product.name}
+        description={
+          product.description
+            ? product.description.slice(0, 160)
+            : `Compre ${product.name} na AMMI Fitwear. Moda fitness feminina com qualidade e estilo.`
+        }
+        image={product.images?.[0] || ''}
+        url={`/products/${product._id}`}
+        type="product"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.name,
+          description: product.description || '',
+          image: product.images || [],
+          brand: { '@type': 'Brand', name: 'AMMI Fitwear' },
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'BRL',
+            price: product.price,
+            availability: product.stock > 0
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+            url: `https://ammifitwear.com.br/products/${product._id}`,
+            seller: { '@type': 'Organization', name: 'AMMI Fitwear' },
+          },
+          ...(product.averageRating > 0 && {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: product.averageRating,
+              reviewCount: product.numReviews,
+              bestRating: 5,
+              worstRating: 1,
+            },
+          }),
+        }}
+      />
+
       <div className="container py-5">
         <div className="row g-5">
           {/* ━━ Image Gallery ━━ */}
